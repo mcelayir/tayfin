@@ -52,6 +52,8 @@ Prerequisites:
 
 3. The database will be available on localhost:5432.
 
+Note: Running the compose command will start the DB and run Flyway to initialize the schemas and audit tables for each context.
+
 ## Key architecture rules (high level)
 
 These are summarized here; the authoritative version is in `docs/architecture/ARCHITECTURE_RULES.md`.
