@@ -39,18 +39,18 @@ Cloud deployment (GCP Cloud Run) is a later phase.
 
 ## Quick start (local)
 
-> This section will be finalized during Phase 1 when docker-compose and app skeletons exist.
-
 Prerequisites:
 - Docker + Docker Compose
-- (Optional) Python 3.11+ for running jobs locally on host
-- (Optional) Node.js 20+ for running UI locally
 
-Typical workflow (planned):
-1. Start infrastructure (Postgres + migrations)
-2. Start APIs
-3. Run jobs on demand from CLI
-4. Use BFF + UI to browse results and download exports
+1. Copy env file:
+
+   cp .env.example .env
+
+2. Start database:
+
+   docker compose --env-file .env -f infra/docker-compose.yml up
+
+3. The database will be available on localhost:5432.
 
 ## Key architecture rules (high level)
 
