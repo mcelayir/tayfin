@@ -11,6 +11,13 @@ Examples:
 curl "http://localhost:8000/health"
 curl "http://localhost:8000/fundamentals/latest?symbol=AAPL"
 curl "http://localhost:8000/fundamentals?symbol=AAPL&from=2025-01-01&to=2026-02-09"
+
+# Indices endpoints
+```bash
+curl "http://localhost:8000/indices/members?index_code=NDX"
+curl "http://localhost:8000/indices/by-symbol?symbol=AAPL"
+curl "http://localhost:8000/markets/instruments?market=NASDAQ"
+```
 ```
 
 Environment variables (defaults shown):

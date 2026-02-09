@@ -85,6 +85,65 @@ def create_app():
         }
         return jsonify(resp)
 
+    @app.get('/indices/members')
+    def index_members():
+        index_code = request.args.get('index_code')
+        country = request.args.get('country', 'US')
+        order = request.args.get('order', 'asc').lower()
+        try:
+            limit = int(request.args.get('limit', '200'))
+        except ValueError:
+            return jsonify({"error": "invalid_limit", "details": "limit must be integer"}), 400
+
+        if not index_code:
+            return jsonify({"error": "index_code_required", "details": "query param 'index_code' is required"}), 400
+        if limit < 1 or limit > 5000:
+            return jsonify({"error": "invalid_limit", "details": "limit must be between 1 and 5000"}), 400
+        if order not in ('asc', 'desc'):
+            return jsonify({"error": "invalid_order", "details": "order must be 'asc' or 'desc'"}), 400
+
+        engine = get_engine()
+        from .repositories.index_membership_repository import IndexMembershipRepository
+        repo = IndexMembershipRepository(engine)
+
+        items = repo.get_members(index_code.upper(), country.upper(), limit, order)
+        if not items:
+            return jsonify({"error": "not_found", "details": f"no members for index {index_code}"}), 404
+
+        return jsonify({"index_code": index_code.upper(), "country": country.upper(), "count": len(items), "items": items})
+
+    @app.get('/indices/by-symbol')
+    def indices_by_symbol():
+        symbol = request.args.get('symbol')
+        country = request.args.get('country', 'US')
+        try:
+            limit = int(request.args.get('limit', '1000'))
+        except ValueError:
+            return jsonify({"error": "invalid_limit", "details": "limit must be integer"}), 400
+
+        if not symbol:
+            return jsonify({"error": "symbol_required", "details": "query param 'symbol' is required"}), 400
+
+        engine = get_engine()
+        from .repositories.instrument_repository import InstrumentRepository
+        from .repositories.index_membership_repository import IndexMembershipRepository
+        instr_repo = InstrumentRepository(engine)
+        repo = IndexMembershipRepository(engine)
+
+        instr = instr_repo.resolve(symbol.upper(), country.upper())
+        if not instr:
+            return jsonify({"error": "instrument_not_found", "details": f"{symbol} {country}"}), 404
+
+        items = repo.get_indices_for_instrument(instr['id'], limit)
+        return jsonify({"symbol": symbol.upper(), "country": country.upper(), "count": len(items), "items": items})
+
+    @app.get('/markets/instruments')
+    def market_instruments():
+        market = request.args.get('market')
+        if not market:
+            return jsonify({"error": "market_required", "details": "query param 'market' is required"}), 400
+        return jsonify({"error": "not_implemented", "details": "Market universe is not stored yet. Implement exchange listings ingestion first."}), 501
+
     return app
 
 
