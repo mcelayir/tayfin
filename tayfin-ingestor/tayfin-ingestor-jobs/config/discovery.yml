@@ -1,0 +1,8 @@
+jobs:
+  discovery:
+    nasdaq-100:
+      code: nasdaq100
+      country: US
+      kind: index
+      index_code: NDX
+      name: "NASDAQ-100"

@@ -1,0 +1,9 @@
+typer
+PyYAML
+python-dotenv
+sqlalchemy
+psycopg[binary]
+pandas
+tabulate
+httpx
+lxml
