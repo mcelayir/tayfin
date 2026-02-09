@@ -4,6 +4,16 @@ set -euo pipefail
 # Installs requirements and runs the Flask API for local development
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 REQ="$ROOT_DIR/requirements.txt"
+# load repo root .env if present (one level above API folder)
+REPO_ROOT="$(cd "$ROOT_DIR/.." && pwd)"
+ENV_FILE="$REPO_ROOT/.env"
+if [ -f "$ENV_FILE" ]; then
+  echo "Loading environment from $ENV_FILE"
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+fi
 
 if [ -f "$REQ" ]; then
   echo "Installing requirements from $REQ"
