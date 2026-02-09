@@ -71,22 +71,39 @@ class FundamentalsJob:
             t = inst.get("ticker")
             try:
                 metrics = provider.compute(t, inst.get("country"))
-                # If provider produced metrics, persist snapshot
-                if metrics:
-                    as_of = metrics.get("as_of_date") or date.today()
-                    source = metrics.get("source") or "stockdex_yahoo"
-                    self.snapshot_repo.upsert(instrument_id=inst.get("id"), as_of_date=as_of, source=source, metrics=metrics, created_by_job_run_id=job_run_id)
-                self.job_run_item_repo.upsert(job_run_id=job_run_id, item_key=t, status="SUCCESS")
+                if not metrics:
+                    raise RuntimeError("provider returned no metrics")
 
-                row = {
-                    "ticker": t,
-                    "as_of_date": metrics.get("as_of_date") if metrics else None,
-                    "source": metrics.get("source") if metrics else None,
-                    "_status": "SUCCESS",
-                }
-                for k in METRIC_KEYS:
-                    row[k] = metrics.get(k) if metrics else None
-                results.append(row)
+                # If provider produced metrics, persist snapshot
+                as_of = metrics.get("as_of_date") or date.today()
+                source = metrics.get("source") or "stockdex_yahoo"
+
+                # insert-only: only create if no snapshot for that day+source exists
+                if self.snapshot_repo.exists_for(instrument_id=inst.get("id"), as_of_date=as_of, source=source):
+                    # Already exists for the day -> mark as skipped (don't update existing)
+                    self.job_run_item_repo.upsert(job_run_id=job_run_id, item_key=t, status="SKIPPED")
+                    row = {
+                        "ticker": t,
+                        "as_of_date": as_of,
+                        "source": source,
+                        "_status": "SKIPPED",
+                    }
+                    for k in METRIC_KEYS:
+                        row[k] = None
+                    results.append(row)
+                else:
+                    inserted_id = self.snapshot_repo.insert(instrument_id=inst.get("id"), as_of_date=as_of, source=source, metrics=metrics, created_by_job_run_id=job_run_id)
+                    self.job_run_item_repo.upsert(job_run_id=job_run_id, item_key=t, status="SUCCESS")
+
+                    row = {
+                        "ticker": t,
+                        "as_of_date": as_of,
+                        "source": source,
+                        "_status": "SUCCESS",
+                    }
+                    for k in METRIC_KEYS:
+                        row[k] = metrics.get(k) if metrics else None
+                    results.append(row)
                 succeeded += 1
             except Exception as e:
                 # record failure and surface the error to stdout for debugging
