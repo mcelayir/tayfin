@@ -1,0 +1,7 @@
+jobs:
+  fundamentals:
+    nasdaq-100:
+      kind: index
+      index_code: NDX
+      country: US
+      name: "NASDAQ-100 fundamentals"
