@@ -85,79 +85,284 @@ class StockdexYahooProvider:
 
             t = Ticker(ticker=sym)
 
-            fin = t.yahoo_api_financials(frequency="quarterly")
-            inc = t.yahoo_api_income_statement(frequency="quarterly")
-            bal = t.yahoo_api_balance_sheet(frequency="quarterly")
+            # Fetch preferred structured datasets (quarterly where available)
+            fin = None
+            inc = None
+            bal = None
+            try:
+                fin = t.yahoo_api_financials(frequency="quarterly")
+            except Exception:
+                try:
+                    fin = t.yahoo_api_financials()
+                except Exception:
+                    fin = None
+            try:
+                inc = t.yahoo_api_income_statement(frequency="quarterly")
+            except Exception:
+                try:
+                    inc = t.yahoo_api_income_statement()
+                except Exception:
+                    inc = None
+            try:
+                bal = t.yahoo_api_balance_sheet(frequency="quarterly")
+            except Exception:
+                try:
+                    bal = t.yahoo_api_balance_sheet()
+                except Exception:
+                    bal = None
 
-            # EPS TTM: sum last 4 quarters
-            eps_ttm = _sum_ttm(inc, "quarterlyBasicEPS")
+            # traceability map for debugging/inspection
+            trace: Dict[str, Any] = {}
 
-            # Shares outstanding heuristics
+            def pick_field(df: Optional[pd.DataFrame], candidates: List[str]) -> Optional[str]:
+                if df is None:
+                    return None
+                for c in candidates:
+                    if c in df.columns:
+                        return c
+                return None
+
+            def ttm_from_quarters(df: Optional[pd.DataFrame], field: str) -> Optional[float]:
+                if df is None or field not in df.columns:
+                    return None
+                vals = [_safe_float(x) for x in df[field].iloc[:4]]
+                vals = [v for v in vals if v is not None]
+                if not vals:
+                    return None
+                return sum(vals)
+
+            def prior_year_ttm_from_quarters(df: Optional[pd.DataFrame], field: str) -> Optional[float]:
+                if df is None or field not in df.columns:
+                    return None
+                if len(df[field]) >= 8:
+                    vals = [_safe_float(x) for x in df[field].iloc[4:8]]
+                    vals = [v for v in vals if v is not None]
+                    if not vals:
+                        return None
+                    return sum(vals)
+                return None
+
+            def latest_from(df: Optional[pd.DataFrame], field: Any) -> Optional[float]:
+                if df is None or df.empty:
+                    return None
+                if isinstance(field, list):
+                    for f in field:
+                        if f in df.columns:
+                            v = _safe_float(df[f].iloc[0])
+                            if v is not None:
+                                return v
+                    return None
+                if field in df.columns:
+                    return _safe_float(df[field].iloc[0])
+                return None
+
+            # Metric mapping preferences - prefer structured yahoo_api quarterly fields,
+            # fall back to annuals and other datasets where necessary.
+            # We'll compute each metric and record trace information.
+
+            # EPS TTM
+            eps_ttm = None
+            eps_trace: Dict[str, Any] = {"tried": []}
+            eps_candidates = ["quarterlyBasicEPS", "quarterlyDilutedEPS", "annualDilutedEPS", "annualBasicEPS"]
+            for cand in eps_candidates:
+                if cand.startswith("quarterly"):
+                    val = ttm_from_quarters(inc, cand)
+                    eps_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": cand, "value": val})
+                    if val not in (None, 0):
+                        eps_ttm = val
+                        eps_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": cand, "method": "ttm_from_quarters"}
+                        break
+                else:
+                    v = latest_from(inc, cand)
+                    eps_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": cand, "value": v})
+                    if v not in (None, 0):
+                        eps_ttm = v
+                        eps_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": cand, "method": "annual_latest"}
+                        break
+            trace["eps_ttm"] = eps_trace
+
+            # Shares outstanding heuristics (for BVPS)
             shares_out = None
-            for shares_field in [
-                "quarterlySharesOutstanding",
+            shares_trace: Dict[str, Any] = {"tried": []}
+            shares_candidates = [
                 "quarterlyOrdinarySharesNumber",
+                "quarterlySharesOutstanding",
                 "quarterlyCommonStockSharesOutstanding",
-            ]:
-                shares_out = _latest_value(bal, shares_field)
-                if shares_out not in (None, 0):
+                "annualOrdinarySharesNumber",
+                "annualBasicAverageShares",
+            ]
+            for sf in shares_candidates:
+                v = latest_from(bal, sf)
+                shares_trace["tried"].append({"dataset": "yahoo_api_balance_sheet", "column": sf, "value": v})
+                if v not in (None, 0):
+                    shares_out = v
+                    shares_trace["chosen"] = {"dataset": "yahoo_api_balance_sheet", "column": sf}
                     break
+            trace["shares_out"] = shares_trace
 
-            tangible_book_total = _latest_value(bal, "quarterlyTangibleBookValue")
+            # BVPS: prefer tangible book value (quarterly) / shares
             bvps = None
-            if tangible_book_total not in (None, 0) and shares_out not in (None, 0):
-                bvps = _div(tangible_book_total, shares_out)
+            bvps_trace: Dict[str, Any] = {"tried": []}
+            tb_candidates = ["quarterlyTangibleBookValue", "annualTangibleBookValue", "quarterlyNetTangibleAssets"]
+            for tb in tb_candidates:
+                tval = latest_from(bal, tb)
+                bvps_trace["tried"].append({"dataset": "yahoo_api_balance_sheet", "column": tb, "value": tval})
+                if tval not in (None, 0) and shares_out not in (None, 0):
+                    bvps = _div(tval, shares_out)
+                    bvps_trace["chosen"] = {"dataset": "yahoo_api_balance_sheet", "column": tb}
+                    break
+            trace["bvps"] = bvps_trace
 
-            # total debt
-            if "quarterlyTotalDebt" in bal.columns:
-                total_debt = _latest_value(bal, "quarterlyTotalDebt")
+            # total debt & total equity
+            debt_trace: Dict[str, Any] = {"tried": []}
+            td = pick_field(bal, ["quarterlyTotalDebt", "annualTotalDebt", "quarterlyLongTermDebt", "annualLongTermDebt"])
+            if td:
+                debt_val = latest_from(bal, td)
+                debt_trace["chosen"] = {"dataset": "yahoo_api_balance_sheet", "column": td, "value": debt_val}
+                total_debt = debt_val
             else:
-                total_debt = _latest_value(bal, ["quarterlyLongTermDebt", "quarterlyCurrentDebt"])
+                total_debt = None
+            trace["total_debt"] = debt_trace
 
-            total_equity = _latest_value(bal, "quarterlyStockholdersEquity")
+            eq_trace: Dict[str, Any] = {"tried": []}
+            te = pick_field(bal, ["quarterlyStockholdersEquity", "annualStockholdersEquity", "annualTotalEquityGrossMinorityInterest"])
+            if te:
+                te_val = latest_from(bal, te)
+                eq_trace["chosen"] = {"dataset": "yahoo_api_balance_sheet", "column": te, "value": te_val}
+                total_equity = te_val
+            else:
+                total_equity = None
+            trace["total_equity"] = eq_trace
 
-            # average equity
+            # average equity (try quarterly lookback)
             equity_now = total_equity
             equity_4q = None
-            if "quarterlyStockholdersEquity" in bal.columns and len(bal["quarterlyStockholdersEquity"]) >= 5:
+            if bal is not None and "quarterlyStockholdersEquity" in bal.columns and len(bal["quarterlyStockholdersEquity"]) >= 5:
                 equity_4q = _safe_float(bal["quarterlyStockholdersEquity"].iloc[4])
             if equity_now not in (None, 0) and equity_4q not in (None, 0):
                 avg_equity = (equity_now + equity_4q) / 2
             else:
                 avg_equity = equity_now
 
-            net_income_ttm = _sum_ttm(inc, "quarterlyNetIncome")
-            total_revenue = _latest_value(inc, "quarterlyTotalRevenue")
-            total_revenue_ttm = _sum_ttm(inc, "quarterlyTotalRevenue")
+            # Net income TTM and revenue TTM: prefer quarterly aggregation
+            net_income_ttm = None
+            nit_trace: Dict[str, Any] = {"tried": []}
+            for cand in ["quarterlyNetIncome", "annualNetIncome"]:
+                if cand.startswith("quarterly"):
+                    v = ttm_from_quarters(inc, cand)
+                    nit_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": cand, "value": v})
+                    if v not in (None, 0):
+                        net_income_ttm = v
+                        nit_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": cand, "method": "ttm_from_quarters"}
+                        break
+                else:
+                    v = latest_from(inc, cand)
+                    nit_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": cand, "value": v})
+                    if v not in (None, 0):
+                        net_income_ttm = v
+                        nit_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": cand, "method": "annual_latest"}
+                        break
+            trace["net_income_ttm"] = nit_trace
+
+            total_revenue = None
+            tr_trace: Dict[str, Any] = {"tried": []}
+            # try quarterly TTM then latest quarterly then annual
+            tr_tt = ttm_from_quarters(inc, "quarterlyTotalRevenue")
+            tr_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": "quarterlyTotalRevenue", "ttm": tr_tt})
+            if tr_tt not in (None, 0):
+                total_revenue = tr_tt
+                tr_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": "quarterlyTotalRevenue", "method": "ttm_from_quarters"}
+            else:
+                q_latest = latest_from(inc, "quarterlyTotalRevenue")
+                tr_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": "quarterlyTotalRevenue_latest", "value": q_latest})
+                if q_latest not in (None, 0):
+                    total_revenue = q_latest
+                    tr_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": "quarterlyTotalRevenue", "method": "latest_quarter"}
+                else:
+                    a_latest = latest_from(inc, "annualTotalRevenue")
+                    tr_trace["tried"].append({"dataset": "yahoo_api_income_statement", "column": "annualTotalRevenue", "value": a_latest})
+                    if a_latest not in (None, 0):
+                        total_revenue = a_latest
+                        tr_trace["chosen"] = {"dataset": "yahoo_api_income_statement", "column": "annualTotalRevenue", "method": "annual_latest"}
+            trace["total_revenue"] = tr_trace
 
             roe = None
             if net_income_ttm not in (None, 0) and avg_equity not in (None, 0):
                 roe = _div(net_income_ttm, avg_equity) * 100
 
             net_margin = None
-            if net_income_ttm not in (None, 0) and total_revenue_ttm not in (None, 0):
-                net_margin = _div(net_income_ttm, total_revenue_ttm) * 100
+            # net margin: prefer net_income_ttm / revenue_ttm when possible
+            revenue_ttm = None
+            revenue_ttm = ttm_from_quarters(inc, "quarterlyTotalRevenue")
+            if revenue_ttm not in (None, 0) and net_income_ttm not in (None, 0):
+                net_margin = _div(net_income_ttm, revenue_ttm) * 100
+            elif total_revenue not in (None, 0) and net_income_ttm not in (None, 0):
+                net_margin = _div(net_income_ttm, total_revenue) * 100
 
+            # revenue YoY (try comparing TTM to prior-year TTM)
             revenue_growth_yoy = None
-            if "quarterlyTotalRevenue" in inc.columns and len(inc["quarterlyTotalRevenue"]) >= 5:
-                rev_now = _latest_value(inc, "quarterlyTotalRevenue")
-                rev_4q = _safe_float(inc["quarterlyTotalRevenue"].iloc[4])
-                if rev_now not in (None, 0) and rev_4q not in (None, 0):
-                    revenue_growth_yoy = _div((rev_now - rev_4q), rev_4q) * 100
+            rev_trace: Dict[str, Any] = {"tried": []}
+            rev_ttm = ttm_from_quarters(inc, "quarterlyTotalRevenue")
+            prior_rev_ttm = prior_year_ttm_from_quarters(inc, "quarterlyTotalRevenue")
+            rev_trace["quarterly_ttm"] = rev_ttm
+            rev_trace["prior_quarterly_ttm"] = prior_rev_ttm
+            if rev_ttm not in (None, 0) and prior_rev_ttm not in (None, 0):
+                revenue_growth_yoy = _div((rev_ttm - prior_rev_ttm), prior_rev_ttm) * 100
+                rev_trace["chosen"] = {"method": "quarterly_ttm_vs_prior_ttm"}
+            else:
+                # fallback to annual comparison
+                a_now = latest_from(inc, "annualTotalRevenue")
+                # try previous annual (second row)
+                a_prev = None
+                try:
+                    if inc is not None and "annualTotalRevenue" in inc.columns and len(inc["annualTotalRevenue"]) >= 2:
+                        a_prev = _safe_float(inc["annualTotalRevenue"].iloc[1])
+                except Exception:
+                    a_prev = None
+                rev_trace["annual_now"] = a_now
+                rev_trace["annual_prev"] = a_prev
+                if a_now not in (None, 0) and a_prev not in (None, 0):
+                    revenue_growth_yoy = _div((a_now - a_prev), a_prev) * 100
+                    rev_trace["chosen"] = {"method": "annual_latest_vs_prev"}
+            trace["revenue_growth_yoy"] = rev_trace
 
+            # earnings YoY (same approach)
             earnings_growth_yoy = None
-            if "quarterlyNetIncome" in inc.columns and len(inc["quarterlyNetIncome"]) >= 5:
-                ni_now = _safe_float(inc["quarterlyNetIncome"].iloc[0])
-                ni_4q = _safe_float(inc["quarterlyNetIncome"].iloc[4])
-                if ni_now not in (None, 0) and ni_4q not in (None, 0):
-                    earnings_growth_yoy = _div((ni_now - ni_4q), ni_4q) * 100
+            earn_trace: Dict[str, Any] = {"tried": []}
+            net_ttm = net_income_ttm
+            prior_net_ttm = prior_year_ttm_from_quarters(inc, "quarterlyNetIncome")
+            earn_trace["quarterly_ttm"] = net_ttm
+            earn_trace["prior_quarterly_ttm"] = prior_net_ttm
+            if net_ttm not in (None, 0) and prior_net_ttm not in (None, 0):
+                earnings_growth_yoy = _div((net_ttm - prior_net_ttm), prior_net_ttm) * 100
+                earn_trace["chosen"] = {"method": "quarterly_ttm_vs_prior_ttm"}
+            else:
+                a_now = latest_from(inc, "annualNetIncome")
+                a_prev = None
+                try:
+                    if inc is not None and "annualNetIncome" in inc.columns and len(inc["annualNetIncome"]) >= 2:
+                        a_prev = _safe_float(inc["annualNetIncome"].iloc[1])
+                except Exception:
+                    a_prev = None
+                earn_trace["annual_now"] = a_now
+                earn_trace["annual_prev"] = a_prev
+                if a_now not in (None, 0) and a_prev not in (None, 0):
+                    earnings_growth_yoy = _div((a_now - a_prev), a_prev) * 100
+                    earn_trace["chosen"] = {"method": "annual_latest_vs_prev"}
+            trace["earnings_growth_yoy"] = earn_trace
 
-            # price
+            # price (prefer structured yahoo_api_price close)
+            price = None
+            price_trace: Dict[str, Any] = {"tried": []}
             try:
                 price_df = t.yahoo_api_price(range="1mo", dataGranularity="1d")
-                price = _safe_float(price_df["close"].iloc[-1])
+                if price_df is not None and not price_df.empty and "close" in price_df.columns:
+                    # take last available close
+                    price = _safe_float(price_df["close"].iloc[-1])
+                    price_trace["chosen"] = {"dataset": "yahoo_api_price", "column": "close", "value": price}
             except Exception:
                 price = None
+            trace["price"] = price_trace
 
             # ratios
             pe_ratio = None
@@ -202,6 +407,7 @@ class StockdexYahooProvider:
             out: Dict[str, Any] = {**result}
             out["source"] = self.SOURCE_ID
             out["as_of_date"] = date.today()
+            out["trace"] = trace
             return out
         except Exception as stockdex_exc:
             # stockdex failed or raised runtime error — attempt yfinance fallback with retries
