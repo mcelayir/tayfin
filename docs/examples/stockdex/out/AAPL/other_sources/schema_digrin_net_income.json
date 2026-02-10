@@ -1,0 +1,29 @@
+{
+  "columns": [
+    "Date",
+    "Net Income"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "Net Income": "object"
+  },
+  "name": "digrin_net_income",
+  "sample": [
+    {
+      "Date": "Dec. 31, 2025",
+      "Net Income": "42.1 billion"
+    },
+    {
+      "Date": "Sept. 30, 2025",
+      "Net Income": "27.5 billion"
+    },
+    {
+      "Date": "June 30, 2025",
+      "Net Income": "23.4 billion"
+    }
+  ],
+  "shape": [
+    4,
+    2
+  ]
+}

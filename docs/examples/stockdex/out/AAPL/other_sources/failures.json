@@ -1,0 +1,30 @@
+[
+  {
+    "method": "macrotrends_gross_margin",
+    "error": "Failed to fetch URL (status 429): https://www.macrotrends.net/stocks/charts/AAPL/TBD/gross-margin"
+  },
+  {
+    "method": "macrotrends_income_statement",
+    "error": "Failed to fetch URL (status 429): https://www.macrotrends.net/stocks/charts/AAPL/TBD/income-statement?freq=A"
+  },
+  {
+    "method": "macrotrends_key_financial_ratios",
+    "error": "Could not find originalData in the page for 'Current Ratio'"
+  },
+  {
+    "method": "macrotrends_net_margin",
+    "error": "Failed to fetch URL (status 429): https://www.macrotrends.net/stocks/charts/AAPL/TBD/net-profit-margin"
+  },
+  {
+    "method": "macrotrends_operating_margin",
+    "error": "Failed to fetch URL (status 429): https://www.macrotrends.net/stocks/charts/AAPL/TBD/operating-margin"
+  },
+  {
+    "method": "macrotrends_pre_tax_margin",
+    "error": "Failed to fetch URL (status 429): https://www.macrotrends.net/stocks/charts/AAPL/TBD/pre-tax-profit-margin"
+  },
+  {
+    "method": "macrotrends_revenue",
+    "error": "list index out of range"
+  }
+]

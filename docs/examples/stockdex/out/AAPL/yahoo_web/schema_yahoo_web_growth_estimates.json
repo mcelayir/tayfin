@@ -1,0 +1,37 @@
+{
+  "columns": [
+    "Symbol",
+    "Current Qtr.",
+    "Next Qtr.",
+    "Current Year",
+    "Next Year"
+  ],
+  "dtypes": {
+    "Current Qtr.": "object",
+    "Current Year": "object",
+    "Next Qtr.": "object",
+    "Next Year": "object",
+    "Symbol": "object"
+  },
+  "name": "yahoo_web_growth_estimates",
+  "sample": [
+    {
+      "Current Qtr.": "17.97%",
+      "Current Year": "13.57%",
+      "Next Qtr.": "10.21%",
+      "Next Year": "9.51%",
+      "Symbol": "AAPL"
+    },
+    {
+      "Current Qtr.": "12.21%",
+      "Current Year": "16.09%",
+      "Next Qtr.": "10.49%",
+      "Next Year": "15.41%",
+      "Symbol": "S&P 500"
+    }
+  ],
+  "shape": [
+    2,
+    5
+  ]
+}

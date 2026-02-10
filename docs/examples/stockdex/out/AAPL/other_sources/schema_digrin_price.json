@@ -1,0 +1,34 @@
+{
+  "columns": [
+    "Date",
+    "Adjusted price",
+    "Real price"
+  ],
+  "dtypes": {
+    "Adjusted price": "object",
+    "Date": "object",
+    "Real price": "object"
+  },
+  "name": "digrin_price",
+  "sample": [
+    {
+      "Adjusted price": "$273.96",
+      "Date": "February 2026 ",
+      "Real price": "$273.96"
+    },
+    {
+      "Adjusted price": "$259.48",
+      "Date": "January 2026 ",
+      "Real price": "$259.48"
+    },
+    {
+      "Adjusted price": "$271.86",
+      "Date": "December 2025 ",
+      "Real price": "$271.86"
+    }
+  ],
+  "shape": [
+    543,
+    3
+  ]
+}

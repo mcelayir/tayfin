@@ -1,0 +1,27 @@
+{
+  "columns": [
+    "lastClose",
+    "dividendExDate",
+    "dividendEstimate",
+    "dividendTTM"
+  ],
+  "dtypes": {
+    "dividendEstimate": "float64",
+    "dividendExDate": "object",
+    "dividendTTM": "float64",
+    "lastClose": "float64"
+  },
+  "name": "finviz_overall_dividend",
+  "sample": [
+    {
+      "dividendEstimate": 1.075,
+      "dividendExDate": "2026-02-09T00:00:00",
+      "dividendTTM": 1.04,
+      "lastClose": 273.74
+    }
+  ],
+  "shape": [
+    1,
+    4
+  ]
+}

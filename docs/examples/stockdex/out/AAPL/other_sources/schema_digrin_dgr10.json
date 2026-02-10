@@ -1,0 +1,34 @@
+{
+  "columns": [
+    "Year",
+    "Dividend",
+    "Estimated Yield on Cost"
+  ],
+  "dtypes": {
+    "Dividend": "object",
+    "Estimated Yield on Cost": "object",
+    "Year": "object"
+  },
+  "name": "digrin_dgr10",
+  "sample": [
+    {
+      "Dividend": "1.646USD ",
+      "Estimated Yield on Cost": "0.60%",
+      "Year": "2036 "
+    },
+    {
+      "Dividend": "1.577USD ",
+      "Estimated Yield on Cost": "0.58%",
+      "Year": "2035 "
+    },
+    {
+      "Dividend": "1.511USD ",
+      "Estimated Yield on Cost": "0.55%",
+      "Year": "2034 "
+    }
+  ],
+  "shape": [
+    11,
+    3
+  ]
+}

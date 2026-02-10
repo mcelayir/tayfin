@@ -1,0 +1,44 @@
+{
+  "columns": [
+    "holder",
+    "shares",
+    "date_reported",
+    "percentage",
+    "value"
+  ],
+  "dtypes": {
+    "date_reported": "object",
+    "holder": "object",
+    "percentage": "object",
+    "shares": "object",
+    "value": "object"
+  },
+  "name": "yahoo_web_top_mutual_fund_holders",
+  "sample": [
+    {
+      "date_reported": null,
+      "holder": "1.70% ",
+      "percentage": null,
+      "shares": "% of Shares Held by All Insider ",
+      "value": null
+    },
+    {
+      "date_reported": null,
+      "holder": "65.09% ",
+      "percentage": null,
+      "shares": "% of Shares Held by Institutions ",
+      "value": null
+    },
+    {
+      "date_reported": null,
+      "holder": "66.22% ",
+      "percentage": null,
+      "shares": "% of Float Held by Institutions ",
+      "value": null
+    }
+  ],
+  "shape": [
+    26,
+    5
+  ]
+}

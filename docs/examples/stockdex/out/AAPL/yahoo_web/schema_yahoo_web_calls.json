@@ -1,0 +1,74 @@
+{
+  "columns": [
+    "Contract Name",
+    "Last Trade Date (EST)",
+    "Strike",
+    "Last Price",
+    "Bid",
+    "Ask",
+    "Change",
+    "% Change",
+    "Volume",
+    "Open Interest",
+    "Implied Volatility"
+  ],
+  "dtypes": {
+    "% Change": "object",
+    "Ask": "object",
+    "Bid": "object",
+    "Change": "object",
+    "Contract Name": "object",
+    "Implied Volatility": "object",
+    "Last Price": "object",
+    "Last Trade Date (EST)": "object",
+    "Open Interest": "object",
+    "Strike": "object",
+    "Volume": "object"
+  },
+  "name": "yahoo_web_calls",
+  "sample": [
+    {
+      "% Change": "0.00% ",
+      "Ask": "90.60 ",
+      "Bid": "87.15 ",
+      "Change": "0.00 ",
+      "Contract Name": "AAPL260211C00185000   ",
+      "Implied Volatility": "223.44% ",
+      "Last Price": "72.25 ",
+      "Last Trade Date (EST)": "1/30/2026  10:12 AM ",
+      "Open Interest": "0 ",
+      "Strike": "185   ",
+      "Volume": "1 "
+    },
+    {
+      "% Change": "0.00% ",
+      "Ask": "70.35 ",
+      "Bid": "67.20 ",
+      "Change": "0.00 ",
+      "Contract Name": "AAPL260211C00205000   ",
+      "Implied Volatility": "131.25% ",
+      "Last Price": "72.32 ",
+      "Last Trade Date (EST)": "2/6/2026  1:41 PM ",
+      "Open Interest": "0 ",
+      "Strike": "205   ",
+      "Volume": "1 "
+    },
+    {
+      "% Change": "0.00% ",
+      "Ask": "65.10 ",
+      "Bid": "62.35 ",
+      "Change": "0.00 ",
+      "Contract Name": "AAPL260211C00210000   ",
+      "Implied Volatility": "242.97% ",
+      "Last Price": "64.75 ",
+      "Last Trade Date (EST)": "2/5/2026  1:08 PM ",
+      "Open Interest": "0 ",
+      "Strike": "210   ",
+      "Volume": "- "
+    }
+  ],
+  "shape": [
+    38,
+    11
+  ]
+}

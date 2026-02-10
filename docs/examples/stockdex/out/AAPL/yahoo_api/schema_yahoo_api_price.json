@@ -1,0 +1,74 @@
+{
+  "columns": [
+    "timestamp",
+    "volume",
+    "close",
+    "open",
+    "high",
+    "low",
+    "currency",
+    "timezone",
+    "exchangeTimezoneName",
+    "exchangeName",
+    "instrumentType"
+  ],
+  "dtypes": {
+    "close": "float64",
+    "currency": "object",
+    "exchangeName": "object",
+    "exchangeTimezoneName": "object",
+    "high": "float64",
+    "instrumentType": "object",
+    "low": "float64",
+    "open": "float64",
+    "timestamp": "datetime64[ns]",
+    "timezone": "object",
+    "volume": "float64"
+  },
+  "name": "yahoo_api_price",
+  "sample": [
+    {
+      "close": 273.43499755859375,
+      "currency": "USD",
+      "exchangeName": "NMS",
+      "exchangeTimezoneName": "America/New_York",
+      "high": 275.2799987792969,
+      "instrumentType": "EQUITY",
+      "low": 273.30999755859375,
+      "open": 274.885009765625,
+      "timestamp": "2026-02-10T14:30:00",
+      "timezone": "EST",
+      "volume": 1012014.0
+    },
+    {
+      "close": 274.3999938964844,
+      "currency": "USD",
+      "exchangeName": "NMS",
+      "exchangeTimezoneName": "America/New_York",
+      "high": 274.5400085449219,
+      "instrumentType": "EQUITY",
+      "low": 273.30609130859375,
+      "open": 273.3800964355469,
+      "timestamp": "2026-02-10T14:31:00",
+      "timezone": "EST",
+      "volume": 148860.0
+    },
+    {
+      "close": 274.510009765625,
+      "currency": "USD",
+      "exchangeName": "NMS",
+      "exchangeTimezoneName": "America/New_York",
+      "high": 274.79998779296875,
+      "instrumentType": "EQUITY",
+      "low": 274.260009765625,
+      "open": 274.3999938964844,
+      "timestamp": "2026-02-10T14:32:00",
+      "timezone": "EST",
+      "volume": 77558.0
+    }
+  ],
+  "shape": [
+    305,
+    11
+  ]
+}

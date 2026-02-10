@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Date",
+    "Cash",
+    "Debt",
+    "Capital Lease"
+  ],
+  "dtypes": {
+    "Capital Lease": "object",
+    "Cash": "object",
+    "Date": "object",
+    "Debt": "object"
+  },
+  "name": "digrin_cash_and_debt",
+  "sample": [
+    {
+      "Capital Lease": "-",
+      "Cash": "66.9 billion",
+      "Date": "Dec. 31, 2025",
+      "Debt": "76.7 billion"
+    },
+    {
+      "Capital Lease": "11.6 billion",
+      "Cash": "54.7 billion",
+      "Date": "Sept. 30, 2025",
+      "Debt": "100.8 billion"
+    },
+    {
+      "Capital Lease": "-",
+      "Cash": "55.4 billion",
+      "Date": "June 30, 2025",
+      "Debt": "82.4 billion"
+    }
+  ],
+  "shape": [
+    4,
+    4
+  ]
+}

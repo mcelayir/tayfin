@@ -1,0 +1,34 @@
+{
+  "columns": [
+    "Date",
+    "Payout ratio",
+    "PE ratio"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "PE ratio": "object",
+    "Payout ratio": "object"
+  },
+  "name": "digrin_payout_ratio",
+  "sample": [
+    {
+      "Date": "2026Q1 ",
+      "PE ratio": "23.95",
+      "Payout ratio": "9.31%"
+    },
+    {
+      "Date": "2025Q4 ",
+      "PE ratio": "34.76",
+      "Payout ratio": "14.06%"
+    },
+    {
+      "Date": "2025Q3 ",
+      "PE ratio": "31.97",
+      "Payout ratio": "16.83%"
+    }
+  ],
+  "shape": [
+    5,
+    3
+  ]
+}

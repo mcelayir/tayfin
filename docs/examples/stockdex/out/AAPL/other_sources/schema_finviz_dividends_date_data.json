@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Ticker",
+    "Exdate",
+    "Ordinary",
+    "Special"
+  ],
+  "dtypes": {
+    "Exdate": "object",
+    "Ordinary": "float64",
+    "Special": "int64",
+    "Ticker": "object"
+  },
+  "name": "finviz_dividends_date_data",
+  "sample": [
+    {
+      "Exdate": "2026-02-10",
+      "Ordinary": 0.26,
+      "Special": 0,
+      "Ticker": "AAPL"
+    },
+    {
+      "Exdate": "2025-11-10",
+      "Ordinary": 0.26,
+      "Special": 0,
+      "Ticker": "AAPL"
+    },
+    {
+      "Exdate": "2025-08-11",
+      "Ordinary": 0.26,
+      "Special": 0,
+      "Ticker": "AAPL"
+    }
+  ],
+  "shape": [
+    41,
+    4
+  ]
+}

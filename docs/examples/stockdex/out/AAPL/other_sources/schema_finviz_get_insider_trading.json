@@ -1,0 +1,64 @@
+{
+  "columns": [
+    "Insider Trading",
+    "Relationship",
+    "Date",
+    "Transaction",
+    "Cost",
+    "#Shares",
+    "Value ($)",
+    "#Shares Total",
+    "SEC Form 4"
+  ],
+  "dtypes": {
+    "#Shares": "object",
+    "#Shares Total": "object",
+    "Cost": "object",
+    "Date": "object",
+    "Insider Trading": "object",
+    "Relationship": "object",
+    "SEC Form 4": "object",
+    "Transaction": "object",
+    "Value ($)": "object"
+  },
+  "name": "finviz_get_insider_trading",
+  "sample": [
+    {
+      "#Shares": "3,752",
+      "#Shares Total": "15,098",
+      "Cost": "271.23",
+      "Date": "Nov 07 '25",
+      "Insider Trading": "KONDO CHRIS",
+      "Relationship": "Principal Accounting Officer",
+      "SEC Form 4": "Nov 12 06:30 PM",
+      "Transaction": "Sale",
+      "Value ($)": "1,017,655"
+    },
+    {
+      "#Shares": "4,199",
+      "#Shares Total": "8,765",
+      "Cost": "247.39",
+      "Date": "Oct 16 '25",
+      "Insider Trading": "Parekh Kevan",
+      "Relationship": "Senior Vice President, CFO",
+      "SEC Form 4": "Oct 17 06:31 PM",
+      "Transaction": "Sale",
+      "Value ($)": "1,038,787"
+    },
+    {
+      "#Shares": "4,199",
+      "#Shares Total": "",
+      "Cost": "249.34",
+      "Date": "Oct 16 '25",
+      "Insider Trading": "KEVAN PAREKH",
+      "Relationship": "Officer",
+      "SEC Form 4": "Oct 16 04:23 PM",
+      "Transaction": "Proposed Sale",
+      "Value ($)": "1,046,979"
+    }
+  ],
+  "shape": [
+    23,
+    9
+  ]
+}

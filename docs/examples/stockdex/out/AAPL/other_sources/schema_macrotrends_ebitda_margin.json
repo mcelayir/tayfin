@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Date",
+    "TTM Revenue",
+    "TTM EBITDA",
+    "EBITDA Margin"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "EBITDA Margin": "object",
+    "TTM EBITDA": "object",
+    "TTM Revenue": "object"
+  },
+  "name": "macrotrends_ebitda_margin",
+  "sample": [
+    {
+      "Date": null,
+      "EBITDA Margin": null,
+      "TTM EBITDA": null,
+      "TTM Revenue": null
+    },
+    {
+      "Date": "2025-09-30",
+      "EBITDA Margin": "34.78%",
+      "TTM EBITDA": "$144.75B",
+      "TTM Revenue": "$416.16B"
+    },
+    {
+      "Date": "2025-06-30",
+      "EBITDA Margin": "34.68%",
+      "TTM EBITDA": "$141.70B",
+      "TTM Revenue": "$408.63B"
+    }
+  ],
+  "shape": [
+    154,
+    4
+  ]
+}

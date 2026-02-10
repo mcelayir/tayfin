@@ -1,0 +1,314 @@
+{
+  "columns": [
+    "ticker",
+    "reportDate",
+    "fiscalPeriod",
+    "fiscalEndDate",
+    "chartStartDate",
+    "chartEndDate",
+    "rsi",
+    "reactions"
+  ],
+  "dtypes": {
+    "chartEndDate": "object",
+    "chartStartDate": "object",
+    "fiscalEndDate": "object",
+    "fiscalPeriod": "object",
+    "reactions": "object",
+    "reportDate": "object",
+    "rsi": "float64",
+    "ticker": "object"
+  },
+  "name": "finviz_price_reaction_to_earnings_report",
+  "sample": [
+    {
+      "chartEndDate": "2026-02-04",
+      "chartStartDate": "2026-01-27",
+      "fiscalEndDate": "2025-12-31",
+      "fiscalPeriod": "2026Q1",
+      "reactions": {
+        "close": {
+          "date": "2026-01-30",
+          "prevPrice": 258.28,
+          "price": 259.48,
+          "priceDiff": 0.46461487,
+          "spyPriceDiff": -0.29825592
+        },
+        "high": {
+          "date": "2026-01-30",
+          "prevPrice": 258.28,
+          "price": 261.8999,
+          "priceDiff": 1.4015427,
+          "spyPriceDiff": 0.024497986
+        },
+        "low": {
+          "date": "2026-01-30",
+          "prevPrice": 258.28,
+          "price": 252.18,
+          "priceDiff": -2.3617783,
+          "spyPriceDiff": -0.9970627
+        },
+        "minus_1_day": {
+          "date": "2026-01-29",
+          "prevPrice": 256.44,
+          "price": 258.28,
+          "priceDiff": 0.71752167,
+          "spyPriceDiff": -0.19844055
+        },
+        "minus_1_week": {
+          "date": "2026-01-23",
+          "prevPrice": 248.35,
+          "price": 248.04,
+          "priceDiff": -0.12483215,
+          "spyPriceDiff": 0.0362854
+        },
+        "minus_2_days": {
+          "date": "2026-01-28",
+          "prevPrice": 258.27,
+          "price": 256.44,
+          "priceDiff": -0.7085571,
+          "spyPriceDiff": -0.010070801
+        },
+        "minus_3_days": {
+          "date": "2026-01-27",
+          "prevPrice": 255.41,
+          "price": 258.27,
+          "priceDiff": 1.1197586,
+          "spyPriceDiff": 0.39842224
+        },
+        "open": {
+          "date": "2026-01-30",
+          "prevPrice": 258.28,
+          "price": 255.165,
+          "priceDiff": -1.2060547,
+          "spyPriceDiff": -0.32418823
+        },
+        "plus_1_day": {
+          "date": "2026-02-02",
+          "prevPrice": 259.48,
+          "price": 270.01,
+          "priceDiff": 4.058113,
+          "spyPriceDiff": 0.49712372
+        },
+        "plus_1_week": {
+          "date": "2026-02-06",
+          "prevPrice": 275.91,
+          "price": 278.12,
+          "priceDiff": 0.8009796,
+          "spyPriceDiff": 1.9184799
+        },
+        "plus_2_days": {
+          "date": "2026-02-03",
+          "prevPrice": 270.01,
+          "price": 269.48,
+          "priceDiff": -0.19628906,
+          "spyPriceDiff": -0.8455353
+        },
+        "plus_3_days": {
+          "date": "2026-02-04",
+          "prevPrice": 269.48,
+          "price": 276.49,
+          "priceDiff": 2.601303,
+          "spyPriceDiff": -0.48439026
+        }
+      },
+      "reportDate": "2026-01-29T16:30:00",
+      "rsi": 46.3,
+      "ticker": "AAPL"
+    },
+    {
+      "chartEndDate": "2025-11-05",
+      "chartStartDate": "2025-10-28",
+      "fiscalEndDate": "2025-09-30",
+      "fiscalPeriod": "2025Q4",
+      "reactions": {
+        "close": {
+          "date": "2025-10-31",
+          "prevPrice": 271.4,
+          "price": 270.37,
+          "priceDiff": -0.3795166,
+          "spyPriceDiff": 0.3280182
+        },
+        "high": {
+          "date": "2025-10-31",
+          "prevPrice": 271.4,
+          "price": 277.32,
+          "priceDiff": 2.1812897,
+          "spyPriceDiff": 0.7722473
+        },
+        "low": {
+          "date": "2025-10-31",
+          "prevPrice": 271.4,
+          "price": 269.16,
+          "priceDiff": -0.8253479,
+          "spyPriceDiff": -0.08679199
+        },
+        "minus_1_day": {
+          "date": "2025-10-30",
+          "prevPrice": 269.7,
+          "price": 271.4,
+          "priceDiff": 0.6303177,
+          "spyPriceDiff": -1.0998154
+        },
+        "minus_1_week": {
+          "date": "2025-10-24",
+          "prevPrice": 259.58,
+          "price": 262.82,
+          "priceDiff": 1.2481842,
+          "spyPriceDiff": 0.8172531
+        },
+        "minus_2_days": {
+          "date": "2025-10-29",
+          "prevPrice": 269,
+          "price": 269.7,
+          "priceDiff": 0.2602234,
+          "spyPriceDiff": 0.04802704
+        },
+        "minus_3_days": {
+          "date": "2025-10-28",
+          "prevPrice": 268.81,
+          "price": 269,
+          "priceDiff": 0.07067871,
+          "spyPriceDiff": 0.26559448
+        },
+        "open": {
+          "date": "2025-10-31",
+          "prevPrice": 271.4,
+          "price": 276.99,
+          "priceDiff": 2.0596848,
+          "spyPriceDiff": 0.7663574
+        },
+        "plus_1_day": {
+          "date": "2025-11-03",
+          "prevPrice": 270.37,
+          "price": 269.05,
+          "priceDiff": -0.4882202,
+          "spyPriceDiff": 0.18766785
+        },
+        "plus_1_week": {
+          "date": "2025-11-07",
+          "prevPrice": 269.77,
+          "price": 268.47,
+          "priceDiff": -0.48188782,
+          "spyPriceDiff": 0.09845734
+        },
+        "plus_2_days": {
+          "date": "2025-11-04",
+          "prevPrice": 269.05,
+          "price": 270.04,
+          "priceDiff": 0.3679657,
+          "spyPriceDiff": -1.1853561
+        },
+        "plus_3_days": {
+          "date": "2025-11-05",
+          "prevPrice": 270.04,
+          "price": 270.14,
+          "priceDiff": 0.03704071,
+          "spyPriceDiff": 0.34655
+        }
+      },
+      "reportDate": "2025-10-30T16:30:00",
+      "rsi": 71.1,
+      "ticker": "AAPL"
+    },
+    {
+      "chartEndDate": "2025-08-06",
+      "chartStartDate": "2025-07-29",
+      "fiscalEndDate": "2025-06-30",
+      "fiscalPeriod": "2025Q3",
+      "reactions": {
+        "close": {
+          "date": "2025-08-01",
+          "prevPrice": 207.57,
+          "price": 202.38,
+          "priceDiff": -2.5003586,
+          "spyPriceDiff": -1.6390381
+        },
+        "high": {
+          "date": "2025-08-01",
+          "prevPrice": 207.57,
+          "price": 213.58,
+          "priceDiff": 2.895401,
+          "spyPriceDiff": -0.9081116
+        },
+        "low": {
+          "date": "2025-08-01",
+          "prevPrice": 207.57,
+          "price": 201.5,
+          "priceDiff": -2.9243164,
+          "spyPriceDiff": -2.0234833
+        },
+        "minus_1_day": {
+          "date": "2025-07-31",
+          "prevPrice": 209.05,
+          "price": 207.57,
+          "priceDiff": -0.70796204,
+          "spyPriceDiff": -0.37512207
+        },
+        "minus_1_week": {
+          "date": "2025-07-25",
+          "prevPrice": 213.76,
+          "price": 213.88,
+          "priceDiff": 0.056144714,
+          "spyPriceDiff": 0.42243195
+        },
+        "minus_2_days": {
+          "date": "2025-07-30",
+          "prevPrice": 211.27,
+          "price": 209.05,
+          "priceDiff": -1.0507889,
+          "spyPriceDiff": -0.12593079
+        },
+        "minus_3_days": {
+          "date": "2025-07-29",
+          "prevPrice": 214.05,
+          "price": 211.27,
+          "priceDiff": -1.2987595,
+          "spyPriceDiff": -0.26376343
+        },
+        "open": {
+          "date": "2025-08-01",
+          "prevPrice": 207.57,
+          "price": 210.865,
+          "priceDiff": 1.5874176,
+          "spyPriceDiff": -0.9144516
+        },
+        "plus_1_day": {
+          "date": "2025-08-04",
+          "prevPrice": 202.38,
+          "price": 203.35,
+          "priceDiff": 0.47929382,
+          "spyPriceDiff": 1.5199814
+        },
+        "plus_1_week": {
+          "date": "2025-08-08",
+          "prevPrice": 220.03,
+          "price": 229.35,
+          "priceDiff": 4.235794,
+          "spyPriceDiff": 0.779747
+        },
+        "plus_2_days": {
+          "date": "2025-08-05",
+          "prevPrice": 203.35,
+          "price": 202.92,
+          "priceDiff": -0.2114563,
+          "spyPriceDiff": -0.50699615
+        },
+        "plus_3_days": {
+          "date": "2025-08-06",
+          "prevPrice": 202.92,
+          "price": 213.25,
+          "priceDiff": 5.0906754,
+          "spyPriceDiff": 0.7659683
+        }
+      },
+      "reportDate": "2025-07-31T16:30:00",
+      "rsi": 45.1,
+      "ticker": "AAPL"
+    }
+  ],
+  "shape": [
+    12,
+    8
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "columns": [
+    "Date",
+    "Shares Outstanding"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "Shares Outstanding": "object"
+  },
+  "name": "digrin_shares_outstanding",
+  "sample": [
+    {
+      "Date": "Dec. 31, 2025",
+      "Shares Outstanding": "14.8 billion"
+    },
+    {
+      "Date": "Sept. 30, 2025",
+      "Shares Outstanding": "15.0 billion"
+    },
+    {
+      "Date": "June 30, 2025",
+      "Shares Outstanding": "14.9 billion"
+    }
+  ],
+  "shape": [
+    4,
+    2
+  ]
+}

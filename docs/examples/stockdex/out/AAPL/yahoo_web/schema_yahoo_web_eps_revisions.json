@@ -1,0 +1,44 @@
+{
+  "columns": [
+    " Currency in USD  ",
+    " Current Qtr. (Mar 2026)  ",
+    " Next Qtr. (Jun 2026)  ",
+    " Current Year (2026)  ",
+    " Next Year (2027)  "
+  ],
+  "dtypes": {
+    " Currency in USD  ": "object",
+    " Current Qtr. (Mar 2026)  ": "object",
+    " Current Year (2026)  ": "object",
+    " Next Qtr. (Jun 2026)  ": "object",
+    " Next Year (2027)  ": "object"
+  },
+  "name": "yahoo_web_eps_revisions",
+  "sample": [
+    {
+      " Currency in USD  ": "      Up Last 7 Days ",
+      " Current Qtr. (Mar 2026)  ": "      2 ",
+      " Current Year (2026)  ": "      31 ",
+      " Next Qtr. (Jun 2026)  ": "      -- ",
+      " Next Year (2027)  ": "      4 "
+    },
+    {
+      " Currency in USD  ": "      Up Last 30 Days ",
+      " Current Qtr. (Mar 2026)  ": "      24 ",
+      " Current Year (2026)  ": "      32 ",
+      " Next Qtr. (Jun 2026)  ": "      14 ",
+      " Next Year (2027)  ": "      22 "
+    },
+    {
+      " Currency in USD  ": "      Down Last 7 Days ",
+      " Current Qtr. (Mar 2026)  ": "      -- ",
+      " Current Year (2026)  ": "      -- ",
+      " Next Qtr. (Jun 2026)  ": "      2 ",
+      " Next Year (2027)  ": "      -- "
+    }
+  ],
+  "shape": [
+    4,
+    5
+  ]
+}

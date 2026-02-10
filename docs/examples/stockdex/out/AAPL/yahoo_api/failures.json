@@ -1,0 +1,10 @@
+[
+  {
+    "method": "yahoo_api_current_trading_period",
+    "error": "'DataFrame' object is not callable"
+  },
+  {
+    "method": "yahoo_api_price",
+    "error": "Object of type Timestamp is not JSON serializable"
+  }
+]

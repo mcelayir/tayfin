@@ -1,0 +1,44 @@
+{
+  "columns": [
+    " Currency in USD  ",
+    " Current Qtr. (Mar 2026)  ",
+    " Next Qtr. (Jun 2026)  ",
+    " Current Year (2026)  ",
+    " Next Year (2027)  "
+  ],
+  "dtypes": {
+    " Currency in USD  ": "object",
+    " Current Qtr. (Mar 2026)  ": "object",
+    " Current Year (2026)  ": "object",
+    " Next Qtr. (Jun 2026)  ": "object",
+    " Next Year (2027)  ": "object"
+  },
+  "name": "yahoo_web_revenue_estimate",
+  "sample": [
+    {
+      " Currency in USD  ": "      No. of Analysts ",
+      " Current Qtr. (Mar 2026)  ": "      31 ",
+      " Current Year (2026)  ": "      38 ",
+      " Next Qtr. (Jun 2026)  ": "      28 ",
+      " Next Year (2027)  ": "      43 "
+    },
+    {
+      " Currency in USD  ": "      Avg. Estimate ",
+      " Current Qtr. (Mar 2026)  ": "      108.93B ",
+      " Current Year (2026)  ": "      464.49B ",
+      " Next Qtr. (Jun 2026)  ": "      101.65B ",
+      " Next Year (2027)  ": "      493.77B "
+    },
+    {
+      " Currency in USD  ": "      Low Estimate ",
+      " Current Qtr. (Mar 2026)  ": "      104.64B ",
+      " Current Year (2026)  ": "      448.74B ",
+      " Next Qtr. (Jun 2026)  ": "      95.98B ",
+      " Next Year (2027)  ": "      454.83B "
+    }
+  ],
+  "shape": [
+    6,
+    5
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "columns": [
+    0,
+    1
+  ],
+  "dtypes": {
+    "0": "object",
+    "1": "object"
+  },
+  "name": "yahoo_web_major_holders",
+  "sample": [
+    {
+      "0": "1.70% ",
+      "1": "% of Shares Held by All Insider "
+    },
+    {
+      "0": "65.09% ",
+      "1": "% of Shares Held by Institutions "
+    },
+    {
+      "0": "66.22% ",
+      "1": "% of Float Held by Institutions "
+    }
+  ],
+  "shape": [
+    4,
+    2
+  ]
+}

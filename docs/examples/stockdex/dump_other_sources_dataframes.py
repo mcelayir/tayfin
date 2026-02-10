@@ -12,7 +12,43 @@ from _utils import write_schema_and_data
 
 
 def call_method(ticker_obj, method_name):
-    fn = getattr(ticker_obj, method_name)
+    # Conservative handling: most justetf_* methods only apply to ETFs.
+    # Try to detect ETF-like attributes; if we can't confirm ETF, skip to avoid heavy failures.
+    if method_name.startswith("justetf_"):
+        is_etf = False
+        candidates = ("security_type", "type", "instrument_type", "asset_type", "securityType", "is_etf")
+        for a in candidates:
+            try:
+                v = getattr(ticker_obj, a)
+            except Exception:
+                continue
+            # If attribute is callable (e.g., is_etf()), try to call it safely
+            try:
+                if callable(v):
+                    try:
+                        r = v()
+                    except Exception:
+                        r = None
+                    v = r
+            except Exception:
+                pass
+            if isinstance(v, str) and v.lower() == "etf":
+                is_etf = True
+                break
+            if isinstance(v, bool) and v:
+                is_etf = True
+                break
+        if not is_etf:
+            return {"skipped": True, "reason": "requires ETF - skipped for non-ETF instrument"}
+
+    try:
+        fn = getattr(ticker_obj, method_name)
+    except Exception as e:
+        msg = str(e)
+        if "Wrong security type" in msg or "Wrong security type" in repr(e):
+            return {"skipped": True, "reason": "Wrong security type - skipped for non-ETF instrument"}
+        raise
+
     if not callable(fn):
         return fn
     try:
@@ -27,7 +63,16 @@ def call_method(ticker_obj, method_name):
             required.append(name)
     if required:
         return {"skipped": True, "reason": f"requires args: {required}"}
-    return fn()
+    try:
+        return fn()
+    except Exception as e:
+        msg = str(e)
+        # Treat JustETF wrong-security-type errors as skips (ETF-only methods)
+        if "Wrong security type" in msg or "Wrong security type" in repr(e):
+            cleaned = "Wrong security type - skipped for non-ETF instrument"
+            return {"skipped": True, "reason": cleaned}
+        # Propagate other exceptions to be treated as real failures
+        raise
 
 
 def main():
@@ -51,17 +96,27 @@ def main():
     for m in methods:
         try:
             val = call_method(t, m)
-            if isinstance(val, pd.DataFrame):
-                write_schema_and_data(outroot, m, val, args.format)
-                print(f"{m}: wrote schema and data (shape={val.shape})")
-            else:
-                schema = {"name": m, "type": type(val).__name__}
-                with (outroot / f"schema_{m}.json").open("w") as f:
-                    json.dump(schema, f, indent=2)
-                print(f"{m}: returned {type(val).__name__}")
         except Exception as e:
             failures.append({"method": m, "error": str(e)})
             print(f"{m}: FAILED: {e}")
+            continue
+
+        # Handle skipped results returned from call_method
+        if isinstance(val, dict) and val.get("skipped"):
+            schema = {"name": m, "type": "skipped", "reason": val.get("reason")}
+            with (outroot / f"schema_{m}.json").open("w") as f:
+                json.dump(schema, f, indent=2)
+            print(f"{m}: SKIPPED: {val.get('reason')}")
+            continue
+
+        if isinstance(val, pd.DataFrame):
+            write_schema_and_data(outroot, m, val, args.format)
+            print(f"{m}: wrote schema and data (shape={val.shape})")
+        else:
+            schema = {"name": m, "type": type(val).__name__}
+            with (outroot / f"schema_{m}.json").open("w") as f:
+                json.dump(schema, f, indent=2)
+            print(f"{m}: returned {type(val).__name__}")
 
     if failures:
         with (outroot / "failures.json").open("w") as f:

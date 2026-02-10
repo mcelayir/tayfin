@@ -1,0 +1,44 @@
+{
+  "columns": [
+    "Name",
+    "Title",
+    "Pay",
+    "Exercised",
+    "Year Born"
+  ],
+  "dtypes": {
+    "Exercised": "object",
+    "Name": "object",
+    "Pay": "object",
+    "Title": "object",
+    "Year Born": "object"
+  },
+  "name": "yahoo_web_key_executives",
+  "sample": [
+    {
+      "Exercised": "-- ",
+      "Name": "Mr. Timothy D. Cook ",
+      "Pay": "16.76M ",
+      "Title": "CEO & Director ",
+      "Year Born": "1961 "
+    },
+    {
+      "Exercised": "-- ",
+      "Name": "Mr. Kevan  Parekh ",
+      "Pay": "4.03M ",
+      "Title": "Senior VP & CFO ",
+      "Year Born": "1972 "
+    },
+    {
+      "Exercised": "-- ",
+      "Name": "Mr. Sabih  Khan ",
+      "Pay": "5.02M ",
+      "Title": "Senior VP & Chief Operating Officer ",
+      "Year Born": "1967 "
+    }
+  ],
+  "shape": [
+    10,
+    5
+  ]
+}

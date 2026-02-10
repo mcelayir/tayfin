@@ -1,0 +1,44 @@
+{
+  "columns": [
+    "Ex-dividend date",
+    "Payable date",
+    "Dividend amount (change)",
+    "Adjusted Price",
+    "Close Price"
+  ],
+  "dtypes": {
+    "Adjusted Price": "object",
+    "Close Price": "object",
+    "Dividend amount (change)": "object",
+    "Ex-dividend date": "object",
+    "Payable date": "object"
+  },
+  "name": "digrin_dividend",
+  "sample": [
+    {
+      "Adjusted Price": "Upcoming dividend",
+      "Close Price": null,
+      "Dividend amount (change)": "0.2600 USD                                                                       ",
+      "Ex-dividend date": "2026-02-09",
+      "Payable date": "2026-02-12"
+    },
+    {
+      "Adjusted Price": "270.37 USD",
+      "Close Price": "270.37 USD",
+      "Dividend amount (change)": "0.2600 USD                                                                       ",
+      "Ex-dividend date": "2025-11-10",
+      "Payable date": "2025-11-13"
+    },
+    {
+      "Adjusted Price": "202.38 USD",
+      "Close Price": "202.38 USD",
+      "Dividend amount (change)": "0.2600 USD                                                                       ",
+      "Ex-dividend date": "2025-08-11",
+      "Payable date": "2025-08-14"
+    }
+  ],
+  "shape": [
+    90,
+    5
+  ]
+}

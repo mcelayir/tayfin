@@ -1,0 +1,84 @@
+{
+  "columns": [
+    "ticker",
+    "fiscalPeriod",
+    "earningsDate",
+    "fiscalEndDate",
+    "epsActual",
+    "epsEstimate",
+    "epsReportedActual",
+    "epsReportedEstimate",
+    "salesActual",
+    "salesEstimate",
+    "epsAnalysts",
+    "epsReportedAnalysts",
+    "salesAnalysts"
+  ],
+  "dtypes": {
+    "earningsDate": "object",
+    "epsActual": "float64",
+    "epsAnalysts": "float64",
+    "epsEstimate": "float64",
+    "epsReportedActual": "float64",
+    "epsReportedAnalysts": "float64",
+    "epsReportedEstimate": "float64",
+    "fiscalEndDate": "object",
+    "fiscalPeriod": "object",
+    "salesActual": "float64",
+    "salesAnalysts": "float64",
+    "salesEstimate": "float64",
+    "ticker": "object"
+  },
+  "name": "finviz_earnings_data",
+  "sample": [
+    {
+      "earningsDate": "2026-01-29T16:30:00",
+      "epsActual": 2.84,
+      "epsAnalysts": 31.0,
+      "epsEstimate": 2.6733,
+      "epsReportedActual": 2.84,
+      "epsReportedAnalysts": 31.0,
+      "epsReportedEstimate": 2.6733,
+      "fiscalEndDate": "2025-12-31",
+      "fiscalPeriod": "2026Q1",
+      "salesActual": 143756.0,
+      "salesAnalysts": 29.0,
+      "salesEstimate": 138391.0076,
+      "ticker": "AAPL"
+    },
+    {
+      "earningsDate": "2025-10-30T16:30:00",
+      "epsActual": 1.85,
+      "epsAnalysts": 31.0,
+      "epsEstimate": 1.7771,
+      "epsReportedActual": 1.848,
+      "epsReportedAnalysts": 31.0,
+      "epsReportedEstimate": 1.7771,
+      "fiscalEndDate": "2025-09-30",
+      "fiscalPeriod": "2025Q4",
+      "salesActual": 102466.0,
+      "salesAnalysts": 32.0,
+      "salesEstimate": 102227.0746,
+      "ticker": "AAPL"
+    },
+    {
+      "earningsDate": "2025-07-31T16:30:00",
+      "epsActual": 1.57,
+      "epsAnalysts": 29.0,
+      "epsEstimate": 1.438,
+      "epsReportedActual": 1.568,
+      "epsReportedAnalysts": 29.0,
+      "epsReportedEstimate": 1.438,
+      "fiscalEndDate": "2025-06-30",
+      "fiscalPeriod": "2025Q3",
+      "salesActual": 94036.0,
+      "salesAnalysts": 28.0,
+      "salesEstimate": 89562.7364,
+      "ticker": "AAPL"
+    }
+  ],
+  "shape": [
+    116,
+    13
+  ]
+}

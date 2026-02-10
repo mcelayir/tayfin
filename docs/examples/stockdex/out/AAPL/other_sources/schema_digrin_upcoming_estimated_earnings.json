@@ -1,0 +1,30 @@
+{
+  "columns": [
+    "Date",
+    "Actual / Estimated EPS",
+    "Low Revenue",
+    "Actual / Estimated Revenue",
+    "High Revenue"
+  ],
+  "dtypes": {
+    "Actual / Estimated EPS": "object",
+    "Actual / Estimated Revenue": "object",
+    "Date": "object",
+    "High Revenue": "object",
+    "Low Revenue": "object"
+  },
+  "name": "digrin_upcoming_estimated_earnings",
+  "sample": [
+    {
+      "Actual / Estimated EPS": "                                    - / -                            ",
+      "Actual / Estimated Revenue": "                            - / 108.8 billion                        ",
+      "Date": "April 29, 2026 BeforeMarket",
+      "High Revenue": "112.6 billion",
+      "Low Revenue": "104.6 billion"
+    }
+  ],
+  "shape": [
+    1,
+    5
+  ]
+}

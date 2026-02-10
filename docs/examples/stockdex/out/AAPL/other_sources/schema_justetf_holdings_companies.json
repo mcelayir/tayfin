@@ -1,0 +1,5 @@
+{
+  "name": "justetf_holdings_companies",
+  "type": "skipped",
+  "reason": "requires ETF - skipped for non-ETF instrument"
+}

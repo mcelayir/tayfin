@@ -1,0 +1,24 @@
+{
+  "columns": [
+    "Value"
+  ],
+  "dtypes": {
+    "Value": "object"
+  },
+  "name": "yahoo_web_trading_information",
+  "sample": [
+    {
+      "Value": "1.11"
+    },
+    {
+      "Value": "18.06%"
+    },
+    {
+      "Value": "14.77%"
+    }
+  ],
+  "shape": [
+    29,
+    1
+  ]
+}

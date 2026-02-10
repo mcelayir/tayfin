@@ -1,0 +1,44 @@
+{
+  "columns": [
+    "Holder",
+    "Shares",
+    "Date Reported",
+    "% Out",
+    "Value"
+  ],
+  "dtypes": {
+    "% Out": "object",
+    "Date Reported": "object",
+    "Holder": "object",
+    "Shares": "object",
+    "Value": "object"
+  },
+  "name": "yahoo_web_top_institutional_holders",
+  "sample": [
+    {
+      "% Out": " 9.72% ",
+      "Date Reported": " Dec 31, 2025 ",
+      "Holder": " Vanguard Group Inc ",
+      "Shares": " 1.43B ",
+      "Value": " 390,423,806,305 "
+    },
+    {
+      "% Out": " 7.81% ",
+      "Date Reported": " Sep 30, 2025 ",
+      "Holder": " Blackrock Inc. ",
+      "Shares": " 1.15B ",
+      "Value": " 313,791,248,231 "
+    },
+    {
+      "% Out": " 4.07% ",
+      "Date Reported": " Sep 30, 2025 ",
+      "Holder": " State Street Corporation ",
+      "Shares": " 597.5M ",
+      "Value": " 163,556,958,414 "
+    }
+  ],
+  "shape": [
+    10,
+    5
+  ]
+}

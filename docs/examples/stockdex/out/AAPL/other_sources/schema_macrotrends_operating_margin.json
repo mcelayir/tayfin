@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Date",
+    "TTM Revenue",
+    "TTM Operating Income",
+    "Operating Margin"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "Operating Margin": "object",
+    "TTM Operating Income": "object",
+    "TTM Revenue": "object"
+  },
+  "name": "macrotrends_operating_margin",
+  "sample": [
+    {
+      "Date": null,
+      "Operating Margin": null,
+      "TTM Operating Income": null,
+      "TTM Revenue": null
+    },
+    {
+      "Date": "2025-12-31",
+      "Operating Margin": "32.38%",
+      "TTM Operating Income": "$141.07B",
+      "TTM Revenue": "$435.62B"
+    },
+    {
+      "Date": "2025-09-30",
+      "Operating Margin": "31.97%",
+      "TTM Operating Income": "$133.05B",
+      "TTM Revenue": "$416.16B"
+    }
+  ],
+  "shape": [
+    155,
+    4
+  ]
+}

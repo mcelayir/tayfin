@@ -1,0 +1,49 @@
+{
+  "columns": [
+    "Ticker",
+    "FiscalPeriod",
+    "Amount",
+    "Yield",
+    "Payout",
+    "Estimate"
+  ],
+  "dtypes": {
+    "Amount": "float64",
+    "Estimate": "bool",
+    "FiscalPeriod": "object",
+    "Payout": "float64",
+    "Ticker": "object",
+    "Yield": "float64"
+  },
+  "name": "finviz_dividends_annual_data",
+  "sample": [
+    {
+      "Amount": 0.49,
+      "Estimate": false,
+      "FiscalPeriod": "2015FY",
+      "Payout": 21.48,
+      "Ticker": "AAPL",
+      "Yield": 1.73
+    },
+    {
+      "Amount": 0.55,
+      "Estimate": false,
+      "FiscalPeriod": "2016FY",
+      "Payout": 26.23,
+      "Ticker": "AAPL",
+      "Yield": 1.93
+    },
+    {
+      "Amount": 0.6,
+      "Estimate": false,
+      "FiscalPeriod": "2017FY",
+      "Payout": 26.06,
+      "Ticker": "AAPL",
+      "Yield": 1.56
+    }
+  ],
+  "shape": [
+    15,
+    6
+  ]
+}

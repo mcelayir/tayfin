@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Date",
+    "TTM Revenue",
+    "TTM Gross Profit",
+    "Gross Margin"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "Gross Margin": "object",
+    "TTM Gross Profit": "object",
+    "TTM Revenue": "object"
+  },
+  "name": "macrotrends_gross_margin",
+  "sample": [
+    {
+      "Date": null,
+      "Gross Margin": null,
+      "TTM Gross Profit": null,
+      "TTM Revenue": null
+    },
+    {
+      "Date": "2025-12-31",
+      "Gross Margin": "47.33%",
+      "TTM Gross Profit": "$206.16B",
+      "TTM Revenue": "$435.62B"
+    },
+    {
+      "Date": "2025-09-30",
+      "Gross Margin": "46.91%",
+      "TTM Gross Profit": "$195.20B",
+      "TTM Revenue": "$416.16B"
+    }
+  ],
+  "shape": [
+    155,
+    4
+  ]
+}

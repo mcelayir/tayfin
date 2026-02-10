@@ -1,0 +1,79 @@
+{
+  "columns": [
+    "ticker",
+    "fiscalPeriod",
+    "estimateType",
+    "estimateDate",
+    "relativeFiscalPeriod",
+    "estimates",
+    "upRevisions",
+    "downRevisions",
+    "mean",
+    "high",
+    "low",
+    "price"
+  ],
+  "dtypes": {
+    "downRevisions": "int64",
+    "estimateDate": "object",
+    "estimateType": "object",
+    "estimates": "int64",
+    "fiscalPeriod": "object",
+    "high": "float64",
+    "low": "float64",
+    "mean": "float64",
+    "price": "float64",
+    "relativeFiscalPeriod": "int64",
+    "ticker": "object",
+    "upRevisions": "int64"
+  },
+  "name": "finviz_earnings_revisions_data",
+  "sample": [
+    {
+      "downRevisions": 8,
+      "estimateDate": "2023-07-06T00:00:00",
+      "estimateType": "E",
+      "estimates": 36,
+      "fiscalPeriod": "2023FY",
+      "high": 6.29,
+      "low": 5.73,
+      "mean": 5.9934,
+      "price": 191.81,
+      "relativeFiscalPeriod": 1,
+      "ticker": "AAPL",
+      "upRevisions": 17
+    },
+    {
+      "downRevisions": 8,
+      "estimateDate": "2023-07-10T00:00:00",
+      "estimateType": "E",
+      "estimates": 37,
+      "fiscalPeriod": "2023FY",
+      "high": 6.29,
+      "low": 5.73,
+      "mean": 5.9936,
+      "price": 188.61,
+      "relativeFiscalPeriod": 1,
+      "ticker": "AAPL",
+      "upRevisions": 17
+    },
+    {
+      "downRevisions": 8,
+      "estimateDate": "2023-07-14T00:00:00",
+      "estimateType": "E",
+      "estimates": 38,
+      "fiscalPeriod": "2023FY",
+      "high": 6.29,
+      "low": 5.73,
+      "mean": 5.994,
+      "price": 190.69,
+      "relativeFiscalPeriod": 1,
+      "ticker": "AAPL",
+      "upRevisions": 17
+    }
+  ],
+  "shape": [
+    7403,
+    12
+  ]
+}

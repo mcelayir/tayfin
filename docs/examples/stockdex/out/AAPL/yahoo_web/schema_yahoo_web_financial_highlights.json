@@ -1,0 +1,24 @@
+{
+  "columns": [
+    "Value"
+  ],
+  "dtypes": {
+    "Value": "object"
+  },
+  "name": "yahoo_web_financial_highlights",
+  "sample": [
+    {
+      "Value": "9/27/2025"
+    },
+    {
+      "Value": "12/27/2025"
+    },
+    {
+      "Value": "27.04%"
+    }
+  ],
+  "shape": [
+    22,
+    1
+  ]
+}

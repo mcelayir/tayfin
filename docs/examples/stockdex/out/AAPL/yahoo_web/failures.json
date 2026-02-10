@@ -1,0 +1,6 @@
+[
+  {
+    "method": "yahoo_web_financials_table",
+    "error": "YahooWeb.yahoo_web_financials_table() missing 1 required positional argument: 'url'"
+  }
+]

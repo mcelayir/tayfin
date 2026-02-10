@@ -1,0 +1,5 @@
+{
+  "name": "justetf_price",
+  "type": "skipped",
+  "reason": "requires ETF - skipped for non-ETF instrument"
+}

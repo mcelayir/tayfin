@@ -1,0 +1,5 @@
+{
+  "name": "macrotrends_cash_flow",
+  "type": "skipped",
+  "reason": "requires args: ['frequency']"
+}

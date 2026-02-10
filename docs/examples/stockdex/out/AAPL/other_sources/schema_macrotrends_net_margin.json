@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Date",
+    "TTM Revenue",
+    "TTM Net Income",
+    "Net Margin"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "Net Margin": "object",
+    "TTM Net Income": "object",
+    "TTM Revenue": "object"
+  },
+  "name": "macrotrends_net_margin",
+  "sample": [
+    {
+      "Date": null,
+      "Net Margin": null,
+      "TTM Net Income": null,
+      "TTM Revenue": null
+    },
+    {
+      "Date": "2025-12-31",
+      "Net Margin": "27.04%",
+      "TTM Net Income": "$117.78B",
+      "TTM Revenue": "$435.62B"
+    },
+    {
+      "Date": "2025-09-30",
+      "Net Margin": "26.92%",
+      "TTM Net Income": "$112.01B",
+      "TTM Revenue": "$416.16B"
+    }
+  ],
+  "shape": [
+    155,
+    4
+  ]
+}

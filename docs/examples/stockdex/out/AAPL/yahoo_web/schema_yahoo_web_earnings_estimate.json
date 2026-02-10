@@ -1,0 +1,44 @@
+{
+  "columns": [
+    " Currency in USD  ",
+    " Current Qtr. (Mar 2026)  ",
+    " Next Qtr. (Jun 2026)  ",
+    " Current Year (2026)  ",
+    " Next Year (2027)  "
+  ],
+  "dtypes": {
+    " Currency in USD  ": "object",
+    " Current Qtr. (Mar 2026)  ": "object",
+    " Current Year (2026)  ": "object",
+    " Next Qtr. (Jun 2026)  ": "object",
+    " Next Year (2027)  ": "object"
+  },
+  "name": "yahoo_web_earnings_estimate",
+  "sample": [
+    {
+      " Currency in USD  ": "      No. of Analysts ",
+      " Current Qtr. (Mar 2026)  ": "      30 ",
+      " Current Year (2026)  ": "      40 ",
+      " Next Qtr. (Jun 2026)  ": "      27 ",
+      " Next Year (2027)  ": "      42 "
+    },
+    {
+      " Currency in USD  ": "      Avg. Estimate ",
+      " Current Qtr. (Mar 2026)  ": "      1.95 ",
+      " Current Year (2026)  ": "      8.48 ",
+      " Next Qtr. (Jun 2026)  ": "      1.73 ",
+      " Next Year (2027)  ": "      9.3 "
+    },
+    {
+      " Currency in USD  ": "      Low Estimate ",
+      " Current Qtr. (Mar 2026)  ": "      1.83 ",
+      " Current Year (2026)  ": "      8.15 ",
+      " Next Qtr. (Jun 2026)  ": "      1.59 ",
+      " Next Year (2027)  ": "      8.36 "
+    }
+  ],
+  "shape": [
+    5,
+    5
+  ]
+}

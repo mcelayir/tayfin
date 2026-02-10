@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "Date",
+    "TTM Revenue",
+    "TTM Pre-Tax Income",
+    "Pre-Tax Margin"
+  ],
+  "dtypes": {
+    "Date": "object",
+    "Pre-Tax Margin": "object",
+    "TTM Pre-Tax Income": "object",
+    "TTM Revenue": "object"
+  },
+  "name": "macrotrends_pre_tax_margin",
+  "sample": [
+    {
+      "Date": null,
+      "Pre-Tax Margin": null,
+      "TTM Pre-Tax Income": null,
+      "TTM Revenue": null
+    },
+    {
+      "Date": "2025-12-31",
+      "Pre-Tax Margin": "32.40%",
+      "TTM Pre-Tax Income": "$141.15B",
+      "TTM Revenue": "$435.62B"
+    },
+    {
+      "Date": "2025-09-30",
+      "Pre-Tax Margin": "31.89%",
+      "TTM Pre-Tax Income": "$132.73B",
+      "TTM Revenue": "$416.16B"
+    }
+  ],
+  "shape": [
+    155,
+    4
+  ]
+}

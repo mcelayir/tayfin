@@ -1,0 +1,34 @@
+{
+  "columns": [
+    "pre",
+    "regular",
+    "post"
+  ],
+  "dtypes": {
+    "post": "object",
+    "pre": "object",
+    "regular": "object"
+  },
+  "name": "yahoo_api_current_trading_period",
+  "sample": [
+    {
+      "post": "EST",
+      "pre": "EST",
+      "regular": "EST"
+    },
+    {
+      "post": "2026-02-10T21:00:00",
+      "pre": "2026-02-10T09:00:00",
+      "regular": "2026-02-10T14:30:00"
+    },
+    {
+      "post": "2026-02-11T01:00:00",
+      "pre": "2026-02-10T14:30:00",
+      "regular": "2026-02-10T21:00:00"
+    }
+  ],
+  "shape": [
+    4,
+    3
+  ]
+}
