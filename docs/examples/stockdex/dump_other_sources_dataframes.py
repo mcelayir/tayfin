@@ -3,6 +3,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import inspect
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import pandas as pd
@@ -12,9 +13,21 @@ from _utils import write_schema_and_data
 
 def call_method(ticker_obj, method_name):
     fn = getattr(ticker_obj, method_name)
-    if callable(fn):
-        return fn()
-    return fn
+    if not callable(fn):
+        return fn
+    try:
+        sig = inspect.signature(fn)
+    except (ValueError, TypeError):
+        return {"skipped": True, "reason": "cannot inspect signature"}
+    required = []
+    for name, param in sig.parameters.items():
+        if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+            continue
+        if param.default is inspect._empty:
+            required.append(name)
+    if required:
+        return {"skipped": True, "reason": f"requires args: {required}"}
+    return fn()
 
 
 def main():
