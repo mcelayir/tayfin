@@ -2,9 +2,12 @@
 import argparse
 import json
 from pathlib import Path
+import sys
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
 import pandas as pd
 from stockdex import Ticker
-from docs.examples.stockdex._utils import write_schema_and_data
+from _utils import write_schema_and_data
 
 
 def call_method(ticker_obj, method_name):
