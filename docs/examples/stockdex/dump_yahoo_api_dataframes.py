@@ -12,8 +12,10 @@ from _utils import write_schema_and_data
 
 def call_method(ticker_obj, method_name):
     fn = getattr(ticker_obj, method_name)
-    # call with no args; many Stockdex Ticker methods accept no args
-    return fn()
+    # some attributes are properties returning values (DataFrame) — only call if callable
+    if callable(fn):
+        return fn()
+    return fn
 
 
 def main():

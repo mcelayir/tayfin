@@ -12,7 +12,9 @@ from _utils import write_schema_and_data
 
 def call_method(ticker_obj, method_name):
     fn = getattr(ticker_obj, method_name)
-    return fn()
+    if callable(fn):
+        return fn()
+    return fn
 
 
 def main():
