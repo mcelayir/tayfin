@@ -5,9 +5,24 @@ import logging
 
 import pandas as pd
 
-from .base import IOhlcvProvider, ProviderEmptyError, ProviderError
+from .base import (
+    PermanentProviderError,
+    ProviderEmptyError,
+    TransientProviderError,
+)
 
 logger = logging.getLogger(__name__)
+
+_TRANSIENT_KEYWORDS = (
+    "timeout", "timed out", "connection reset", "connection refused",
+    "connection error", "429", "rate limit", "too many requests",
+    "service unavailable", "eof", "broken pipe",
+)
+
+
+def _is_transient(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(kw in msg for kw in _TRANSIENT_KEYWORDS)
 
 
 class YfinanceOhlcvProvider:
@@ -29,7 +44,7 @@ class YfinanceOhlcvProvider:
         try:
             import yfinance as yf
         except ImportError as exc:
-            raise ProviderError(
+            raise PermanentProviderError(
                 "yfinance is not installed.  pip install yfinance"
             ) from exc
 
@@ -47,7 +62,11 @@ class YfinanceOhlcvProvider:
 
             hist = ticker.history(**kwargs)
         except Exception as exc:
-            raise ProviderError(
+            if _is_transient(exc):
+                raise TransientProviderError(
+                    f"yfinance transient error for {symbol}: {exc}"
+                ) from exc
+            raise PermanentProviderError(
                 f"yfinance history failed for {symbol}: {exc}"
             ) from exc
 

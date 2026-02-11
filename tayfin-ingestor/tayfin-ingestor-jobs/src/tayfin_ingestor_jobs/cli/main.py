@@ -53,6 +53,7 @@ def run(
     ticker: Optional[str] = typer.Option(None, help="Optional ticker override (single instrument)"),
     from_date: Optional[str] = typer.Option(None, "--from", help="Start date override (YYYY-MM-DD)"),
     to_date: Optional[str] = typer.Option(None, "--to", help="End date override (YYYY-MM-DD)"),
+    limit: Optional[int] = typer.Option(None, "--limit", help="Process only the first N tickers (for testing)"),
 ):
     """Run a job. Example: jobs run discovery nasdaq-100 --config config/discovery.yml"""
     cfg = None
@@ -84,7 +85,7 @@ def run(
             typer.echo(f"OHLCV target '{target}' not found in config.")
             raise typer.Exit(code=1)
         job = OhlcvJob.from_config(target_cfg, cfg)
-        job.run(ticker=ticker, from_date=from_date, to_date=to_date)
+        job.run(ticker=ticker, from_date=from_date, to_date=to_date, limit_tickers=limit)
         return
     else:
         typer.echo("Unsupported job kind. Use 'discovery', 'fundamentals', or 'ohlcv'.")

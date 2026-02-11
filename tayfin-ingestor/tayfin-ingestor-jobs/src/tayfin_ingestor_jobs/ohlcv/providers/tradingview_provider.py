@@ -7,9 +7,27 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from .base import IOhlcvProvider, ProviderEmptyError, ProviderError
+from .base import (
+    PermanentProviderError,
+    ProviderEmptyError,
+    TransientProviderError,
+)
+from ..reliability import RateLimiter
 
 logger = logging.getLogger(__name__)
+
+# Strings in exceptions that indicate transient (retryable) failures
+_TRANSIENT_KEYWORDS = (
+    "timeout", "timed out", "connection reset", "connection refused",
+    "connection error", "429", "rate limit", "too many requests",
+    "temporarily unavailable", "service unavailable", "eof",
+    "broken pipe", "websocket",
+)
+
+
+def _is_transient(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(kw in msg for kw in _TRANSIENT_KEYWORDS)
 
 
 class TradingViewOhlcvProvider:
@@ -24,8 +42,9 @@ class TradingViewOhlcvProvider:
 
     TIMEFRAME = "1d"
 
-    def __init__(self, cookie: str | None = None):
+    def __init__(self, cookie: str | None = None, rate_limiter: RateLimiter | None = None):
         self._cookie = cookie or os.environ.get("TRADINGVIEW_COOKIE")
+        self._rate_limiter = rate_limiter or RateLimiter()
 
     # ------------------------------------------------------------------
     # IOhlcvProvider
@@ -44,11 +63,20 @@ class TradingViewOhlcvProvider:
         ``start_date`` / ``end_date`` are not natively supported by the
         Streamer API — it works with a candle count.  Post-fetch filtering
         is applied when date bounds are provided.
+
+        Raises
+        ------
+        PermanentProviderError
+            If the library is not installed.
+        TransientProviderError
+            On network / websocket / rate-limit failures.
+        ProviderEmptyError
+            If no data is returned.
         """
         try:
             from tradingview_scraper.symbols.stream import Streamer
         except ImportError as exc:
-            raise ProviderError(
+            raise PermanentProviderError(
                 "tradingview-scraper is not installed.  "
                 "pip install tradingview-scraper"
             ) from exc
@@ -57,6 +85,9 @@ class TradingViewOhlcvProvider:
             "TradingView fetch — exchange=%s symbol=%s limit=%d",
             exchange, symbol, limit,
         )
+
+        # Rate-limit between ticker fetches
+        self._rate_limiter.wait()
 
         try:
             streamer = Streamer(export_result=True, export_type="json")
@@ -67,7 +98,11 @@ class TradingViewOhlcvProvider:
                 numb_price_candles=limit,
             )
         except Exception as exc:
-            raise ProviderError(
+            if _is_transient(exc):
+                raise TransientProviderError(
+                    f"TradingView transient error for {exchange}:{symbol}: {exc}"
+                ) from exc
+            raise PermanentProviderError(
                 f"TradingView stream failed for {exchange}:{symbol}: {exc}"
             ) from exc
 

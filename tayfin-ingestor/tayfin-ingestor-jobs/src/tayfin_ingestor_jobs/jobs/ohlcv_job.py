@@ -1,6 +1,7 @@
 """OHLCV job — daily candle ingestion for index members."""
 from __future__ import annotations
 
+import json
 import logging
 from datetime import date, timedelta
 from typing import Optional
@@ -13,8 +14,14 @@ from ..repositories.job_run_item_repository import JobRunItemRepository
 from ..fundamentals.repositories.instrument_query_repository import InstrumentQueryRepository
 from ..ohlcv.providers.tradingview_provider import TradingViewOhlcvProvider
 from ..ohlcv.providers.yfinance_provider import YfinanceOhlcvProvider
-from ..ohlcv.providers.base import ProviderError
+from ..ohlcv.providers.base import (
+    ProviderError,
+    ProviderEmptyError,
+    TransientProviderError,
+    PermanentProviderError,
+)
 from ..ohlcv.normalize import normalize_ohlcv_df, NormalizationError
+from ..ohlcv.reliability import retry_with_backoff
 from ..ohlcv.repositories.ohlcv_repository import OhlcvRepository
 
 logger = logging.getLogger(__name__)
@@ -27,12 +34,12 @@ class OhlcvJob:
     """Daily OHLCV ingestion job.
 
     Flow per ticker:
-    1. Resolve exchange from ``instruments.exchange`` (fallback: config / NASDAQ).
-    2. Try TradingView provider (primary).
-    3. Fallback to yfinance on failure.
+    1. Resolve exchange from ``instruments.exchange`` (fallback: NASDAQ).
+    2. Try TradingView provider with retries (primary).
+    3. Fallback to yfinance with retries if TradingView fails.
     4. Normalize the DataFrame.
     5. Upsert into ``ohlcv_daily``.
-    6. Record ``job_run_item`` SUCCESS / FAILED.
+    6. Record ``job_run_item`` SUCCESS / FAILED with audit details.
     """
 
     REQUIRED_FIELDS = ("code", "country", "index_code", "timeframe")
@@ -115,6 +122,61 @@ class OhlcvJob:
         return instrument.get("exchange") or _DEFAULT_EXCHANGE
 
     # ------------------------------------------------------------------
+    # Provider fetch with retry + fallback
+    # ------------------------------------------------------------------
+
+    def _fetch_with_fallback(
+        self,
+        tv_provider: TradingViewOhlcvProvider,
+        yf_provider: YfinanceOhlcvProvider,
+        exchange: str,
+        symbol: str,
+        start: str,
+        end: str,
+        limit: int,
+    ) -> tuple[pd.DataFrame, str, bool]:
+        """Try TradingView with retries, fall back to yfinance with retries.
+
+        Returns
+        -------
+        (df, provider_name, fallback_used)
+        """
+        tv_label = f"TradingView:{exchange}:{symbol}"
+        yf_label = f"yfinance:{symbol}"
+
+        # 1. TradingView with retries
+        try:
+            df = retry_with_backoff(
+                lambda: tv_provider.fetch_daily(
+                    exchange=exchange,
+                    symbol=symbol,
+                    start_date=start,
+                    end_date=end,
+                    limit=limit,
+                ),
+                label=tv_label,
+            )
+            return df, "tradingview", False
+        except (TransientProviderError, ProviderEmptyError, PermanentProviderError) as tv_err:
+            logger.warning(
+                "TradingView failed for %s:%s — falling back to yfinance: %s",
+                exchange, symbol, tv_err,
+            )
+
+        # 2. yfinance fallback with retries
+        df = retry_with_backoff(
+            lambda: yf_provider.fetch_daily(
+                exchange=exchange,
+                symbol=symbol,
+                start_date=start,
+                end_date=end,
+                limit=limit,
+            ),
+            label=yf_label,
+        )
+        return df, "yfinance", True
+
+    # ------------------------------------------------------------------
     # Run
     # ------------------------------------------------------------------
 
@@ -123,10 +185,11 @@ class OhlcvJob:
         ticker: Optional[str] = None,
         from_date: Optional[str] = None,
         to_date: Optional[str] = None,
+        limit_tickers: Optional[int] = None,
     ) -> None:
         self._validate_config()
         start, end = self.resolve_date_window(from_date, to_date)
-        limit = int(self.target_cfg.get("window_days", 400))
+        candle_limit = int(self.target_cfg.get("window_days", 400))
 
         job_run_id = self.job_run_repo.create(job_name="ohlcv", trigger_type="MANUAL_CLI")
         logger.info(
@@ -137,6 +200,9 @@ class OhlcvJob:
         )
 
         instruments = self._resolve_instruments(ticker, job_run_id)
+        if limit_tickers is not None and limit_tickers > 0:
+            instruments = instruments[:limit_tickers]
+            logger.info("--limit applied: processing %d of total instruments", len(instruments))
 
         tv_provider = TradingViewOhlcvProvider()
         yf_provider = YfinanceOhlcvProvider()
@@ -154,38 +220,24 @@ class OhlcvJob:
             min_date = ""
             max_date = ""
             status = "FAILED"
+            fallback_used = False
+            error_msg = ""
 
             try:
-                # 1. Try TradingView
-                raw_df = None
-                try:
-                    raw_df = tv_provider.fetch_daily(
-                        exchange=exchange,
-                        symbol=t,
-                        start_date=str(start),
-                        end_date=str(end),
-                        limit=limit,
-                    )
-                    provider_used = "tradingview"
-                except ProviderError as tv_err:
-                    logger.warning(
-                        "TradingView failed for %s:%s — falling back to yfinance: %s",
-                        exchange, t, tv_err,
-                    )
-                    # 2. Fallback to yfinance
-                    raw_df = yf_provider.fetch_daily(
-                        exchange=exchange,
-                        symbol=t,
-                        start_date=str(start),
-                        end_date=str(end),
-                        limit=limit,
-                    )
-                    provider_used = "yfinance"
+                # Fetch with retry + fallback
+                raw_df, provider_used, fallback_used = self._fetch_with_fallback(
+                    tv_provider, yf_provider,
+                    exchange=exchange,
+                    symbol=t,
+                    start=str(start),
+                    end=str(end),
+                    limit=candle_limit,
+                )
 
-                # 3. Normalize
+                # Normalize
                 clean_df = normalize_ohlcv_df(raw_df)
 
-                # 4. Upsert
+                # Upsert
                 row_count = self.ohlcv_repo.upsert_bulk(
                     instrument_id=instrument_id,
                     df=clean_df,
@@ -197,19 +249,42 @@ class OhlcvJob:
                 max_date = str(clean_df["as_of_date"].max())
                 status = "SUCCESS"
 
+                # Audit details
+                details = {
+                    "provider": provider_used,
+                    "fallback": fallback_used,
+                    "rows": row_count,
+                    "date_min": min_date,
+                    "date_max": max_date,
+                }
                 self.job_run_item_repo.upsert(
-                    job_run_id=job_run_id, item_key=t, status="SUCCESS",
+                    job_run_id=job_run_id,
+                    item_key=t,
+                    status="SUCCESS",
+                    error_details=json.dumps(details),
                 )
                 succeeded += 1
 
+                logger.info(
+                    "OHLCV ticker=%s provider=%s rows=%d range=%s→%s fallback=%s",
+                    t, provider_used, row_count, min_date, max_date, fallback_used,
+                )
+
             except Exception as exc:
-                logger.error("OHLCV ticker=%s failed: %s", t, exc)
+                error_msg = str(exc)
+                logger.error("OHLCV ticker=%s failed: %s", t, error_msg)
                 try:
+                    details = {
+                        "provider_attempted": "tradingview+yfinance",
+                        "fallback": True,
+                        "error": error_msg[:500],
+                    }
                     self.job_run_item_repo.upsert(
                         job_run_id=job_run_id,
                         item_key=t,
                         status="FAILED",
-                        error_summary=str(exc),
+                        error_summary=error_msg[:200],
+                        error_details=json.dumps(details),
                     )
                 except Exception:
                     pass

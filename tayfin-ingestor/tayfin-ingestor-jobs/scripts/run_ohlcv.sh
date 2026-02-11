@@ -9,6 +9,7 @@ set -euo pipefail
 #   ./run_ohlcv.sh --ticker AAPL           # single ticker debug
 #   ./run_ohlcv.sh --from 2025-01-01       # custom date window
 #   ./run_ohlcv.sh --ticker MSFT --from 2025-06-01 --to 2025-12-31
+#   ./run_ohlcv.sh --limit 5               # first 5 tickers only (testing)
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 

@@ -10,6 +10,14 @@ class ProviderError(Exception):
     """Base exception for OHLCV provider failures."""
 
 
+class TransientProviderError(ProviderError):
+    """Transient failure — safe to retry (timeout, rate-limit, connection reset)."""
+
+
+class PermanentProviderError(ProviderError):
+    """Permanent failure — do NOT retry (bad symbol, missing library, bad data shape)."""
+
+
 class ProviderEmptyError(ProviderError):
     """Provider returned no data."""
 
