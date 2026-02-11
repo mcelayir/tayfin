@@ -8,7 +8,7 @@ class InstrumentQueryRepository:
     def get_instruments_for_index(self, index_code: str, country: str) -> list[dict]:
         stmt = text(
             """
-            SELECT i.id, i.ticker, i.country
+            SELECT i.id, i.ticker, i.country, i.exchange
             FROM tayfin_ingestor.index_memberships m
             JOIN tayfin_ingestor.instruments i ON i.id = m.instrument_id
             WHERE m.index_code = :index_code AND i.country = :country
@@ -23,7 +23,7 @@ class InstrumentQueryRepository:
     def get_instrument_by_ticker(self, ticker: str, country: str) -> dict | None:
         stmt = text(
             """
-            SELECT id, ticker, country FROM tayfin_ingestor.instruments WHERE ticker = :ticker AND country = :country
+            SELECT id, ticker, country, exchange FROM tayfin_ingestor.instruments WHERE ticker = :ticker AND country = :country
             """
         )
         with self.engine.connect() as conn:

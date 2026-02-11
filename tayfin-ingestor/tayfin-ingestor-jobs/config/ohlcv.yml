@@ -1,0 +1,9 @@
+jobs:
+  ohlcv:
+    nasdaq-100:
+      code: ndx
+      country: US
+      type: index
+      index_code: NDX
+      timeframe: 1d
+      window_days: 400

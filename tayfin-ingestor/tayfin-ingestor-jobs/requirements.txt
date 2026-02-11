@@ -9,3 +9,4 @@ httpx
 lxml
 stockdex
 yfinance
+tradingview-scraper
