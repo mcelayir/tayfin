@@ -1,14 +1,11 @@
 import httpx
 import pandas as pd
-import io
-import re
-import html as _html
-import unicodedata
+import logging
 from typing import Iterable
 
 
 class NasdaqTraderIndexDiscoveryProvider:
-    """Provider that fetches NASDAQ-100 constituents from NasdaqTrader HTML.
+    """Provider that fetches NASDAQ-100 constituents from Nasdaq API.
 
     The provider returns a pandas.DataFrame internally but exposes a
     discover(...) method that returns an iterable of dicts (records),
@@ -16,73 +13,51 @@ class NasdaqTraderIndexDiscoveryProvider:
     consumers that need it.
     """
 
-    URL = "https://www.nasdaqtrader.com/dynamic/nasdaq100ndx.stm"
+    URL = "https://api.nasdaq.com/api/quote/list-type/nasdaq100"
 
-    def __init__(self, timeout: float = 10.0):
+    HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+    }
+
+    def __init__(self, timeout: float = 15.0):
         self.timeout = timeout
         self.last_dataframe: pd.DataFrame | None = None
 
-    def _fetch_html(self) -> str:
-        with httpx.Client(timeout=self.timeout) as client:
-            resp = client.get(self.URL)
+    def _fetch_json(self) -> list[dict]:
+        with httpx.Client(timeout=self.timeout, follow_redirects=True) as client:
+            resp = client.get(self.URL, headers=self.HEADERS)
         if resp.status_code != 200:
-            raise RuntimeError(f"Failed to fetch NASDAQ list: {resp.status_code}")
-        return resp.text
-
-    def _parse_tables(self, html: str) -> pd.DataFrame:
-        # Let pandas parse all tables and find the one with a symbol/ticker column
-        tables = pd.read_html(io.StringIO(html))
-        for df in tables:
-            cols = [c.lower() for c in df.columns.astype(str)]
-            for candidate in ("symbol", "ticker", "sym"):
-                for i, c in enumerate(cols):
-                    if candidate in c:
-                        colname = df.columns[i]
-                        # Normalize, unescape HTML entities and strip whitespace
-                        def clean_token(x: str) -> str:
-                            if x is None:
-                                return ""
-                            s = str(x)
-                            # Unescape HTML entities (convert '&nbsp;' -> non-breaking space)
-                            s = _html.unescape(s)
-                            # Normalize unicode (NFKC) and replace non-breaking and other spaces
-                            s = unicodedata.normalize("NFKC", s)
-                            # Replace any whitespace (including NBSP) with empty string
-                            s = re.sub(r"\s+", "", s)
-                            s = s.strip().upper()
-                            return s
-
-                        ser = df[colname].astype(str).map(clean_token)
-                        ser = ser[ser.notnull()]
-                        ser = ser[ser != ""]
-                        ser = ser.drop_duplicates()
-                        # Keep only reasonable ticker tokens (letters, numbers, dot, hyphen)
-                        ser = ser[ser.str.match(r"^[A-Z0-9.\-]+$")]
-                        # Filter obvious invalid tokens (common HTML artifacts or placeholders)
-                        blacklist = {"NAN", "N/A", "NA", "", "NONE"}
-                        ser = ser[~ser.isin(blacklist)]
-                        out = pd.DataFrame({"ticker": ser.values})
-                        return out
-        raise RuntimeError("Could not find ticker column in NasdaqTrader tables")
+            raise RuntimeError(f"Failed to fetch NASDAQ-100 list: HTTP {resp.status_code}")
+        payload = resp.json()
+        rows = payload.get("data", {}).get("data", {}).get("rows")
+        if not rows:
+            raise RuntimeError("No rows found in NASDAQ API response")
+        return rows
 
     def discover(self, target_cfg: dict) -> Iterable[dict]:
         """Discover returns an iterable of dicts (to satisfy the job interface).
 
         It also stores a DataFrame in `last_dataframe` matching the spec.
         """
-        html = self._fetch_html()
-        df = self._parse_tables(html)
+        rows = self._fetch_json()
 
         country = target_cfg.get("country", "US")
         index_code = target_cfg.get("index_code", "NDX")
 
+        tickers = []
+        for row in rows:
+            symbol = row.get("symbol", "").strip().upper()
+            if symbol:
+                tickers.append(symbol)
+
+        df = pd.DataFrame({"ticker": tickers})
+        df = df.drop_duplicates(subset=["ticker"])
         df["country"] = country
         df["index_code"] = index_code
-
-        # Keep canonical ordering and types
         df = df[["ticker", "country", "index_code"]].copy()
 
         self.last_dataframe = df
+        logging.info(f"Discovered {len(df)} tickers from Nasdaq API for {index_code}")
 
-        # Return the DataFrame (caller may iterate over records if needed)
         return df
