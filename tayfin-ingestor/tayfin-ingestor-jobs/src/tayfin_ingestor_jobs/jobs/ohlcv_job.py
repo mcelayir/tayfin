@@ -1,7 +1,6 @@
-"""OHLCV job — daily candle ingestion for index members."""
+"""OHLCV job — thin wrapper around the shared ingestion service."""
 from __future__ import annotations
 
-import json
 import logging
 from datetime import date, timedelta
 from typing import Optional
@@ -9,40 +8,18 @@ from typing import Optional
 import pandas as pd
 
 from ..db.engine import get_engine
-from ..repositories.job_run_repository import JobRunRepository
-from ..repositories.job_run_item_repository import JobRunItemRepository
-from ..fundamentals.repositories.instrument_query_repository import InstrumentQueryRepository
-from ..ohlcv.providers.tradingview_provider import TradingViewOhlcvProvider
-from ..ohlcv.providers.yfinance_provider import YfinanceOhlcvProvider
-from ..ohlcv.providers.base import (
-    ProviderError,
-    ProviderEmptyError,
-    TransientProviderError,
-    PermanentProviderError,
-)
-from ..ohlcv.normalize import normalize_ohlcv_df, NormalizationError
-from ..ohlcv.reliability import retry_with_backoff
-from ..ohlcv.repositories.ohlcv_repository import OhlcvRepository
+from ..ohlcv.service import run_ohlcv_ingestion
 
 logger = logging.getLogger(__name__)
-
-# Default exchange when instrument has no exchange in DB
-_DEFAULT_EXCHANGE = "NASDAQ"
 
 
 class OhlcvJob:
     """Daily OHLCV ingestion job.
 
-    Flow per ticker:
-    1. Resolve exchange from ``instruments.exchange`` (fallback: NASDAQ).
-    2. Try TradingView provider with retries (primary).
-    3. Fallback to yfinance with retries if TradingView fails.
-    4. Normalize the DataFrame.
-    5. Upsert into ``ohlcv_daily``.
-    6. Record ``job_run_item`` SUCCESS / FAILED with audit details.
+    Thin wrapper that resolves configuration and the date window,
+    delegates all real work to :func:`run_ohlcv_ingestion`, and
+    prints a CLI-friendly summary table.
     """
-
-    REQUIRED_FIELDS = ("code", "country", "index_code", "timeframe")
 
     def __init__(
         self,
@@ -53,23 +30,14 @@ class OhlcvJob:
         self.engine = engine or get_engine()
         self.target_cfg = target_cfg or {}
         self.global_cfg = global_cfg or {}
-        self.job_run_repo = JobRunRepository(self.engine)
-        self.job_run_item_repo = JobRunItemRepository(self.engine)
-        self.instrument_query_repo = InstrumentQueryRepository(self.engine)
-        self.ohlcv_repo = OhlcvRepository(self.engine)
 
     @classmethod
     def from_config(cls, target_cfg: dict, global_cfg: dict | None = None) -> "OhlcvJob":
         return cls(target_cfg=target_cfg, global_cfg=global_cfg)
 
     # ------------------------------------------------------------------
-    # Config helpers
+    # Date resolution (stays in the wrapper — CLI concern)
     # ------------------------------------------------------------------
-
-    def _validate_config(self) -> None:
-        missing = [f for f in self.REQUIRED_FIELDS if f not in self.target_cfg]
-        if missing:
-            raise ValueError(f"OHLCV config missing required fields: {missing}")
 
     def resolve_date_window(
         self,
@@ -87,96 +55,6 @@ class OhlcvJob:
         return start, end
 
     # ------------------------------------------------------------------
-    # Instrument resolution
-    # ------------------------------------------------------------------
-
-    def _resolve_instruments(self, ticker: Optional[str], job_run_id: str) -> list[dict]:
-        """Return list of dicts with keys: id, ticker, country, exchange."""
-        country = self.target_cfg.get("country", "US")
-
-        if ticker:
-            inst = self.instrument_query_repo.get_instrument_by_ticker(ticker, country)
-            if not inst:
-                raise ValueError(
-                    f"Ticker '{ticker}' not found in instruments for country={country}. "
-                    "Run discovery first."
-                )
-            return [inst]
-
-        index_code = self.target_cfg["index_code"]
-        instruments = self.instrument_query_repo.get_instruments_for_index(
-            index_code=index_code, country=country,
-        )
-        if not instruments:
-            raise ValueError(
-                f"No instruments found for index_code={index_code} country={country}. "
-                "Run discovery first."
-            )
-        return instruments
-
-    def _exchange_for(self, instrument: dict) -> str:
-        """Resolve the exchange for a given instrument.
-
-        Priority: instrument.exchange (DB) → NASDAQ default.
-        """
-        return instrument.get("exchange") or _DEFAULT_EXCHANGE
-
-    # ------------------------------------------------------------------
-    # Provider fetch with retry + fallback
-    # ------------------------------------------------------------------
-
-    def _fetch_with_fallback(
-        self,
-        tv_provider: TradingViewOhlcvProvider,
-        yf_provider: YfinanceOhlcvProvider,
-        exchange: str,
-        symbol: str,
-        start: str,
-        end: str,
-        limit: int,
-    ) -> tuple[pd.DataFrame, str, bool]:
-        """Try TradingView with retries, fall back to yfinance with retries.
-
-        Returns
-        -------
-        (df, provider_name, fallback_used)
-        """
-        tv_label = f"TradingView:{exchange}:{symbol}"
-        yf_label = f"yfinance:{symbol}"
-
-        # 1. TradingView with retries
-        try:
-            df = retry_with_backoff(
-                lambda: tv_provider.fetch_daily(
-                    exchange=exchange,
-                    symbol=symbol,
-                    start_date=start,
-                    end_date=end,
-                    limit=limit,
-                ),
-                label=tv_label,
-            )
-            return df, "tradingview", False
-        except (TransientProviderError, ProviderEmptyError, PermanentProviderError) as tv_err:
-            logger.warning(
-                "TradingView failed for %s:%s — falling back to yfinance: %s",
-                exchange, symbol, tv_err,
-            )
-
-        # 2. yfinance fallback with retries
-        df = retry_with_backoff(
-            lambda: yf_provider.fetch_daily(
-                exchange=exchange,
-                symbol=symbol,
-                start_date=start,
-                end_date=end,
-                limit=limit,
-            ),
-            label=yf_label,
-        )
-        return df, "yfinance", True
-
-    # ------------------------------------------------------------------
     # Run
     # ------------------------------------------------------------------
 
@@ -187,146 +65,32 @@ class OhlcvJob:
         to_date: Optional[str] = None,
         limit_tickers: Optional[int] = None,
     ) -> None:
-        self._validate_config()
         start, end = self.resolve_date_window(from_date, to_date)
-        candle_limit = int(self.target_cfg.get("window_days", 400))
 
-        job_run_id = self.job_run_repo.create(job_name="ohlcv", trigger_type="MANUAL_CLI")
-        logger.info(
-            "OHLCV job started — job_run_id=%s index=%s window=%s→%s ticker=%s",
-            job_run_id,
-            self.target_cfg.get("index_code"),
-            start, end, ticker,
+        summary = run_ohlcv_ingestion(
+            target_name=self.target_cfg.get("index_code", "unknown"),
+            cfg=self.target_cfg,
+            start_date=start,
+            end_date=end,
+            ticker=ticker,
+            limit=limit_tickers,
+            engine=self.engine,
         )
 
-        instruments = self._resolve_instruments(ticker, job_run_id)
-        if limit_tickers is not None and limit_tickers > 0:
-            instruments = instruments[:limit_tickers]
-            logger.info("--limit applied: processing %d of total instruments", len(instruments))
-
-        tv_provider = TradingViewOhlcvProvider()
-        yf_provider = YfinanceOhlcvProvider()
-
-        results: list[dict] = []
-        succeeded = 0
-        failed = 0
-
-        for inst in instruments:
-            t = inst["ticker"]
-            exchange = self._exchange_for(inst)
-            instrument_id = str(inst["id"])
-            provider_used = ""
-            row_count = 0
-            min_date = ""
-            max_date = ""
-            status = "FAILED"
-            fallback_used = False
-            error_msg = ""
-
-            try:
-                # Fetch with retry + fallback
-                raw_df, provider_used, fallback_used = self._fetch_with_fallback(
-                    tv_provider, yf_provider,
-                    exchange=exchange,
-                    symbol=t,
-                    start=str(start),
-                    end=str(end),
-                    limit=candle_limit,
-                )
-
-                # Normalize
-                clean_df = normalize_ohlcv_df(raw_df)
-
-                # Upsert
-                row_count = self.ohlcv_repo.upsert_bulk(
-                    instrument_id=instrument_id,
-                    df=clean_df,
-                    source=provider_used,
-                    job_run_id=job_run_id,
-                )
-
-                min_date = str(clean_df["as_of_date"].min())
-                max_date = str(clean_df["as_of_date"].max())
-                status = "SUCCESS"
-
-                # Audit details
-                details = {
-                    "provider": provider_used,
-                    "fallback": fallback_used,
-                    "rows": row_count,
-                    "date_min": min_date,
-                    "date_max": max_date,
-                }
-                self.job_run_item_repo.upsert(
-                    job_run_id=job_run_id,
-                    item_key=t,
-                    status="SUCCESS",
-                    error_details=json.dumps(details),
-                )
-                succeeded += 1
-
-                logger.info(
-                    "OHLCV ticker=%s provider=%s rows=%d range=%s→%s fallback=%s",
-                    t, provider_used, row_count, min_date, max_date, fallback_used,
-                )
-
-            except Exception as exc:
-                error_msg = str(exc)
-                logger.error("OHLCV ticker=%s failed: %s", t, error_msg)
-                try:
-                    details = {
-                        "provider_attempted": "tradingview+yfinance",
-                        "fallback": True,
-                        "error": error_msg[:500],
-                    }
-                    self.job_run_item_repo.upsert(
-                        job_run_id=job_run_id,
-                        item_key=t,
-                        status="FAILED",
-                        error_summary=error_msg[:200],
-                        error_details=json.dumps(details),
-                    )
-                except Exception:
-                    pass
-                failed += 1
-
-            results.append(
-                {
-                    "ticker": t,
-                    "provider": provider_used,
-                    "rows": row_count,
-                    "min_date": min_date,
-                    "max_date": max_date,
-                    "status": status,
-                }
-            )
-
-        # Finalize job run
-        total = len(instruments)
-        final_status = "FAILED" if failed > 0 else "SUCCESS"
-        self.job_run_repo.finalize(
-            job_run_id=job_run_id,
-            status=final_status,
-            items_total=total,
-            items_succeeded=succeeded,
-            items_failed=failed,
-        )
-
-        # CLI summary table
-        self._print_summary(results, total, succeeded, failed)
+        self._print_summary(summary)
 
     # ------------------------------------------------------------------
     # CLI summary
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _print_summary(
-        results: list[dict], total: int, succeeded: int, failed: int,
-    ) -> None:
-        if results:
-            df = pd.DataFrame(results)
+    def _print_summary(summary: dict) -> None:
+        items = summary["items"]
+        if items:
+            df = pd.DataFrame(items)
             print(df.to_markdown(index=False), flush=True)
         print(
-            f"\nTotal: {total}  Succeeded: {succeeded}  Failed: {failed}",
+            f"\nTotal: {summary['total']}  Succeeded: {summary['succeeded']}  "
+            f"Failed: {summary['failed']}",
             flush=True,
         )

@@ -1,0 +1,9 @@
+jobs:
+  nasdaq-100:
+    code: ndx
+    country: US
+    index_code: NDX
+    timeframe: 1d
+    default_exchange: NASDAQ
+    default_chunk_days: 30
+    window_days: 400

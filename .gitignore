@@ -17,3 +17,6 @@ docs/examples/tradingview_scraper/out/
 
 # tradingview-scraper auto-created export dir
 export/
+
+# Job output / run reports
+**/out/

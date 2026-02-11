@@ -6,6 +6,7 @@ from ..config.loader import load_config
 from ..jobs.discovery_job import DiscoveryJob
 from ..jobs.fundamentals_job import FundamentalsJob
 from ..jobs.ohlcv_job import OhlcvJob
+from ..jobs.ohlcv_backfill_job import OhlcvBackfillJob
 
 app = typer.Typer()
 jobs_app = typer.Typer()
@@ -34,7 +35,19 @@ def list_jobs(config: Optional[Path] = typer.Option(None, help="Path to config Y
         for name, entry in targets.items():
             typer.echo(f"- {name}: code={entry.get('code', '')} index_code={entry.get('index_code','')} timeframe={entry.get('timeframe','')} window_days={entry.get('window_days','')}")
         raise typer.Exit(code=0)
-
+    if kind == "ohlcv_backfill":
+        cfg = load_config(config, default_filename="ohlcv_backfill.yml")
+        targets = cfg.get("jobs", {})
+        if not targets:
+            typer.echo("No ohlcv_backfill targets found in config.")
+            raise typer.Exit(code=0)
+        for name, entry in targets.items():
+            typer.echo(
+                f"- {name}: index_code={entry.get('index_code', '')} "
+                f"default_exchange={entry.get('default_exchange', '')} "
+                f"default_chunk_days={entry.get('default_chunk_days', '')}"
+            )
+        raise typer.Exit(code=0)
     # Default: discovery
     cfg = load_config(config)
     targets = cfg.get("jobs", {}).get("discovery", {})
@@ -54,6 +67,9 @@ def run(
     from_date: Optional[str] = typer.Option(None, "--from", help="Start date override (YYYY-MM-DD)"),
     to_date: Optional[str] = typer.Option(None, "--to", help="End date override (YYYY-MM-DD)"),
     limit: Optional[int] = typer.Option(None, "--limit", help="Process only the first N tickers (for testing)"),
+    days_back: Optional[int] = typer.Option(None, "--days-back", help="(backfill) Days back from today"),
+    chunk_days: Optional[int] = typer.Option(None, "--chunk-days", help="(backfill) Override chunk size in days"),
+    skip_existing: bool = typer.Option(False, "--skip-existing", help="(backfill) Skip dates already present"),
 ):
     """Run a job. Example: jobs run discovery nasdaq-100 --config config/discovery.yml"""
     cfg = None
@@ -87,8 +103,30 @@ def run(
         job = OhlcvJob.from_config(target_cfg, cfg)
         job.run(ticker=ticker, from_date=from_date, to_date=to_date, limit_tickers=limit)
         return
+    elif kind == "ohlcv_backfill":
+        cfg = load_config(config, default_filename="ohlcv_backfill.yml")
+        targets = cfg.get("jobs", {})
+        target_cfg = targets.get(target)
+        if not target_cfg:
+            typer.echo(f"OHLCV backfill target '{target}' not found in config.")
+            raise typer.Exit(code=1)
+        job = OhlcvBackfillJob.from_config(target_cfg, cfg)
+        try:
+            job.run(
+                days_back=days_back,
+                from_date=from_date,
+                to_date=to_date,
+                ticker=ticker,
+                limit=limit,
+                chunk_days=chunk_days,
+                skip_existing=skip_existing,
+            )
+        except ValueError as exc:
+            typer.echo(f"ERROR: {exc}")
+            raise typer.Exit(code=1)
+        return
     else:
-        typer.echo("Unsupported job kind. Use 'discovery', 'fundamentals', or 'ohlcv'.")
+        typer.echo("Unsupported job kind. Use 'discovery', 'fundamentals', 'ohlcv', or 'ohlcv_backfill'.")
         raise typer.Exit(code=1)
     # result is a list of dicts with ticker,country,index_code
     import pandas as pd

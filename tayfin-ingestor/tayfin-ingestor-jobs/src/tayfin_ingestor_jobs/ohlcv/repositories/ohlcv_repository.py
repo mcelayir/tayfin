@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import date as date_type
 
 import pandas as pd
 from sqlalchemy import text
@@ -91,3 +92,22 @@ class OhlcvRepository:
             len(params), instrument_id, source,
         )
         return len(params)
+
+    def get_date_bounds(
+        self,
+        instrument_id: str,
+    ) -> tuple[date_type | None, date_type | None]:
+        """Return ``(min_date, max_date)`` for existing rows of an instrument.
+
+        Returns ``(None, None)`` when no data exists.
+        """
+        stmt = text("""
+            SELECT MIN(as_of_date), MAX(as_of_date)
+            FROM tayfin_ingestor.ohlcv_daily
+            WHERE instrument_id = :instrument_id
+        """)
+        with self.engine.connect() as conn:
+            row = conn.execute(stmt, {"instrument_id": instrument_id}).fetchone()
+        if row is None or row[0] is None:
+            return None, None
+        return row[0], row[1]
