@@ -1,5 +1,7 @@
 from typing import List
 import pandas as pd
+import logging
+from stockdex import Ticker
 from ..db.engine import get_engine
 from ..repositories.job_run_repository import JobRunRepository
 from ..repositories.job_run_item_repository import JobRunItemRepository
@@ -21,6 +23,24 @@ class DiscoveryJob:
     @classmethod
     def from_config(cls, target_cfg: dict, global_cfg: dict | None = None):
         return cls(target_cfg=target_cfg, global_cfg=global_cfg)
+
+    def _get_exchange_for_ticker(self, ticker: str) -> str | None:
+        """Get exchange for a ticker using Stockdex yahoo_api_price with better mapping."""
+        try:
+            t = Ticker(ticker)
+            data = t.yahoo_api_price()
+            if isinstance(data, pd.DataFrame) and 'exchangeName' in data.columns and not data['exchangeName'].empty:
+                exchange_code = str(data['exchangeName'].iloc[0]).strip().upper()
+                if exchange_code and exchange_code not in ('YHD', ''):  # Skip historical marker and empty
+                    exchange_map = {
+                        "NMS": "NASDAQ", "NYQ": "NYSE", "ASE": "AMEX", 
+                        "NCM": "NASDAQ", "PNK": "OTC", "OTC": "OTC",
+                        "PCX": "NYSE", "NGM": "NASDAQ", "BTS": "OTC"
+                    }
+                    return exchange_map.get(exchange_code, exchange_code)
+        except Exception as e:
+            logging.info(f"Exchange not found for {ticker}")
+        return None
 
     def run(self) -> List[dict]:
         # Create job run
@@ -48,7 +68,10 @@ class DiscoveryJob:
             country = it.get("country", self.target_cfg.get("country"))
             index_code = it.get("index_code", self.target_cfg.get("index_code"))
             try:
-                instrument_id = self.instrument_repo.upsert(ticker=ticker, country=country, instrument_type=it.get("instrument_type"), created_by_job_run_id=job_run_id)
+                exchange = self._get_exchange_for_ticker(ticker)
+                if exchange:
+                    logging.info(f"Found exchange for {ticker}: {exchange}")
+                instrument_id = self.instrument_repo.upsert(ticker=ticker, country=country, instrument_type=it.get("instrument_type"), exchange=exchange, created_by_job_run_id=job_run_id)
                 membership_id = self.index_membership_repo.upsert(index_code=index_code, instrument_id=instrument_id, country=country, effective_date=it.get("effective_date"), created_by_job_run_id=job_run_id)
                 self.job_run_item_repo.upsert(job_run_id=job_run_id, item_key=ticker, status="SUCCESS")
                 results.append({"ticker": ticker, "country": country, "index_code": index_code, "_status": "SUCCESS"})
