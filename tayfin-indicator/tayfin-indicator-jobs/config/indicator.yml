@@ -10,4 +10,7 @@ jobs:
               window: 50
           - key: sma
             params:
+              window: 150
+          - key: sma
+            params:
               window: 200
