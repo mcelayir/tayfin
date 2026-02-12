@@ -14,3 +14,13 @@ jobs:
           - key: sma
             params:
               window: 200
+
+  atr_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: atr
+            params:
+              window: 20

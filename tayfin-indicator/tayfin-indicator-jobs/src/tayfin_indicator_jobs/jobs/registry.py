@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 # Lazy imports to avoid circular dependencies; resolved at look-up time.
 _REGISTRY: dict[str, str] = {
     "ma_compute": "ma_compute_job.MaComputeJob",
+    "atr_compute": "atr_compute_job.AtrComputeJob",
 }
 
 
