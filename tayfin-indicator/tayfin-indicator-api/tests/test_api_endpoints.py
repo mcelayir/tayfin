@@ -125,6 +125,11 @@ class TestIndicatorsLatest:
         assert resp.status_code == 404
         assert resp.get_json()["error"] == "not_found"
 
+    def test_invalid_window_returns_400(self, client):
+        resp = client.get("/indicators/latest?ticker=AAPL&indicator=sma&window=abc")
+        assert resp.status_code == 400
+        assert resp.get_json()["error"] == "invalid_window"
+
 
 # ── /indicators/range ────────────────────────────────────────────────
 
@@ -187,6 +192,14 @@ class TestIndicatorsRange:
         assert resp.status_code == 200
         assert resp.get_json()["items"] == []
 
+    def test_invalid_window_returns_400(self, client):
+        resp = client.get(
+            "/indicators/range?ticker=AAPL&indicator=sma"
+            "&from=2025-01-01&to=2026-02-12&window=invalid"
+        )
+        assert resp.status_code == 400
+        assert resp.get_json()["error"] == "invalid_window"
+
 
 # ── /indicators/index/latest ────────────────────────────────────────
 
@@ -220,3 +233,10 @@ class TestIndicatorsIndexLatest:
         )
         assert resp.status_code == 200
         assert resp.get_json()["items"] == []
+
+    def test_invalid_window_returns_400(self, client):
+        resp = client.get(
+            "/indicators/index/latest?index_code=NDX&indicator=sma&window=bad"
+        )
+        assert resp.status_code == 400
+        assert resp.get_json()["error"] == "invalid_window"
