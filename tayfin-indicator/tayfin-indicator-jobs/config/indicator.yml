@@ -34,3 +34,13 @@ jobs:
           - key: vol_sma
             params:
               window: 50
+
+  rolling_high_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: rolling_high
+            params:
+              window: 252
