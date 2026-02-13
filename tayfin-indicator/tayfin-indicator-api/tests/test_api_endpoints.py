@@ -58,7 +58,7 @@ def _patch_repo(monkeypatch, *, latest=_SEED_ROW, range_rows=_RANGE_ROWS, index_
         "tayfin_indicator_api.app.get_index_latest",
         lambda engine, indicator_key, params_json=None, tickers=None: index_rows,
     )
-    
+
     # Mock IngestorClient to return AAPL and MSFT for NDX index
     class FakeIngestorClient:
         def get_index_members(self, index_code):
