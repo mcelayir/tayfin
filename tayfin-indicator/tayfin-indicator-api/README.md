@@ -75,11 +75,11 @@ curl "http://localhost:8010/indicators/range?ticker=AAPL&indicator=sma&window=50
 
 ### GET /indicators/index/latest
 
-Return the latest indicator value per ticker across all tickers with data.
+Return the latest indicator value per ticker for all tickers in the specified index.
 
 | Param | Required | Description |
 |---|---|---|
-| `index_code` | yes | index label (e.g. `NDX`) — used in response only |
+| `index_code` | yes | index label (e.g. `NDX`) — filters results to index members |
 | `indicator` | yes | e.g. `sma` |
 | `window` | no | integer window size |
 

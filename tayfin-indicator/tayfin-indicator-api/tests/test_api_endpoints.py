@@ -36,7 +36,7 @@ _INDEX_ROWS = [
 
 
 def _patch_repo(monkeypatch, *, latest=_SEED_ROW, range_rows=_RANGE_ROWS, index_rows=_INDEX_ROWS):
-    """Monkeypatch all three repository functions + ping_db + get_engine."""
+    """Monkeypatch all three repository functions + ping_db + get_engine + IngestorClient."""
 
     monkeypatch.setattr(
         "tayfin_indicator_api.app.ping_db",
@@ -56,7 +56,19 @@ def _patch_repo(monkeypatch, *, latest=_SEED_ROW, range_rows=_RANGE_ROWS, index_
     )
     monkeypatch.setattr(
         "tayfin_indicator_api.app.get_index_latest",
-        lambda engine, indicator_key, params_json=None: index_rows,
+        lambda engine, indicator_key, params_json=None, tickers=None: index_rows,
+    )
+    
+    # Mock IngestorClient to return AAPL and MSFT for NDX index
+    class FakeIngestorClient:
+        def get_index_members(self, index_code):
+            if index_code == "NDX":
+                return ["AAPL", "MSFT"]
+            return []
+    
+    monkeypatch.setattr(
+        "tayfin_indicator_api.app.IngestorClient",
+        lambda: FakeIngestorClient(),
     )
 
 

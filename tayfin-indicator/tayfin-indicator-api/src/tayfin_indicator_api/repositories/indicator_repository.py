@@ -90,9 +90,11 @@ def get_index_latest(
     engine,
     indicator_key: str,
     params_json: dict | None = None,
+    tickers: list[str] | None = None,
 ) -> list[dict]:
-    """Return the latest indicator row per ticker (all tickers that have data).
+    """Return the latest indicator row per ticker.
 
+    If *tickers* is provided, only returns data for those tickers.
     Uses a window function to pick the most recent row per ticker.
     """
     params_filter = ""
@@ -101,6 +103,12 @@ def get_index_latest(
     if params_json is not None:
         params_filter = "AND params_json = CAST(:params_json AS jsonb)"
         bind["params_json"] = json.dumps(params_json, sort_keys=True)
+
+    ticker_filter = ""
+    if tickers is not None and len(tickers) > 0:
+        # Use ANY to filter by ticker list
+        ticker_filter = "AND ticker = ANY(:tickers)"
+        bind["tickers"] = tickers
 
     sql = text(
         f"""
@@ -111,6 +119,7 @@ def get_index_latest(
             FROM tayfin_indicator.indicator_series
             WHERE indicator_key = :indicator_key
             {params_filter}
+            {ticker_filter}
         ) sub
         WHERE rn = 1
         ORDER BY ticker
