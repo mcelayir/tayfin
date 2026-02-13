@@ -100,7 +100,9 @@ class IngestorClient:
                 last_exc = exc
                 self._sleep(attempt)
         # Exhausted retries
-        raise last_exc  # type: ignore[misc]
+        if last_exc is not None:
+            raise last_exc
+        raise RuntimeError("Exhausted retries without a captured exception")
 
     def _sleep(self, attempt: int) -> None:
         time.sleep(self.backoff_s * attempt)
