@@ -19,6 +19,7 @@ import typer
 
 from ..clients.ingestor_client import IngestorClient
 from ..db.engine import get_engine
+from ..indicator.compute import compute_rolling_high
 from ..repositories.indicator_series_repository import IndicatorSeriesRepository
 from ..repositories.job_run_item_repository import JobRunItemRepository
 from ..repositories.job_run_repository import JobRunRepository
@@ -188,7 +189,7 @@ class RollingHighComputeJob:
             for window in rh_windows:
                 if len(df) < window:
                     continue
-                rh_series = df["close"].astype(float).rolling(window=window).max()
+                rh_series = compute_rolling_high(df["close"], window)
                 params_json = json.dumps({"window": window}, sort_keys=True)
 
                 for idx in range(window - 1, len(df)):

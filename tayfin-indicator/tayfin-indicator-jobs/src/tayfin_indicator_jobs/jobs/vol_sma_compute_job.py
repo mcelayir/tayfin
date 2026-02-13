@@ -19,6 +19,7 @@ import typer
 
 from ..clients.ingestor_client import IngestorClient
 from ..db.engine import get_engine
+from ..indicator.compute import compute_vol_sma
 from ..repositories.indicator_series_repository import IndicatorSeriesRepository
 from ..repositories.job_run_item_repository import JobRunItemRepository
 from ..repositories.job_run_repository import JobRunRepository
@@ -201,7 +202,7 @@ class VolSmaComputeJob:
             for window in vol_sma_windows:
                 if len(df) < window:
                     continue
-                vol_sma_series = volume.rolling(window=window).mean()
+                vol_sma_series = compute_vol_sma(volume, window)
                 params_json = json.dumps({"window": window}, sort_keys=True)
 
                 for idx in range(window - 1, len(df)):

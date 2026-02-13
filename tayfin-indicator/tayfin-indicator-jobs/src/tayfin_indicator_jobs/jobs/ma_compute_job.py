@@ -19,6 +19,7 @@ import typer
 
 from ..clients.ingestor_client import IngestorClient
 from ..db.engine import get_engine
+from ..indicator.compute import compute_sma
 from ..repositories.indicator_series_repository import IndicatorSeriesRepository
 from ..repositories.job_run_item_repository import JobRunItemRepository
 from ..repositories.job_run_repository import JobRunRepository
@@ -184,7 +185,7 @@ class MaComputeJob:
             for window in sma_windows:
                 if len(df) < window:
                     continue
-                sma_series = df["close"].rolling(window=window).mean()
+                sma_series = compute_sma(df["close"], window)
                 params_json = json.dumps({"window": window}, sort_keys=True)
 
                 for idx in range(window - 1, len(df)):

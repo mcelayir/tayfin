@@ -19,6 +19,7 @@ import typer
 
 from ..clients.ingestor_client import IngestorClient
 from ..db.engine import get_engine
+from ..indicator.compute import compute_atr
 from ..repositories.indicator_series_repository import IndicatorSeriesRepository
 from ..repositories.job_run_item_repository import JobRunItemRepository
 from ..repositories.job_run_repository import JobRunRepository
@@ -184,32 +185,16 @@ class AtrComputeJob:
                 result["error"] = "insufficient candles for TR"
                 return result
 
-            # Compute True Range
-            # TR_t = max(high_t - low_t,
-            #            abs(high_t - close_{t-1}),
-            #            abs(low_t  - close_{t-1}))
+            # Compute ATR via extracted helper
             high = df["high"].astype(float)
             low = df["low"].astype(float)
             close = df["close"].astype(float)
-            prev_close = close.shift(1)
-
-            tr = pd.concat(
-                [
-                    high - low,
-                    (high - prev_close).abs(),
-                    (low - prev_close).abs(),
-                ],
-                axis=1,
-            ).max(axis=1)
-
-            # First row has NaN prev_close → use high-low as TR
-            tr.iloc[0] = high.iloc[0] - low.iloc[0]
 
             rows_to_upsert: list[dict] = []
 
             for window in atr_windows:
                 # ATR = simple moving average of TR over W days
-                atr_series = tr.rolling(window=window).mean()
+                atr_series = compute_atr(high, low, close, window)
                 params_json = json.dumps({"window": window}, sort_keys=True)
 
                 for idx in range(len(df)):
