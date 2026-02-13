@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 _REGISTRY: dict[str, str] = {
     "ma_compute": "ma_compute_job.MaComputeJob",
     "atr_compute": "atr_compute_job.AtrComputeJob",
+    "vol_sma_compute": "vol_sma_compute_job.VolSmaComputeJob",
 }
 
 
