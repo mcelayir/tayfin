@@ -30,6 +30,7 @@ services:
       - ../tayfin-ingestor/db/migrations:/flyway/sql/tayfin-ingestor:ro
       - ../tayfin-screener/db/migrations:/flyway/sql/tayfin-screener:ro
       - ../tayfin-analyzer/db/migrations:/flyway/sql/tayfin-analyzer:ro
+      - ../tayfin-indicator/db/migrations:/flyway/sql/tayfin-indicator:ro
       - ./flyway-run.sh:/flyway-run.sh:ro
     entrypoint: ["/bin/bash"]
     command: ["/flyway-run.sh"]

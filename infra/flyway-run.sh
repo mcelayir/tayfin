@@ -14,4 +14,7 @@ FLYWAY_LOCATIONS=filesystem:/flyway/sql/tayfin-screener FLYWAY_DEFAULT_SCHEMA=ta
 echo "Running Flyway for tayfin_analyzer"
 FLYWAY_LOCATIONS=filesystem:/flyway/sql/tayfin-analyzer FLYWAY_DEFAULT_SCHEMA=tayfin_analyzer flyway migrate
 
+echo "Running Flyway for tayfin_indicator"
+FLYWAY_LOCATIONS=filesystem:/flyway/sql/tayfin-indicator FLYWAY_DEFAULT_SCHEMA=tayfin_indicator flyway migrate
+
 echo "Flyway migrations completed"

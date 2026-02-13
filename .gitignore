@@ -16,7 +16,7 @@ __pycache__/
 docs/examples/tradingview_scraper/out/
 
 # tradingview-scraper auto-created export dir
-export/
+**/export/
 
 # Job output / run reports
 **/out/

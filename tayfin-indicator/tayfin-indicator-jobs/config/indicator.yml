@@ -1,0 +1,46 @@
+jobs:
+  ma_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: sma
+            params:
+              window: 50
+          - key: sma
+            params:
+              window: 150
+          - key: sma
+            params:
+              window: 200
+
+  atr_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: atr
+            params:
+              window: 20
+
+  vol_sma_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: vol_sma
+            params:
+              window: 50
+
+  rolling_high_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: rolling_high
+            params:
+              window: 252
