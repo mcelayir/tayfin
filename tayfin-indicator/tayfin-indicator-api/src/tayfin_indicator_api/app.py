@@ -27,13 +27,17 @@ def _parse_date(value: str) -> date:
 
 
 def _build_params(window: str | None) -> dict | None:
-    """Build params_json dict from optional window query param."""
+    """Build params_json dict from optional window query param.
+    
+    Raises:
+        ValueError: If window is provided but not a valid integer.
+    """
     if window is None:
         return None
     try:
         return {"window": int(window)}
-    except (ValueError, TypeError):
-        return None
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f"invalid window parameter: {window}") from exc
 
 
 def create_app():
@@ -64,7 +68,11 @@ def create_app():
         if not ticker or not indicator:
             return jsonify({"error": "missing_params", "detail": "ticker and indicator are required"}), 400
 
-        params = _build_params(request.args.get("window"))
+        try:
+            params = _build_params(request.args.get("window"))
+        except ValueError as exc:
+            return jsonify({"error": "invalid_window", "detail": str(exc)}), 400
+
         engine = get_engine()
         row = get_latest(engine, ticker.upper(), indicator, params)
         if row is None:
@@ -109,7 +117,11 @@ def create_app():
         if (to_date - from_date).days > _MAX_RANGE_DAYS:
             return jsonify({"error": "range_too_large", "detail": f"max range is {_MAX_RANGE_DAYS} days (~5 years)"}), 400
 
-        params = _build_params(request.args.get("window"))
+        try:
+            params = _build_params(request.args.get("window"))
+        except ValueError as exc:
+            return jsonify({"error": "invalid_window", "detail": str(exc)}), 400
+
         engine = get_engine()
         rows = get_range(engine, ticker.upper(), indicator, from_date, to_date, params)
 
@@ -144,7 +156,11 @@ def create_app():
         if not index_code or not indicator:
             return jsonify({"error": "missing_params", "detail": "index_code and indicator are required"}), 400
 
-        params = _build_params(request.args.get("window"))
+        try:
+            params = _build_params(request.args.get("window"))
+        except ValueError as exc:
+            return jsonify({"error": "invalid_window", "detail": str(exc)}), 400
+
         engine = get_engine()
         rows = get_index_latest(engine, indicator, params)
 
