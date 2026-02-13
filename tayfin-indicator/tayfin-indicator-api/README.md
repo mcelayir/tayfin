@@ -38,3 +38,52 @@ flask --app tayfin_indicator_api.app run --port 8010
 curl http://localhost:8010/health
 # {"status":"ok"}
 ```
+
+## Endpoints
+
+### GET /indicators/latest
+
+Return the most recent indicator value for a single ticker.
+
+| Param | Required | Description |
+|---|---|---|
+| `ticker` | yes | e.g. `AAPL` |
+| `indicator` | yes | e.g. `sma`, `atr`, `vol_sma`, `rolling_high` |
+| `window` | no | integer window size (e.g. `50`) |
+
+```bash
+curl "http://localhost:8010/indicators/latest?ticker=AAPL&indicator=sma&window=50"
+# {"ticker":"AAPL","as_of_date":"2026-02-12","indicator":"sma","params":{"window":50},"value":268.081,"source":"computed"}
+```
+
+### GET /indicators/range
+
+Return indicator values for a date range (max ~5 years).
+
+| Param | Required | Description |
+|---|---|---|
+| `ticker` | yes | e.g. `AAPL` |
+| `indicator` | yes | e.g. `sma` |
+| `from` | yes | start date `YYYY-MM-DD` |
+| `to` | yes | end date `YYYY-MM-DD` |
+| `window` | no | integer window size |
+
+```bash
+curl "http://localhost:8010/indicators/range?ticker=AAPL&indicator=sma&window=50&from=2025-01-01&to=2026-02-12"
+# {"ticker":"AAPL","indicator":"sma","params":{"window":50},"from":"2025-01-01","to":"2026-02-12","items":[...]}
+```
+
+### GET /indicators/index/latest
+
+Return the latest indicator value per ticker across all tickers with data.
+
+| Param | Required | Description |
+|---|---|---|
+| `index_code` | yes | index label (e.g. `NDX`) — used in response only |
+| `indicator` | yes | e.g. `sma` |
+| `window` | no | integer window size |
+
+```bash
+curl "http://localhost:8010/indicators/index/latest?index_code=NDX&indicator=sma&window=50"
+# {"index_code":"NDX","indicator":"sma","params":{"window":50},"items":[{"ticker":"AAPL","as_of_date":"2026-02-12","value":268.081}]}
+```
