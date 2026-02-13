@@ -8,6 +8,7 @@ from datetime import date, timedelta
 
 from flask import Flask, jsonify, request
 
+from .clients.ingestor_client import IngestorClient
 from .db.engine import get_engine
 from .repositories.indicator_repository import (
     get_index_latest,
@@ -162,7 +163,13 @@ def create_app():
             return jsonify({"error": "invalid_window", "detail": str(exc)}), 400
 
         engine = get_engine()
-        rows = get_index_latest(engine, indicator, params)
+        
+        # Fetch index members from the ingestor API
+        ingestor = IngestorClient()
+        tickers = ingestor.get_index_members(index_code)
+        
+        # Query indicators filtered by index membership
+        rows = get_index_latest(engine, indicator, params, tickers=tickers)
 
         items = [
             {
