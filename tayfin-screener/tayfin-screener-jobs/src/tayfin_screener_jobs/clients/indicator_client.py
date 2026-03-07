@@ -14,7 +14,7 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_BASE_URL = "http://localhost:8001"
+_DEFAULT_BASE_URL = "http://localhost:8010"
 _MAX_RETRIES = 3
 _BACKOFF_BASE = 1.0  # seconds
 

@@ -15,7 +15,6 @@ Architecture rules satisfied
 from __future__ import annotations
 
 import logging
-import traceback
 from datetime import date, timedelta
 from uuid import UUID
 
@@ -169,8 +168,7 @@ class VcpScreenJob:
                     status="FAILED",
                     error_summary=msg,
                 )
-                logger.warning("  %s  FAILED  %s", tkr, msg)
-                traceback.print_exc()
+                logger.warning("  %s  FAILED  %s", tkr, msg, exc_info=True)
 
         # --- audit: finalise job run ---
         total = succeeded + failed
@@ -224,7 +222,8 @@ class VcpScreenJob:
         )
 
         # -- 3  Contraction detection (pure math) --------------------------
-        contraction_seq = detect_contractions(df["high"], df["low"])
+        df_indexed = df.set_index("as_of_date")
+        contraction_seq = detect_contractions(df_indexed["high"], df_indexed["low"])
         contraction_features = contraction_seq.to_dict()
 
         # -- 4  Volatility / trend features --------------------------------
@@ -243,7 +242,6 @@ class VcpScreenJob:
         volume_values = df["volume"].tolist()
         volume_features = extract_volume_features(
             volume_values=volume_values,
-            vol_sma_50_current=latest.get("vol_sma_50", 0.0),
             vol_sma_50_values=ranges.get("vol_sma_50", []),
         )
 
@@ -271,6 +269,7 @@ class VcpScreenJob:
             "pattern_detected": scoring_result.pattern_detected,
             "features_json": features_json,
             "created_by_job_run_id": str(job_run_id),
+            "updated_by_job_run_id": str(job_run_id),
         }
 
     # ------------------------------------------------------------------

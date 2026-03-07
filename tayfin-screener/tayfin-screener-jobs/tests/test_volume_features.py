@@ -153,7 +153,6 @@ class TestExtractVolumeFeatures:
         vol_sma_values = [900_000, 850_000, 800_000, 700_000, 600_000]
         result = extract_volume_features(
             volume_values=volume,
-            vol_sma_50_current=600_000,
             vol_sma_50_values=vol_sma_values,
         )
         assert result["volume_dryup"] is True
@@ -167,7 +166,6 @@ class TestExtractVolumeFeatures:
         vol_sma_values = [1_000_000] * 10
         result = extract_volume_features(
             volume_values=volume,
-            vol_sma_50_current=1_000_000,
             vol_sma_50_values=vol_sma_values,
         )
         assert result["volume_dryup"] is False
@@ -177,7 +175,6 @@ class TestExtractVolumeFeatures:
     def test_all_keys_present(self):
         result = extract_volume_features(
             volume_values=[100_000, 90_000, 80_000],
-            vol_sma_50_current=85_000,
             vol_sma_50_values=[95_000, 90_000, 85_000],
         )
         expected_keys = {
@@ -189,7 +186,6 @@ class TestExtractVolumeFeatures:
     def test_values_are_rounded(self):
         result = extract_volume_features(
             volume_values=[333_333, 222_222, 111_111],
-            vol_sma_50_current=111_111,
             vol_sma_50_values=[333_333, 222_222, 111_111],
         )
         for key in ("volume_ratio", "volume_trend", "volume_contraction_pct"):
@@ -203,12 +199,10 @@ class TestExtractVolumeFeatures:
         volume = [1_000_000, 800_000, 600_000, 400_000, 200_000]
         vol_sma = [900_000, 700_000, 500_000, 300_000, 200_000]
         r1 = extract_volume_features(
-            volume_values=volume, vol_sma_50_current=200_000,
-            vol_sma_50_values=vol_sma, volume_trend_window=3,
+            volume_values=volume, vol_sma_50_values=vol_sma, volume_trend_window=3,
         )
         r2 = extract_volume_features(
-            volume_values=volume, vol_sma_50_current=200_000,
-            vol_sma_50_values=vol_sma, volume_trend_window=5,
+            volume_values=volume, vol_sma_50_values=vol_sma, volume_trend_window=5,
         )
         assert r1["volume_trend"] != r2["volume_trend"]
 
@@ -216,7 +210,6 @@ class TestExtractVolumeFeatures:
         """Short input doesn't crash."""
         result = extract_volume_features(
             volume_values=[500_000],
-            vol_sma_50_current=500_000,
             vol_sma_50_values=[500_000],
         )
         assert result["volume_dryup"] is False

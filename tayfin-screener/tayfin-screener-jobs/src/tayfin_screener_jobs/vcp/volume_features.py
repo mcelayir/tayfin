@@ -109,7 +109,6 @@ def compute_volume_contraction_pct(
 def extract_volume_features(
     *,
     volume_values: list[float],
-    vol_sma_50_current: float,
     vol_sma_50_values: list[float],
     volume_trend_window: int = 10,
     dryup_threshold: float = 0.7,
@@ -120,8 +119,6 @@ def extract_volume_features(
     ----------
     volume_values : list[float]
         Raw daily volume series (most recent at end).
-    vol_sma_50_current : float
-        Current 50-day volume SMA value.
     vol_sma_50_values : list[float]
         Time-series of vol_sma_50 values (most recent at end).
     volume_trend_window : int

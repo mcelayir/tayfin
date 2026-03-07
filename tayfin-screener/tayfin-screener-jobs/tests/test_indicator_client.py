@@ -202,7 +202,7 @@ class TestConfig:
 
     def test_default_base_url(self):
         client = IndicatorClient()
-        assert client.base_url == "http://localhost:8001"
+        assert client.base_url == "http://localhost:8010"
 
     @patch.dict("os.environ", {"TAYFIN_INDICATOR_API_BASE_URL": "http://indicator:9001/"})
     def test_base_url_from_env(self):
