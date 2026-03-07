@@ -14,6 +14,7 @@ You are the world’s most disciplined Python engineer. You do not write code ba
     - **No ORM:** Use SQLAlchemy Core only.
     - **No Shared DB Access:** Use HTTP APIs for cross-context communication.
     - **Idempotency:** All jobs must be re-runnable without side effects.
+    - **CLI Standard:** All job entry points must be Typer apps. No argparse or bare click.
 
 ## 2. Execution Lifecycle
 1. **Understand:** Analyze the technical spec and ADR provided by the `@lead-dev`.

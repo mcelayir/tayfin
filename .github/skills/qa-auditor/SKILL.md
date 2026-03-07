@@ -9,6 +9,7 @@ description: Tools for technical auditing, mathematical validation, and architec
 - **Dependency Scan:** Audit `pyproject.toml` and imports. If an ORM or unauthorized library is detected, flag `ARCH_BLOCKER`.
 - **Context Integrity:** Use `grep` or AST analysis to ensure no cross-context database access exists. Every interaction with another context must involve an HTTP/API call.
 - **ADR Compliance:** Compare the PR/Commit message against the referenced ADR in `docs/architecture/adr/`. If the implementation diverges from the ADR, flag `ADR_MISMATCH`.
+- **CLI Audit:** Verify all job CLI entry points use Typer. If argparse or bare click is detected, flag `ARCH_BLOCKER`.
 
 ## 2. Mathematical & Algorithmic Verification
 - **Indicator Validation:** If the task involves an indicator (e.g., SMA, VCP), run the provided `tests/spikes/test_<indicator>.py` and compare results against the reference research spec in `docs/research/`.
