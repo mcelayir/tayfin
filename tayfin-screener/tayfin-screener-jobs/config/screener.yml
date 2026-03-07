@@ -1,4 +1,23 @@
-# Placeholder config for screener jobs.
-# Targets will be populated as screening algorithms are implemented.
+# tayfin-screener-jobs configuration
+# Structure: jobs.<job_name>.targets.<target_name>
 
-jobs: {}
+jobs:
+  vcp_screen:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        lookback_days: 365
+        indicators:
+          - key: sma
+            window: 50
+          - key: sma
+            window: 150
+          - key: sma
+            window: 200
+          - key: atr
+            window: 20
+          - key: vol_sma
+            window: 50
+          - key: rolling_high
+            window: 252

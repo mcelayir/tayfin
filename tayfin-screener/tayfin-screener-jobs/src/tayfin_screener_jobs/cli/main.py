@@ -6,6 +6,7 @@ from typing import Optional
 import typer
 
 from ..config.loader import load_config
+from ..jobs.registry import get_job_class
 
 app = typer.Typer()
 jobs_app = typer.Typer()
@@ -53,6 +54,15 @@ def run_job(
         typer.echo(f"Target '{target}' not found under job '{job_name}'.")
         raise typer.Exit(code=1)
 
-    # TODO: Wire job registry and dispatch here once jobs are implemented.
-    typer.echo(f"Job '{job_name}' target '{target}' — not yet implemented.")
-    raise typer.Exit(code=1)
+    # Resolve job class from registry
+    try:
+        job_cls = get_job_class(job_name)
+    except KeyError as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(code=1)
+    except (ImportError, AttributeError) as exc:
+        typer.echo(f"Failed to load job class for '{job_name}': {exc}")
+        raise typer.Exit(code=1)
+
+    job = job_cls.from_config(target_name=target, target_cfg=target_cfg, full_cfg=cfg)
+    job.run(ticker=ticker, limit=limit)
