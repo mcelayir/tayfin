@@ -101,7 +101,7 @@ class VcpResultRepository:
                 features_json         = EXCLUDED.features_json,
                 instrument_id         = EXCLUDED.instrument_id,
                 updated_at            = EXCLUDED.updated_at,
-                updated_by_job_run_id = EXCLUDED.created_by_job_run_id
+                updated_by_job_run_id = EXCLUDED.updated_by_job_run_id
         """)
 
         with self._engine.begin() as conn:

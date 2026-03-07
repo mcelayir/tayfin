@@ -15,7 +15,6 @@ Architecture rules satisfied
 from __future__ import annotations
 
 import logging
-import traceback
 from datetime import date, timedelta
 from uuid import UUID
 
@@ -169,8 +168,7 @@ class VcpScreenJob:
                     status="FAILED",
                     error_summary=msg,
                 )
-                logger.warning("  %s  FAILED  %s", tkr, msg)
-                traceback.print_exc()
+                logger.warning("  %s  FAILED  %s", tkr, msg, exc_info=True)
 
         # --- audit: finalise job run ---
         total = succeeded + failed
@@ -271,6 +269,7 @@ class VcpScreenJob:
             "pattern_detected": scoring_result.pattern_detected,
             "features_json": features_json,
             "created_by_job_run_id": str(job_run_id),
+            "updated_by_job_run_id": str(job_run_id),
         }
 
     # ------------------------------------------------------------------
