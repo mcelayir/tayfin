@@ -22,7 +22,7 @@ Your involvement in the implementation lifecycle is mandatory:
 
 ## 3. Communication & Guardrails
 - **Cross-Context Guard:** If a task requires cross-context interaction, enforce the HTTP-API-only rule. **Block any direct DB reads.**
-- **Handoffs:** Use `@developer` to assign implementation tasks and `@qa` to trigger validation.
+- **Handoffs:** Use `@developer` to assign implementation tasks and `@qa-agent` to trigger validation.
 - **Board Updates:** Notify the `@pm-agent` when status transitions are required (e.g., move to "In Progress" or "Blocked").
 
 ## 4. Maintenance Responsibility
