@@ -13,9 +13,18 @@ class TestRegistry:
     def test_vcp_screen_registered(self):
         assert "vcp_screen" in _REGISTRY
 
+    def test_mcsa_screen_registered(self):
+        assert "mcsa_screen" in _REGISTRY
+
     def test_get_job_class_returns_class(self):
         cls = get_job_class("vcp_screen")
         assert cls.__name__ == "VcpScreenJob"
+        assert hasattr(cls, "from_config")
+        assert hasattr(cls, "run")
+
+    def test_get_mcsa_job_class(self):
+        cls = get_job_class("mcsa_screen")
+        assert cls.__name__ == "McsaScreenJob"
         assert hasattr(cls, "from_config")
         assert hasattr(cls, "run")
 

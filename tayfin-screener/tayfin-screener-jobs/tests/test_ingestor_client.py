@@ -213,3 +213,48 @@ class TestConfig:
     def test_custom_timeout(self):
         client = IngestorClient(timeout_s=5.0)
         assert client.timeout == httpx.Timeout(5.0)
+
+
+# ------------------------------------------------------------------
+# get_fundamentals_latest
+# ------------------------------------------------------------------
+
+class TestGetFundamentalsLatest:
+    """Tests for get_fundamentals_latest."""
+
+    @patch("tayfin_screener_jobs.clients.ingestor_client.httpx.get")
+    def test_success_returns_dict(self, mock_get):
+        mock_get.return_value = _mock_response(200, {
+            "revenue_growth_yoy": 0.25,
+            "earnings_growth_yoy": 0.30,
+            "roe": 0.20,
+            "net_margin": 0.12,
+            "debt_equity": 0.5,
+        })
+        client = IngestorClient(base_url="http://test:8000")
+        result = client.get_fundamentals_latest("AAPL")
+
+        assert result is not None
+        assert result["revenue_growth_yoy"] == 0.25
+        assert result["roe"] == 0.20
+        _, kwargs = mock_get.call_args
+        assert kwargs["params"]["symbol"] == "AAPL"
+        assert kwargs["params"]["country"] == "US"
+        assert kwargs["params"]["source"] == "stockdex"
+
+    @patch("tayfin_screener_jobs.clients.ingestor_client.httpx.get")
+    def test_404_returns_none(self, mock_get):
+        mock_get.return_value = _mock_response(404)
+        client = IngestorClient(base_url="http://test:8000")
+        result = client.get_fundamentals_latest("NOSYMBOL")
+        assert result is None
+
+    @patch("tayfin_screener_jobs.clients.ingestor_client.httpx.get")
+    def test_custom_country_and_source(self, mock_get):
+        mock_get.return_value = _mock_response(200, {})
+        client = IngestorClient(base_url="http://test:8000")
+        client.get_fundamentals_latest("THYAO", country="TR", source="custom")
+
+        _, kwargs = mock_get.call_args
+        assert kwargs["params"]["country"] == "TR"
+        assert kwargs["params"]["source"] == "custom"
