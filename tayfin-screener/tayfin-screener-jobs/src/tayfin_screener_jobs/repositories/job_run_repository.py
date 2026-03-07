@@ -29,7 +29,7 @@ class JobRunRepository:
             INSERT INTO {SCHEMA}.job_runs
                 (job_name, trigger_type, status, started_at, config)
             VALUES
-                (:job_name, :trigger_type, 'RUNNING', :started_at, :config::jsonb)
+                (:job_name, :trigger_type, 'RUNNING', :started_at, CAST(:config AS jsonb))
             RETURNING id
         """)
         import json

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS tayfin_screener.vcp_results (
     instrument_id           uuid          NULL,
     as_of_date              date          NOT NULL,
     vcp_score               numeric       NOT NULL,
-    vcp_confidence          numeric       NULL,
+    vcp_confidence          text          NULL,
     pattern_detected        boolean       NOT NULL DEFAULT false,
     features_json           jsonb         NOT NULL DEFAULT '{}'::jsonb,
 

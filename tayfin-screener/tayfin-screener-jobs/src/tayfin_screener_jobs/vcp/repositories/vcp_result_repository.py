@@ -74,9 +74,7 @@ class VcpResultRepository:
             bind[f"instrument_id_{i}"] = row.get("instrument_id")
             bind[f"as_of_date_{i}"] = row["as_of_date"]
             bind[f"vcp_score_{i}"] = float(row["vcp_score"])
-            bind[f"vcp_confidence_{i}"] = (
-                float(row["vcp_confidence"]) if row.get("vcp_confidence") is not None else None
-            )
+            bind[f"vcp_confidence_{i}"] = row.get("vcp_confidence")
             bind[f"pattern_detected_{i}"] = bool(row["pattern_detected"])
             bind[f"features_json_{i}"] = features
             bind[f"created_at_{i}"] = now

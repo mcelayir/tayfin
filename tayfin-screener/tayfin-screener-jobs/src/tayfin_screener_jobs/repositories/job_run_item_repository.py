@@ -32,7 +32,7 @@ class JobRunItemRepository:
             INSERT INTO {SCHEMA}.job_run_items
                 (job_run_id, item_key, status, error_summary, error_details)
             VALUES
-                (:job_run_id, :item_key, :status, :error_summary, :error_details::jsonb)
+                (:job_run_id, :item_key, :status, :error_summary, CAST(:error_details AS jsonb))
             ON CONFLICT (job_run_id, item_key) DO UPDATE
                 SET status = EXCLUDED.status,
                     error_summary = EXCLUDED.error_summary,
