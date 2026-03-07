@@ -59,3 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_mcsa_results_as_of_date
 -- Filter by band efficiently
 CREATE INDEX IF NOT EXISTS idx_mcsa_results_band_date
     ON tayfin_screener.mcsa_results (mcsa_band, as_of_date DESC);
+
+-- Support ORDER BY mcsa_score DESC for ranked queries (/mcsa/latest)
+CREATE INDEX IF NOT EXISTS idx_mcsa_results_score
+    ON tayfin_screener.mcsa_results (mcsa_score DESC, as_of_date DESC);

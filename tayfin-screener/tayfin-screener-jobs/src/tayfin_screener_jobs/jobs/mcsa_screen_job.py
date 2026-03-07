@@ -138,7 +138,7 @@ class McsaScreenJob:
 
         # --- resolve tickers ---
         if ticker:
-            tickers = [{"symbol": ticker}]
+            tickers = [{"symbol": ticker.upper()}]
         else:
             tickers = self.ingestor.get_index_members(index_code, country)
         if limit:
@@ -149,7 +149,7 @@ class McsaScreenJob:
         errors: list[str] = []
 
         for member in tickers:
-            tkr = member["symbol"]
+            tkr = member["symbol"].upper()
             try:
                 result_row = self._process_ticker(
                     tkr,
@@ -273,7 +273,7 @@ class McsaScreenJob:
 
         # Latest price: use the most recent OHLCV close
         today = date.today()
-        from_date = (today - timedelta(days=7)).isoformat()
+        from_date = (today - timedelta(days=self.mcsa_cfg.lookbacks.trend_days)).isoformat()
         ohlcv = self.ingestor.get_ohlcv_range(ticker, from_date, today.isoformat())
         latest_price = float(ohlcv[-1]["close"]) if ohlcv else None
 

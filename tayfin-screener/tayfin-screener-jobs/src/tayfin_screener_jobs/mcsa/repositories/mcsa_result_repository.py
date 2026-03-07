@@ -92,7 +92,7 @@ class McsaResultRepository:
             bind[f"created_at_{i}"] = now
             bind[f"updated_at_{i}"] = now
             bind[f"created_by_{i}"] = row["created_by_job_run_id"]
-            bind[f"updated_by_{i}"] = row.get("updated_by_job_run_id")
+            bind[f"updated_by_{i}"] = row.get("updated_by_job_run_id") or row["created_by_job_run_id"]
 
         values_sql = ",\n".join(placeholders)
 
@@ -119,7 +119,7 @@ class McsaResultRepository:
                 missing_fields        = EXCLUDED.missing_fields,
                 instrument_id         = EXCLUDED.instrument_id,
                 updated_at            = EXCLUDED.updated_at,
-                updated_by_job_run_id = EXCLUDED.created_by_job_run_id
+                updated_by_job_run_id = EXCLUDED.updated_by_job_run_id
         """)
 
         with self._engine.begin() as conn:
