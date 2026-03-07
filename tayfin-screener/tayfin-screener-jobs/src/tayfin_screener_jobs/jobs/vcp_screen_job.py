@@ -222,8 +222,7 @@ class VcpScreenJob:
         )
 
         # -- 3  Contraction detection (pure math) --------------------------
-        df_indexed = df.set_index("as_of_date")
-        contraction_seq = detect_contractions(df_indexed["high"], df_indexed["low"])
+        contraction_seq = detect_contractions(df["high"], df["low"])
         contraction_features = contraction_seq.to_dict()
 
         # -- 4  Volatility / trend features --------------------------------
@@ -242,6 +241,7 @@ class VcpScreenJob:
         volume_values = df["volume"].tolist()
         volume_features = extract_volume_features(
             volume_values=volume_values,
+            vol_sma_50_current=latest.get("vol_sma_50", 0.0),
             vol_sma_50_values=ranges.get("vol_sma_50", []),
         )
 
