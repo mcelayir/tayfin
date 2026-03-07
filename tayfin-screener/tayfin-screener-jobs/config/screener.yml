@@ -1,0 +1,4 @@
+# Placeholder config for screener jobs.
+# Targets will be populated as screening algorithms are implemented.
+
+jobs: {}
