@@ -120,6 +120,17 @@ def compute_mcsa_score(inp: McsaInput, cfg: McsaConfig) -> McsaResult:
             f"Missing required fields in 'fail' mode: {missing}"
         )
 
+    if cfg.missing_data_mode == "zero" and missing:
+        # Zero out component scores that have any missing required inputs.
+        if any(f.startswith("trend.") for f in missing):
+            trend_score = 0.0
+        if any(f.startswith("vcp.") for f in missing):
+            vcp_score = 0.0
+        if any(f.startswith("volume.") for f in missing):
+            volume_score = 0.0
+        if any(f.startswith("fundamentals.") for f in missing):
+            fund_score = 0.0
+
     total = trend_score + vcp_score + volume_score + fund_score
 
     band = _classify_band(total, cfg)
@@ -177,7 +188,10 @@ def _score_trend(
             raw += tc.price_above_sma50
     else:
         evidence["price_above_sma50"] = None
-        _note_missing(missing, "trend.latest_price" if t.latest_price is None else "trend.sma_50", cfg)
+        if t.latest_price is None:
+            _note_missing(missing, "trend.latest_price", cfg)
+        if t.sma_50 is None:
+            _note_missing(missing, "trend.sma_50", cfg)
 
     # SMA50 > SMA150
     if t.sma_50 is not None and t.sma_150 is not None:
@@ -187,7 +201,10 @@ def _score_trend(
             raw += tc.sma50_above_sma150
     else:
         evidence["sma50_above_sma150"] = None
-        _note_missing(missing, "trend.sma_50" if t.sma_50 is None else "trend.sma_150", cfg)
+        if t.sma_50 is None:
+            _note_missing(missing, "trend.sma_50", cfg)
+        if t.sma_150 is None:
+            _note_missing(missing, "trend.sma_150", cfg)
 
     # SMA150 > SMA200
     if t.sma_150 is not None and t.sma_200 is not None:
@@ -197,7 +214,10 @@ def _score_trend(
             raw += tc.sma150_above_sma200
     else:
         evidence["sma150_above_sma200"] = None
-        _note_missing(missing, "trend.sma_150" if t.sma_150 is None else "trend.sma_200", cfg)
+        if t.sma_150 is None:
+            _note_missing(missing, "trend.sma_150", cfg)
+        if t.sma_200 is None:
+            _note_missing(missing, "trend.sma_200", cfg)
 
     # Price within max_distance_pct of rolling 52-week high
     if t.latest_price is not None and t.rolling_52w_high is not None:
@@ -210,7 +230,10 @@ def _score_trend(
     else:
         evidence["distance_to_52w_high_pct"] = None
         evidence["near_52w_high"] = None
-        _note_missing(missing, "trend.latest_price" if t.latest_price is None else "trend.rolling_52w_high", cfg)
+        if t.latest_price is None:
+            _note_missing(missing, "trend.latest_price", cfg)
+        if t.rolling_52w_high is None:
+            _note_missing(missing, "trend.rolling_52w_high", cfg)
 
     # Normalize raw → weighted score
     score = (raw / max_raw) * cfg.weight_trend if max_raw > 0 else 0.0
@@ -235,13 +258,17 @@ def _score_vcp(
     normalized = max(0.0, min(v.vcp_score / 100.0, 1.0))
     score = normalized * cfg.weight_vcp
 
-    # Apply no-pattern cap
-    pattern_detected = bool(v.pattern_detected) if v.pattern_detected is not None else False
-    if not pattern_detected:
-        score = min(score, cfg.vcp.no_pattern_cap)
+    # Apply no-pattern cap only when pattern_detected is explicitly known
+    if v.pattern_detected is None:
+        evidence["pattern_detected"] = None
+        _note_missing(missing, "vcp.pattern_detected", cfg)
+    else:
+        pattern_detected = bool(v.pattern_detected)
+        if not pattern_detected:
+            score = min(score, cfg.vcp.no_pattern_cap)
+        evidence["pattern_detected"] = pattern_detected
 
     evidence["vcp_score"] = v.vcp_score
-    evidence["pattern_detected"] = pattern_detected
     evidence["score"] = round(score, 2)
     return score, evidence
 

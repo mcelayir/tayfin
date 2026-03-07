@@ -244,6 +244,29 @@ class TestRunOrchestration:
         upserted = job.mcsa_result_repo.upsert.call_args[0][0][0]
         assert upserted["ticker"] == "GOOG"
 
+    def test_ticker_override_normalised_to_uppercase(self):
+        """Lowercase ticker override is normalised to UPPER before persistence."""
+        ingestor, indicator = _setup_clients()
+        job = _build_job(ingestor=ingestor, indicator=indicator)
+
+        job.run(ticker="aapl")
+
+        upserted = job.mcsa_result_repo.upsert.call_args[0][0][0]
+        assert upserted["ticker"] == "AAPL"
+
+    def test_index_tickers_normalised_to_uppercase(self):
+        """Tickers from index members are normalised to UPPER."""
+        ingestor, indicator = _setup_clients()
+        ingestor.get_index_members.return_value = [
+            {"symbol": "msft", "instrument_id": "id-1"},
+        ]
+        job = _build_job(ingestor=ingestor, indicator=indicator)
+
+        job.run()
+
+        upserted = job.mcsa_result_repo.upsert.call_args[0][0][0]
+        assert upserted["ticker"] == "MSFT"
+
     def test_limit_caps_tickers(self):
         ingestor, indicator = _setup_clients()
         ingestor.get_index_members.return_value = [
@@ -401,3 +424,27 @@ class TestProcessTicker:
             "AAPL", instrument_id=None, country="US", job_run_id=_SAMPLE_UUID,
         )
         assert result["mcsa_score"] >= 0.0
+
+    def test_trend_lookback_uses_config_trend_days(self):
+        """OHLCV fetch for latest price uses mcsa_cfg.lookbacks.trend_days, not a hardcoded value."""
+        from datetime import date, timedelta
+
+        ingestor, indicator = _setup_clients()
+        job = _build_job(ingestor=ingestor, indicator=indicator)
+
+        # Override trend_days to a non-default value via target config
+        from tayfin_screener_jobs.mcsa.config import build_mcsa_config
+        target_cfg = _target_cfg()
+        target_cfg["mcsa"]["lookbacks"] = {"trend_days": 14}
+        job.mcsa_cfg = build_mcsa_config(target_cfg["mcsa"])
+
+        job._process_ticker("AAPL", instrument_id=None, country="US", job_run_id=_SAMPLE_UUID)
+
+        today = date.today()
+        expected_from = (today - timedelta(days=14)).isoformat()
+        expected_to = today.isoformat()
+
+        # First ohlcv call is for trend (latest price); check from_date uses trend_days
+        first_call = ingestor.get_ohlcv_range.call_args_list[0]
+        assert first_call[0][1] == expected_from
+        assert first_call[0][2] == expected_to

@@ -482,3 +482,101 @@ class TestMissingDataModes:
         assert result.missing_fields == []
         assert result.score > 0
 
+    def test_zero_mode_zeroes_components_with_missing_inputs(self):
+        """'zero' mode → any component with a missing field gets score 0."""
+        cfg = build_mcsa_config({"missing_data": {"mode": "zero"}})
+        # trend is complete, everything else is missing
+        inp = McsaInput(trend=_strong_trend())
+        result = compute_mcsa_score(inp, cfg)
+        # trend has no missing fields → full score (30)
+        assert result.trend_score == 30.0
+        # vcp, volume, fundamentals all have missing inputs → zeroed out
+        assert result.vcp_component == 0.0
+        assert result.volume_score == 0.0
+        assert result.fundamental_score == 0.0
+
+    def test_zero_mode_preserves_complete_components(self):
+        """'zero' mode leaves components with no missing fields intact."""
+        cfg = build_mcsa_config({"missing_data": {"mode": "zero"}})
+        inp = McsaInput(
+            trend=_strong_trend(),
+            vcp=_strong_vcp(),
+            volume=_strong_volume(),
+            fundamentals=_strong_fundamentals(),
+        )
+        result = compute_mcsa_score(inp, cfg)
+        assert result.missing_fields == []
+        assert result.trend_score == 30.0
+        assert result.vcp_component == 31.5
+        assert result.volume_score == 15.0
+        assert result.fundamental_score == 20.0
+
+    def test_zero_mode_zeros_only_affected_components(self):
+        """'zero' mode zeros only components with missing inputs, not all."""
+        cfg = build_mcsa_config({"missing_data": {"mode": "zero"}})
+        # trend + volume complete; vcp + fundamentals missing
+        inp = McsaInput(
+            trend=_strong_trend(),
+            volume=_strong_volume(),
+        )
+        result = compute_mcsa_score(inp, cfg)
+        assert result.trend_score == 30.0
+        assert result.volume_score == 15.0
+        assert result.vcp_component == 0.0
+        assert result.fundamental_score == 0.0
+
+
+class TestMissingFieldTracking:
+    """Tests for accurate missing field recording."""
+
+    def test_trend_records_both_missing_inputs_when_all_none(self):
+        """When all trend inputs are None, all 5 field names appear in missing_fields."""
+        inp = McsaInput(trend=_empty_trend())
+        result = compute_mcsa_score(inp, _default_cfg())
+        missing = result.missing_fields
+        assert "trend.latest_price" in missing
+        assert "trend.sma_50" in missing
+        assert "trend.sma_150" in missing
+        assert "trend.sma_200" in missing
+        assert "trend.rolling_52w_high" in missing
+
+    def test_trend_records_each_missing_input_independently(self):
+        """Each missing input is listed once (deduplicated); present inputs absent."""
+        # Only sma_50 is present; latest_price, sma_150, sma_200, rolling_52w_high missing
+        trend = TrendInput(sma_50=100.0)
+        inp = McsaInput(trend=trend)
+        result = compute_mcsa_score(inp, _default_cfg())
+        missing = result.missing_fields
+        assert "trend.latest_price" in missing
+        # sma_50 is present so should not be in missing
+        assert "trend.sma_50" not in missing
+        assert "trend.sma_150" in missing
+        assert "trend.sma_200" in missing
+        assert "trend.rolling_52w_high" in missing
+
+    def test_vcp_pattern_detected_none_recorded_as_missing(self):
+        """When vcp_score is set but pattern_detected is None, it's recorded as missing."""
+        inp = McsaInput(vcp=VcpInput(vcp_score=80.0, pattern_detected=None))
+        result = compute_mcsa_score(inp, _default_cfg())
+        assert "vcp.pattern_detected" in result.missing_fields
+
+    def test_vcp_pattern_detected_none_no_cap_applied(self):
+        """When pattern_detected is None, the no_pattern_cap should NOT be applied."""
+        cfg = _default_cfg()
+        # 80/100 * 35 = 28.0 — cap is 15; without cap score stays 28.0
+        inp = McsaInput(vcp=VcpInput(vcp_score=80.0, pattern_detected=None))
+        result = compute_mcsa_score(inp, cfg)
+        assert result.vcp_component == 28.0
+
+    def test_vcp_pattern_detected_false_still_applies_cap(self):
+        """Explicit pattern_detected=False still triggers the no_pattern_cap."""
+        inp = McsaInput(vcp=VcpInput(vcp_score=80.0, pattern_detected=False))
+        result = compute_mcsa_score(inp, _default_cfg())
+        assert result.vcp_component == 15.0  # capped at 15
+
+    def test_vcp_evidence_records_none_for_missing_pattern_detected(self):
+        """evidence['vcp']['pattern_detected'] is None when input is None."""
+        inp = McsaInput(vcp=VcpInput(vcp_score=60.0, pattern_detected=None))
+        result = compute_mcsa_score(inp, _default_cfg())
+        assert result.evidence["vcp"]["pattern_detected"] is None
+
