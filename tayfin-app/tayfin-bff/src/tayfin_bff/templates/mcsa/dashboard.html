@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}MCSA Trend Template — Tayfin{% endblock %}
+
+{% block content %}
+<h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;">MCSA Trend Template</h1>
+<p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1.25rem;">
+    Minervini Stage Analysis — 8 criteria screening for Stage 2 uptrends
+</p>
+
+<!-- ── RS Rank Distribution ──────────────────────────────── -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">RS Rank Distribution</span>
+        <span class="htmx-indicator" id="hist-spinner">Loading…</span>
+    </div>
+    <div id="histogram-container"
+         hx-get="/htmx/mcsa/histogram"
+         hx-trigger="load"
+         hx-indicator="#hist-spinner">
+    </div>
+</div>
+
+<!-- ── Filters ───────────────────────────────────────────── -->
+<div class="card">
+    <form id="mcsa-filters" class="controls"
+          hx-get="/htmx/mcsa/table"
+          hx-target="#results-table"
+          hx-indicator="#table-spinner"
+          hx-trigger="change, submit"
+          hx-swap="innerHTML">
+        <label>
+            <input type="checkbox" name="pass_only" value="true">
+            Pass only
+        </label>
+
+        <label>
+            Min criteria
+            <select name="min_criteria">
+                <option value="">All</option>
+                <option value="6">6+</option>
+                <option value="7">7+</option>
+                <option value="8">8/8</option>
+            </select>
+        </label>
+
+        <label>
+            Limit
+            <select name="limit">
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="250">250</option>
+                <option value="500">500</option>
+            </select>
+        </label>
+
+        <span class="htmx-indicator" id="table-spinner">Loading…</span>
+    </form>
+</div>
+
+<!-- ── Results Table ─────────────────────────────────────── -->
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Screening Results</span>
+    </div>
+    <div id="results-table"
+         hx-get="/htmx/mcsa/table"
+         hx-trigger="load"
+         hx-indicator="#table-spinner">
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{# HTMX partial — MCSA results table.
+   Rendered into #results-table by the dashboard.
+   Sort headers re-request this partial with sort params. #}
+
+{% if rows %}
+<table>
+    <thead>
+        <tr>
+            {% macro sort_header(col, label) %}
+            <th hx-get="/htmx/mcsa/table?sort={{ col }}&order={% if sort == col and order == 'desc' %}asc{% else %}desc{% endif %}{% if pass_only %}&pass_only=true{% endif %}{% if min_criteria %}&min_criteria={{ min_criteria }}{% endif %}"
+                hx-target="#results-table"
+                hx-swap="innerHTML"
+                hx-indicator="#table-spinner">
+                {{ label }}
+                {% if sort == col %}
+                <span class="sort-arrow">{{ '▲' if order == 'asc' else '▼' }}</span>
+                {% endif %}
+            </th>
+            {% endmacro %}
+
+            {{ sort_header('ticker', 'Ticker') }}
+            {{ sort_header('mcsa_pass', 'Pass') }}
+            {{ sort_header('criteria_count_pass', 'Criteria') }}
+            {{ sort_header('rs_rank', 'RS Rank') }}
+            <th>Criteria Detail</th>
+            {{ sort_header('as_of_date', 'As Of') }}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td style="font-weight: 600;">{{ row.ticker }}</td>
+            <td>
+                {% if row.mcsa_pass %}
+                <span class="badge badge-pass">PASS</span>
+                {% else %}
+                <span class="badge badge-fail">FAIL</span>
+                {% endif %}
+            </td>
+            <td>{{ row.criteria_count_pass }}/8</td>
+            <td>{{ "%.1f"|format(row.rs_rank|float) if row.rs_rank is not none else '—' }}</td>
+            <td style="font-size: 0.75rem; font-family: monospace;">
+                {% if row.criteria_json is mapping %}
+                    {% for k, v in row.criteria_json.items() %}
+                        <span style="color: {{ '#6ee7b7' if v else '#f87171' }};">
+                            {{ k[2:] if k.startswith('c_') else k }}{{ '✓' if v else '✗' }}
+                        </span>
+                        {%- if not loop.last %} {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {{ row.criteria_json }}
+                {% endif %}
+            </td>
+            <td style="color: #6b7280;">{{ row.as_of_date }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">
+    Showing {{ rows|length }} ticker{{ 's' if rows|length != 1 else '' }}
+</p>
+{% else %}
+<p style="color: #6b7280; padding: 2rem; text-align: center;">
+    No MCSA results available. Run the <code>mcsa_screen</code> job first.
+</p>
+{% endif %}

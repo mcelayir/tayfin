@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tayfin{% endblock %}</title>
+
+    <!-- HTMX (ADR-0001 §D3) -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"
+            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+            crossorigin="anonymous"></script>
+
+    <style>
+        /* ── Reset & base ──────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                         Ubuntu, Cantarell, sans-serif;
+            background: #0f1117;
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+
+        /* ── Layout ────────────────────────────────────────── */
+        .navbar {
+            display: flex; align-items: center; gap: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #161822;
+            border-bottom: 1px solid #2a2d3a;
+        }
+        .navbar-brand {
+            font-weight: 700; font-size: 1.25rem; color: #6ee7b7;
+            text-decoration: none;
+        }
+        .navbar a { color: #a0a4b8; text-decoration: none; font-size: 0.9rem; }
+        .navbar a:hover, .navbar a.active { color: #e0e0e0; }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 1.5rem; }
+
+        /* ── Cards ─────────────────────────────────────────── */
+        .card {
+            background: #161822;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem;
+        }
+        .card-title { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
+
+        /* ── Table ─────────────────────────────────────────── */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 0.5rem 0.75rem; text-align: left; }
+        th {
+            background: #1c1f2e;
+            color: #a0a4b8;
+            font-weight: 600;
+            border-bottom: 1px solid #2a2d3a;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        th:hover { color: #6ee7b7; }
+        th .sort-arrow { font-size: 0.7rem; margin-left: 0.25rem; }
+        td { border-bottom: 1px solid #1c1f2e; }
+        tr:hover td { background: #1c1f2e; }
+
+        /* ── Badges ────────────────────────────────────────── */
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-pass { background: #064e3b; color: #6ee7b7; }
+        .badge-fail { background: #4c1d25; color: #f87171; }
+
+        /* ── Histogram bars ────────────────────────────────── */
+        .histogram { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+        .histogram-bar {
+            flex: 1;
+            background: #3b82f6;
+            border-radius: 3px 3px 0 0;
+            position: relative;
+            min-width: 0;
+            transition: height 0.3s ease;
+        }
+        .histogram-bar:hover { background: #60a5fa; }
+        .histogram-label {
+            display: flex; justify-content: space-between;
+            font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem;
+        }
+
+        /* ── Controls ──────────────────────────────────────── */
+        .controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .controls label { font-size: 0.8rem; color: #a0a4b8; }
+        .controls select, .controls input[type="number"] {
+            background: #1c1f2e; color: #e0e0e0;
+            border: 1px solid #2a2d3a; border-radius: 4px;
+            padding: 0.3rem 0.5rem; font-size: 0.8rem;
+        }
+        .controls input[type="checkbox"] { accent-color: #6ee7b7; }
+
+        /* ── Spinner (HTMX loading) ────────────────────────── */
+        .htmx-indicator {
+            display: none;
+            color: #6ee7b7;
+            font-size: 0.85rem;
+        }
+        .htmx-request .htmx-indicator,
+        .htmx-request.htmx-indicator { display: inline-block; }
+
+        /* ── Responsive ────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .container { padding: 0.75rem; }
+            table { font-size: 0.75rem; }
+            th, td { padding: 0.35rem 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">Tayfin</a>
+        <a href="/mcsa" class="{% if request.path == '/mcsa' %}active{% endif %}">MCSA</a>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

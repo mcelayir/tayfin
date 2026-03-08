@@ -1,0 +1,31 @@
+{# HTMX partial — RS rank distribution histogram.
+   Rendered into #histogram-container by the dashboard. #}
+
+{% if histogram and total > 0 %}
+<div class="histogram" style="align-items: flex-end;">
+    {% set max_count = histogram | map(attribute='count') | max %}
+    {% for bucket in histogram %}
+    <div class="histogram-bar"
+         style="height: {{ (bucket.count / (max_count if max_count > 0 else 1) * 100)|int }}%;
+                {% if bucket.range.startswith('70') or bucket.range.startswith('80') or bucket.range.startswith('90') %}
+                background: #10b981;
+                {% endif %}"
+         title="{{ bucket.range }}: {{ bucket.count }} ({{ bucket.pct }}%)">
+    </div>
+    {% endfor %}
+</div>
+<div class="histogram-label">
+    <span>0</span>
+    <span>RS Rank Percentile</span>
+    <span>100</span>
+</div>
+<p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem;">
+    {{ total }} tickers screened ·
+    Top 30%: {{ histogram[7].count + histogram[8].count + histogram[9].count }} tickers
+    (RS ≥ 70 passes Criterion 7)
+</p>
+{% else %}
+<p style="color: #6b7280; padding: 1rem; text-align: center;">
+    No RS rank data available.
+</p>
+{% endif %}

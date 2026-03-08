@@ -1,0 +1,4 @@
+Flask>=2.0
+httpx>=0.24
+python-dotenv>=1.0
+typer>=0.9
