@@ -125,8 +125,8 @@ def create_app():
                 return jsonify({"error": "bad_param", "detail": "min_score must be numeric"}), 400
 
         try:
-            limit = min(int(request.args.get("limit", 500)), _MAX_LIMIT)
-            offset = int(request.args.get("offset", 0))
+            limit = max(0, min(int(request.args.get("limit", 500)), _MAX_LIMIT))
+            offset = max(0, int(request.args.get("offset", 0)))
         except ValueError:
             return jsonify({"error": "bad_param", "detail": "limit/offset must be integers"}), 400
 
@@ -233,8 +233,8 @@ def create_app():
                 return jsonify({"error": "bad_param", "detail": "min_criteria must be integer"}), 400
 
         try:
-            limit = min(int(request.args.get("limit", 500)), _MAX_LIMIT)
-            offset = int(request.args.get("offset", 0))
+            limit = max(0, min(int(request.args.get("limit", 500)), _MAX_LIMIT))
+            offset = max(0, int(request.args.get("offset", 0)))
         except ValueError:
             return jsonify({"error": "bad_param", "detail": "limit/offset must be integers"}), 400
 

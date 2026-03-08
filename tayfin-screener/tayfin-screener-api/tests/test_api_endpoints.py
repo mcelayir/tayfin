@@ -289,6 +289,42 @@ class TestVcpLatestAll:
             c.get("/vcp/latest?limit=9999")
         assert captured["limit"] == 1000  # capped at _MAX_LIMIT
 
+    def test_negative_limit_clamped_to_zero(self, monkeypatch):
+        captured = {}
+
+        def fake_all(engine, **kw):
+            captured.update(kw)
+            return []
+
+        monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
+        monkeypatch.setattr("tayfin_screener_api.app.get_latest_all", fake_all)
+
+        from tayfin_screener_api.app import create_app
+
+        app = create_app()
+        app.config["TESTING"] = True
+        with app.test_client() as c:
+            c.get("/vcp/latest?limit=-5")
+        assert captured["limit"] == 0
+
+    def test_negative_offset_clamped_to_zero(self, monkeypatch):
+        captured = {}
+
+        def fake_all(engine, **kw):
+            captured.update(kw)
+            return []
+
+        monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
+        monkeypatch.setattr("tayfin_screener_api.app.get_latest_all", fake_all)
+
+        from tayfin_screener_api.app import create_app
+
+        app = create_app()
+        app.config["TESTING"] = True
+        with app.test_client() as c:
+            c.get("/vcp/latest?offset=-10")
+        assert captured["offset"] == 0
+
     def test_items_serialised_correctly(self, client):
         resp = client.get("/vcp/latest")
         data = resp.get_json()
@@ -363,3 +399,43 @@ class TestVcpRange:
         with app.test_client() as c:
             c.get("/vcp/range?ticker=aapl&from=2026-03-01&to=2026-03-07")
         assert captured["ticker"] == "AAPL"
+
+
+# =====================================================================
+# GET /mcsa/latest — limit/offset clamping
+# =====================================================================
+
+
+class TestMcsaLatestAllClamping:
+    def _make_client(self, monkeypatch, captured):
+        monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
+        monkeypatch.setattr(
+            "tayfin_screener_api.app.mcsa_get_latest_all",
+            lambda engine, **kw: captured.update(kw) or [],
+        )
+        from tayfin_screener_api.app import create_app
+
+        app = create_app()
+        app.config["TESTING"] = True
+        return app.test_client()
+
+    def test_negative_limit_clamped_to_zero(self, monkeypatch):
+        captured = {}
+        c = self._make_client(monkeypatch, captured)
+        with c:
+            c.get("/mcsa/latest?limit=-5")
+        assert captured["limit"] == 0
+
+    def test_negative_offset_clamped_to_zero(self, monkeypatch):
+        captured = {}
+        c = self._make_client(monkeypatch, captured)
+        with c:
+            c.get("/mcsa/latest?offset=-10")
+        assert captured["offset"] == 0
+
+    def test_limit_capped_at_max(self, monkeypatch):
+        captured = {}
+        c = self._make_client(monkeypatch, captured)
+        with c:
+            c.get("/mcsa/latest?limit=9999")
+        assert captured["limit"] == 1000
