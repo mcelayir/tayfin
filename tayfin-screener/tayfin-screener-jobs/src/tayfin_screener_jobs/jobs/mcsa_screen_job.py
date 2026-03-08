@@ -323,17 +323,19 @@ class McsaScreenJob:
             else:
                 rs_raw[tkr] = 0.0
 
-        # Compute percentile rankings
-        sorted_values = sorted(rs_raw.values())
-        n = len(sorted_values)
+        # Compute percentile rankings.
+        # Sort by (rs_raw, ticker) so equal raw values get a deterministic
+        # tie-break (alphabetical by ticker).  Map position index onto a
+        # true 0–100 scale: pos/(n-1)*100, so the top-ranked stock always
+        # receives exactly 100 and the bottom-ranked exactly 0.
+        sorted_pairs = sorted(rs_raw.items(), key=lambda kv: (kv[1], kv[0]))
+        n = len(sorted_pairs)
         if n == 0:
             return {t: 50.0 for t in tickers}
 
         rs_ranking: dict[str, float] = {}
-        for tkr, raw in rs_raw.items():
-            # Count values below this one for percentile
-            rank_below = sum(1 for v in sorted_values if v < raw)
-            rs_ranking[tkr] = (rank_below / n) * 100
+        for pos, (tkr, _) in enumerate(sorted_pairs):
+            rs_ranking[tkr] = (pos / (n - 1) * 100) if n > 1 else 100.0
 
         # Fill missing tickers with median
         for tkr in tickers:

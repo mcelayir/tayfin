@@ -277,3 +277,160 @@ class TestFetchBulkIndicators:
         for canon, ticker_map in data.items():
             for tkr, val in ticker_map.items():
                 assert isinstance(val, float), f"{canon}/{tkr} is not float"
+
+
+# ===================================================================
+# Test _compute_rs_ranking percentile correctness
+# ===================================================================
+
+
+class TestComputeRsRanking:
+    """Tests for :meth:`McsaScreenJob._compute_rs_ranking` percentile logic."""
+
+    def _build_job_with_returns(
+        self,
+        tickers: list[str],
+        stock_closes: dict[str, tuple[float, float]],  # ticker -> (start, end)
+        benchmark_closes: tuple[float, float] = (100.0, 110.0),
+    ) -> McsaScreenJob:
+        """Build a job whose ingestor returns controlled OHLCV data."""
+        ingestor = MagicMock()
+        ingestor.get_index_members.return_value = [
+            {"symbol": t, "instrument_id": f"id-{t}"} for t in tickers
+        ]
+        indicator = MagicMock()
+        indicator.get_index_latest.return_value = _make_index_latest(tickers)
+        indicator.get_range.return_value = _make_range_items(10)
+
+        def _ohlcv(symbol: str, from_date, to_date):  # noqa: ARG001
+            today = date.today()
+            if symbol in stock_closes:
+                start, end = stock_closes[symbol]
+            else:
+                start, end = benchmark_closes
+            return [
+                {"as_of_date": (today - timedelta(days=130)).isoformat(), "close": start},
+                {"as_of_date": today.isoformat(), "close": end},
+            ]
+
+        ingestor.get_ohlcv_range.side_effect = _ohlcv
+
+        jr, jri, mcsa = _mock_repos()
+        return McsaScreenJob(
+            target_name="test-target",
+            target_cfg={"index_code": "NDX", "country": "US"},
+            full_cfg={},
+            engine=MagicMock(),
+            ingestor_client=ingestor,
+            indicator_client=indicator,
+            job_run_repo=jr,
+            job_run_item_repo=jri,
+            mcsa_result_repo=mcsa,
+        )
+
+    def test_top_ranked_ticker_gets_100(self):
+        """The ticker with the highest RS raw must receive rank 100.0."""
+        tickers = ["AAPL", "MSFT", "GOOG"]
+        # GOOG outperforms benchmark the most
+        job = self._build_job_with_returns(
+            tickers,
+            stock_closes={"AAPL": (100.0, 110.0), "MSFT": (100.0, 120.0), "GOOG": (100.0, 150.0)},
+            benchmark_closes=(100.0, 105.0),
+        )
+        ranking = job._compute_rs_ranking(tickers, "NDX")
+        assert ranking["GOOG"] == pytest.approx(100.0)
+
+    def test_bottom_ranked_ticker_gets_0(self):
+        """The ticker with the lowest RS raw must receive rank 0.0."""
+        tickers = ["AAPL", "MSFT", "GOOG"]
+        job = self._build_job_with_returns(
+            tickers,
+            stock_closes={"AAPL": (100.0, 100.0), "MSFT": (100.0, 120.0), "GOOG": (100.0, 150.0)},
+            benchmark_closes=(100.0, 105.0),
+        )
+        ranking = job._compute_rs_ranking(tickers, "NDX")
+        assert ranking["AAPL"] == pytest.approx(0.0)
+
+    def test_ranks_are_evenly_spaced_for_distinct_values(self):
+        """With 3 distinct RS values ranks should be 0, 50, 100."""
+        tickers = ["LOW", "MID", "HIGH"]
+        job = self._build_job_with_returns(
+            tickers,
+            stock_closes={"LOW": (100.0, 100.0), "MID": (100.0, 110.0), "HIGH": (100.0, 120.0)},
+            benchmark_closes=(100.0, 105.0),
+        )
+        ranking = job._compute_rs_ranking(tickers, "NDX")
+        assert ranking["LOW"] == pytest.approx(0.0)
+        assert ranking["MID"] == pytest.approx(50.0)
+        assert ranking["HIGH"] == pytest.approx(100.0)
+
+    def test_single_ticker_gets_100(self):
+        """When there is only one ticker it should receive rank 100.0 (n==1 edge case)."""
+        tickers = ["SOLO"]
+        job = self._build_job_with_returns(
+            tickers,
+            stock_closes={"SOLO": (100.0, 130.0)},
+            benchmark_closes=(100.0, 105.0),
+        )
+        ranking = job._compute_rs_ranking(tickers, "NDX")
+        assert ranking["SOLO"] == pytest.approx(100.0)
+
+    def test_ties_broken_alphabetically(self):
+        """Tied tickers must be ranked deterministically by ticker name (A < B < C)."""
+        tickers = ["AAA", "BBB", "CCC"]
+        # All three have identical returns -> identical RS raw -> tie
+        job = self._build_job_with_returns(
+            tickers,
+            stock_closes={"AAA": (100.0, 110.0), "BBB": (100.0, 110.0), "CCC": (100.0, 110.0)},
+            benchmark_closes=(100.0, 105.0),
+        )
+        ranking = job._compute_rs_ranking(tickers, "NDX")
+        # Alphabetical tie-break: AAA(pos=0)=0, BBB(pos=1)=50, CCC(pos=2)=100
+        assert ranking["AAA"] == pytest.approx(0.0)
+        assert ranking["BBB"] == pytest.approx(50.0)
+        assert ranking["CCC"] == pytest.approx(100.0)
+
+    def test_missing_tickers_get_median_fallback(self):
+        """Tickers whose OHLCV fetch fails must fall back to 50.0."""
+        tickers = ["GOOD", "BAD"]
+        ingestor = MagicMock()
+        ingestor.get_index_members.return_value = [
+            {"symbol": t, "instrument_id": f"id-{t}"} for t in tickers
+        ]
+        today = date.today()
+
+        def _ohlcv(symbol: str, from_date, to_date):  # noqa: ARG001
+            if symbol == "BAD":
+                raise RuntimeError("network error")
+            # NDX benchmark
+            if symbol == "NDX":
+                return [
+                    {"as_of_date": (today - timedelta(days=130)).isoformat(), "close": 100.0},
+                    {"as_of_date": today.isoformat(), "close": 110.0},
+                ]
+            return [
+                {"as_of_date": (today - timedelta(days=130)).isoformat(), "close": 100.0},
+                {"as_of_date": today.isoformat(), "close": 120.0},
+            ]
+
+        ingestor.get_ohlcv_range.side_effect = _ohlcv
+
+        indicator = MagicMock()
+        indicator.get_index_latest.return_value = _make_index_latest(tickers)
+        indicator.get_range.return_value = _make_range_items(10)
+
+        jr, jri, mcsa = _mock_repos()
+        job = McsaScreenJob(
+            target_name="test-target",
+            target_cfg={"index_code": "NDX", "country": "US"},
+            full_cfg={},
+            engine=MagicMock(),
+            ingestor_client=ingestor,
+            indicator_client=indicator,
+            job_run_repo=jr,
+            job_run_item_repo=jri,
+            mcsa_result_repo=mcsa,
+        )
+        ranking = job._compute_rs_ranking(tickers, "NDX")
+        assert ranking["BAD"] == pytest.approx(50.0)
+        assert ranking["GOOD"] == pytest.approx(100.0)
