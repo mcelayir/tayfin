@@ -17,6 +17,8 @@ _REGISTRY: dict[str, str] = {
     "atr_compute": "atr_compute_job.AtrComputeJob",
     "vol_sma_compute": "vol_sma_compute_job.VolSmaComputeJob",
     "rolling_high_compute": "rolling_high_compute_job.RollingHighComputeJob",
+    "rolling_low_compute": "rolling_low_compute_job.RollingLowComputeJob",
+    "sma_slope_compute": "sma_slope_compute_job.SmaSlopeComputeJob",
 }
 
 

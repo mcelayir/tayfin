@@ -64,3 +64,23 @@ def compute_vol_sma(volume: pd.Series, window: int) -> pd.Series:
 def compute_rolling_high(close: pd.Series, window: int) -> pd.Series:
     """Rolling maximum of *close* over *window* periods."""
     return close.astype(float).rolling(window=window).max()
+
+
+def compute_rolling_low(close: pd.Series, window: int) -> pd.Series:
+    """Rolling minimum of *close* over *window* periods."""
+    return close.astype(float).rolling(window=window).min()
+
+
+def compute_sma_slope(
+    sma_series: pd.Series,
+    period: int,
+) -> pd.Series:
+    """Slope of an SMA series over *period* bars.
+
+    Formula: (sma_today - sma_{period}_days_ago) / sma_{period}_days_ago
+
+    Returns a Series of the same length; the first ``period`` values
+    will be NaN.
+    """
+    sma_shifted = sma_series.shift(period)
+    return (sma_series - sma_shifted) / sma_shifted

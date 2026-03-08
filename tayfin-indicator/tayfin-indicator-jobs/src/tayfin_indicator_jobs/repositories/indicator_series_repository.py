@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import text
 
@@ -15,6 +15,60 @@ class IndicatorSeriesRepository:
 
     def __init__(self, engine):
         self.engine = engine
+
+    # ------------------------------------------------------------------
+    # Read helpers (same-context DB access — §1.1 allows this)
+    # ------------------------------------------------------------------
+
+    def get_series(
+        self,
+        ticker: str,
+        indicator_key: str,
+        params_json: dict,
+        from_date: date | None = None,
+        to_date: date | None = None,
+    ) -> list[dict]:
+        """Return indicator rows for a single ticker, ordered by as_of_date.
+
+        Each returned dict has keys: ``as_of_date``, ``value``.
+
+        Used by derived-indicator jobs (e.g. sma_slope reads sma values)
+        that need same-context data without making a network hop.
+        """
+        pj = json.dumps(params_json, sort_keys=True)
+        clauses = [
+            "ticker = :ticker",
+            "indicator_key = :indicator_key",
+            "params_json = CAST(:params_json AS jsonb)",
+        ]
+        bind: dict = {
+            "ticker": ticker,
+            "indicator_key": indicator_key,
+            "params_json": pj,
+        }
+        if from_date is not None:
+            clauses.append("as_of_date >= :from_date")
+            bind["from_date"] = from_date
+        if to_date is not None:
+            clauses.append("as_of_date <= :to_date")
+            bind["to_date"] = to_date
+
+        where = " AND ".join(clauses)
+        stmt = text(
+            f"""
+            SELECT as_of_date, value
+            FROM tayfin_indicator.indicator_series
+            WHERE {where}
+            ORDER BY as_of_date
+            """
+        )
+        with self.engine.connect() as conn:
+            rows = conn.execute(stmt, bind).mappings().all()
+            return [{"as_of_date": r["as_of_date"], "value": float(r["value"])} for r in rows]
+
+    # ------------------------------------------------------------------
+    # Write
+    # ------------------------------------------------------------------
 
     def upsert_indicator_rows(self, rows: list[dict]) -> int:
         """Upsert *rows* in chunks; return total rows affected.

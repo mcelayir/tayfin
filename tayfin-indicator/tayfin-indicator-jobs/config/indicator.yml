@@ -44,3 +44,24 @@ jobs:
           - key: rolling_high
             params:
               window: 252
+
+  rolling_low_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: rolling_low
+            params:
+              window: 252
+
+  sma_slope_compute:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: sma_slope
+            params:
+              sma_window: 200
+              slope_period: 20
