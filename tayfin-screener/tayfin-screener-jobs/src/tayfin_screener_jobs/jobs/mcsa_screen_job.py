@@ -24,9 +24,6 @@ from __future__ import annotations
 
 import logging
 from datetime import date, timedelta
-from uuid import UUID
-
-import pandas as pd
 
 from ..clients.indicator_client import IndicatorClient
 from ..clients.ingestor_client import IngestorClient
