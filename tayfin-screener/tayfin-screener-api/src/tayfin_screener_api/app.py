@@ -1,13 +1,16 @@
 """Flask application factory for tayfin-screener-api.
 
-Read-only API over precomputed VCP screening results (§6.1 ARCHITECTURE_RULES).
+Read-only API over precomputed screening results (§6.1 ARCHITECTURE_RULES).
 
 Endpoints
 ---------
-* ``GET /health``              — DB connectivity check
-* ``GET /vcp/latest``          — latest VCP results (all tickers)
-* ``GET /vcp/latest/<ticker>`` — latest VCP result for one ticker
-* ``GET /vcp/range``           — VCP results for a ticker over a date range
+* ``GET /health``               — DB connectivity check
+* ``GET /vcp/latest``           — latest VCP results (all tickers)
+* ``GET /vcp/latest/<ticker>``  — latest VCP result for one ticker
+* ``GET /vcp/range``            — VCP results for a ticker over a date range
+* ``GET /mcsa/latest``          — latest MCSA results (all tickers)
+* ``GET /mcsa/latest/<ticker>`` — latest MCSA result for one ticker
+* ``GET /mcsa/range``           — MCSA results for a ticker over a date range
 """
 
 from __future__ import annotations
@@ -19,6 +22,11 @@ from datetime import date
 from flask import Flask, jsonify, request
 
 from .db import get_engine
+from .repositories.mcsa_repository import (
+    get_latest_all as mcsa_get_latest_all,
+    get_latest_by_ticker as mcsa_get_latest_by_ticker,
+    get_range_by_ticker as mcsa_get_range_by_ticker,
+)
 from .repositories.vcp_repository import (
     get_latest_all,
     get_latest_by_ticker,
@@ -52,6 +60,24 @@ def _serialise_row(row: dict) -> dict:
     if isinstance(fj, str):
         fj = json.loads(fj)
     out["features_json"] = fj
+    return out
+
+
+def _serialise_mcsa_row(row: dict) -> dict:
+    """Convert an MCSA DB row dict into a JSON-safe representation."""
+    out: dict = {}
+    out["ticker"] = row["ticker"]
+    out["instrument_id"] = str(row["instrument_id"]) if row.get("instrument_id") else None
+    aod = row["as_of_date"]
+    out["as_of_date"] = aod.isoformat() if hasattr(aod, "isoformat") else str(aod)
+    out["mcsa_pass"] = bool(row["mcsa_pass"])
+    out["rs_rank"] = float(row["rs_rank"]) if row.get("rs_rank") is not None else None
+    out["criteria_count_pass"] = int(row["criteria_count_pass"])
+
+    cj = row.get("criteria_json")
+    if isinstance(cj, str):
+        cj = json.loads(cj)
+    out["criteria_json"] = cj
     return out
 
 
@@ -175,6 +201,114 @@ def create_app():
             "from": from_date.isoformat(),
             "to": to_date.isoformat(),
             "items": [_serialise_row(r) for r in rows],
+        })
+
+    # ==================================================================
+    # MCSA Endpoints
+    # ==================================================================
+
+    # ------------------------------------------------------------------
+    # GET /mcsa/latest — all tickers, latest per ticker
+    # ------------------------------------------------------------------
+
+    @app.get("/mcsa/latest")
+    def mcsa_latest_all():
+        """Return the latest MCSA result for every screened ticker.
+
+        Query params
+        ~~~~~~~~~~~~
+        * ``pass_only``     — ``true`` to return only passing tickers
+        * ``min_criteria``  — minimum criteria count (0–8)
+        * ``limit``         — max results (default 500, max 1000)
+        * ``offset``        — pagination offset
+        """
+        pass_only = request.args.get("pass_only", "").lower() == "true"
+
+        min_criteria: int | None = None
+        raw_criteria = request.args.get("min_criteria")
+        if raw_criteria is not None:
+            try:
+                min_criteria = int(raw_criteria)
+            except ValueError:
+                return jsonify({"error": "bad_param", "detail": "min_criteria must be integer"}), 400
+
+        try:
+            limit = min(int(request.args.get("limit", 500)), _MAX_LIMIT)
+            offset = int(request.args.get("offset", 0))
+        except ValueError:
+            return jsonify({"error": "bad_param", "detail": "limit/offset must be integers"}), 400
+
+        engine = get_engine()
+        rows = mcsa_get_latest_all(
+            engine,
+            pass_only=pass_only,
+            min_criteria=min_criteria,
+            limit=limit,
+            offset=offset,
+        )
+        return jsonify({"items": [_serialise_mcsa_row(r) for r in rows]})
+
+    # ------------------------------------------------------------------
+    # GET /mcsa/latest/<ticker> — single ticker
+    # ------------------------------------------------------------------
+
+    @app.get("/mcsa/latest/<ticker>")
+    def mcsa_latest_ticker(ticker: str):
+        """Return the most recent MCSA result for one ticker."""
+        engine = get_engine()
+        row = mcsa_get_latest_by_ticker(engine, ticker.upper())
+        if row is None:
+            return jsonify({
+                "error": "not_found",
+                "detail": f"no MCSA data for {ticker.upper()}",
+            }), 404
+        return jsonify(_serialise_mcsa_row(row))
+
+    # ------------------------------------------------------------------
+    # GET /mcsa/range — date range for a ticker
+    # ------------------------------------------------------------------
+
+    @app.get("/mcsa/range")
+    def mcsa_range():
+        """Return MCSA results for a ticker over a date range.
+
+        Query params
+        ~~~~~~~~~~~~
+        * ``ticker`` — required
+        * ``from``   — YYYY-MM-DD, required
+        * ``to``     — YYYY-MM-DD, required
+        """
+        ticker = request.args.get("ticker")
+        from_str = request.args.get("from")
+        to_str = request.args.get("to")
+
+        if not ticker or not from_str or not to_str:
+            return jsonify({
+                "error": "missing_params",
+                "detail": "ticker, from, and to are required",
+            }), 400
+
+        try:
+            from_date = _parse_date(from_str)
+            to_date = _parse_date(to_str)
+        except ValueError as exc:
+            return jsonify({"error": "bad_date", "detail": str(exc)}), 400
+
+        if from_date > to_date:
+            return jsonify({"error": "bad_range", "detail": "from must be <= to"}), 400
+        if (to_date - from_date).days > _MAX_RANGE_DAYS:
+            return jsonify({
+                "error": "range_too_large",
+                "detail": f"max range is {_MAX_RANGE_DAYS} days (~5 years)",
+            }), 400
+
+        engine = get_engine()
+        rows = mcsa_get_range_by_ticker(engine, ticker.upper(), from_date, to_date)
+        return jsonify({
+            "ticker": ticker.upper(),
+            "from": from_date.isoformat(),
+            "to": to_date.isoformat(),
+            "items": [_serialise_mcsa_row(r) for r in rows],
         })
 
     return app

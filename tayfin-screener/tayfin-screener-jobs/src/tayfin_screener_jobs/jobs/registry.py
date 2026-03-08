@@ -12,6 +12,7 @@ import importlib
 # Format: "job_name" → "module_name.ClassName"
 _REGISTRY: dict[str, str] = {
     "vcp_screen": "vcp_screen_job.VcpScreenJob",
+    "mcsa_screen": "mcsa_screen_job.McsaScreenJob",
 }
 
 

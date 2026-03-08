@@ -2,6 +2,25 @@
 # Structure: jobs.<job_name>.targets.<target_name>
 
 jobs:
+  mcsa_screen:
+    targets:
+      nasdaq-100:
+        index_code: NDX
+        country: US
+        indicators:
+          - key: sma
+            window: 50
+          - key: sma
+            window: 150
+          - key: sma
+            window: 200
+          - key: rolling_high
+            window: 252
+          - key: rolling_low
+            window: 252
+          - key: sma_slope
+            window: 200
+
   vcp_screen:
     targets:
       nasdaq-100:
