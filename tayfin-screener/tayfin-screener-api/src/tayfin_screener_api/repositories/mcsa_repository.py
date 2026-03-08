@@ -6,7 +6,6 @@ façade over precomputed data (§6.1 ARCHITECTURE_RULES).
 
 from __future__ import annotations
 
-import json
 from datetime import date
 
 from sqlalchemy import text
