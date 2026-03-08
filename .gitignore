@@ -20,3 +20,7 @@ docs/examples/tradingview_scraper/out/
 
 # Job output / run reports
 **/out/
+
+# Node.js / UI
+node_modules/
+dist/
