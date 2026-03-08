@@ -66,16 +66,29 @@ def _patch_repo(
         lambda: "fake-engine",
     )
     monkeypatch.setattr(
-        "tayfin_screener_api.app.get_latest_by_ticker",
+        "tayfin_screener_api.app.vcp_get_latest_by_ticker",
         lambda engine, ticker: latest if latest and latest["ticker"] == ticker else None,
     )
     monkeypatch.setattr(
-        "tayfin_screener_api.app.get_latest_all",
+        "tayfin_screener_api.app.vcp_get_latest_all",
         lambda engine, **kw: all_rows,
     )
     monkeypatch.setattr(
-        "tayfin_screener_api.app.get_range_by_ticker",
+        "tayfin_screener_api.app.vcp_get_range_by_ticker",
         lambda engine, ticker, from_date, to_date: range_rows,
+    )
+    # MCSA stubs (needed because endpoints exist; stub with empties)
+    monkeypatch.setattr(
+        "tayfin_screener_api.app.mcsa_get_latest_by_ticker",
+        lambda engine, ticker: None,
+    )
+    monkeypatch.setattr(
+        "tayfin_screener_api.app.mcsa_get_latest_all",
+        lambda engine, **kw: [],
+    )
+    monkeypatch.setattr(
+        "tayfin_screener_api.app.mcsa_get_range_by_ticker",
+        lambda engine, ticker, from_date, to_date: [],
     )
 
 
@@ -160,7 +173,7 @@ class TestVcpLatestTicker:
             return {**_SEED_ROW, "ticker": ticker}
 
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
-        monkeypatch.setattr("tayfin_screener_api.app.get_latest_by_ticker", fake_get)
+        monkeypatch.setattr("tayfin_screener_api.app.vcp_get_latest_by_ticker", fake_get)
 
         from tayfin_screener_api.app import create_app
 
@@ -179,7 +192,7 @@ class TestVcpLatestTicker:
         row = {**_SEED_ROW, "instrument_id": None, "ticker": "X"}
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
         monkeypatch.setattr(
-            "tayfin_screener_api.app.get_latest_by_ticker",
+            "tayfin_screener_api.app.vcp_get_latest_by_ticker",
             lambda engine, ticker: row if ticker == "X" else None,
         )
         from tayfin_screener_api.app import create_app
@@ -196,7 +209,7 @@ class TestVcpLatestTicker:
         row = {**_SEED_ROW, "features_json": json.dumps({"a": 1})}
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
         monkeypatch.setattr(
-            "tayfin_screener_api.app.get_latest_by_ticker",
+            "tayfin_screener_api.app.vcp_get_latest_by_ticker",
             lambda engine, ticker: row,
         )
         from tayfin_screener_api.app import create_app
@@ -235,7 +248,7 @@ class TestVcpLatestAll:
             return []
 
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
-        monkeypatch.setattr("tayfin_screener_api.app.get_latest_all", fake_all)
+        monkeypatch.setattr("tayfin_screener_api.app.vcp_get_latest_all", fake_all)
 
         from tayfin_screener_api.app import create_app
 
@@ -253,7 +266,7 @@ class TestVcpLatestAll:
             return []
 
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
-        monkeypatch.setattr("tayfin_screener_api.app.get_latest_all", fake_all)
+        monkeypatch.setattr("tayfin_screener_api.app.vcp_get_latest_all", fake_all)
 
         from tayfin_screener_api.app import create_app
 
@@ -279,7 +292,7 @@ class TestVcpLatestAll:
             return []
 
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
-        monkeypatch.setattr("tayfin_screener_api.app.get_latest_all", fake_all)
+        monkeypatch.setattr("tayfin_screener_api.app.vcp_get_latest_all", fake_all)
 
         from tayfin_screener_api.app import create_app
 
@@ -354,7 +367,7 @@ class TestVcpRange:
             return []
 
         monkeypatch.setattr("tayfin_screener_api.app.get_engine", lambda: "fake")
-        monkeypatch.setattr("tayfin_screener_api.app.get_range_by_ticker", fake_range)
+        monkeypatch.setattr("tayfin_screener_api.app.vcp_get_range_by_ticker", fake_range)
 
         from tayfin_screener_api.app import create_app
 

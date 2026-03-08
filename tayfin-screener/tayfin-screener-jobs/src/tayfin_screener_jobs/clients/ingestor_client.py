@@ -81,6 +81,25 @@ class IngestorClient:
             return []
         return data.get("items", [])
 
+    def get_fundamentals_latest(
+        self,
+        symbol: str,
+        country: str = "US",
+        source: str = "stockdex",
+    ) -> dict | None:
+        """Return the latest fundamentals snapshot for *symbol*.
+
+        Returns a flat dict with keys such as ``revenue_growth_yoy``,
+        ``earnings_growth_yoy``, ``roe``, ``net_margin``, ``debt_equity``,
+        etc.  Returns ``None`` when the symbol has no fundamentals (404).
+        """
+        params: dict[str, str] = {
+            "symbol": symbol,
+            "country": country,
+            "source": source,
+        }
+        return self._get("/fundamentals/latest", params=params, allow_404=True)
+
     # ------------------------------------------------------------------
     # internals
     # ------------------------------------------------------------------
