@@ -1,0 +1,13 @@
+# BFF configuration — tayfin-app/tayfin-bff
+# Environment variables override these values.
+
+server:
+  host: "0.0.0.0"
+  port: 8030
+
+upstream:
+  screener_api_base_url: "http://127.0.0.1:8020"
+  # indicator_api_base_url: "http://127.0.0.1:8010"   # future
+  # ingestor_api_base_url:  "http://127.0.0.1:8000"   # future
+  timeout_s: 30.0
+  max_retries: 3
