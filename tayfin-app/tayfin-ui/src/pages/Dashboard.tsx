@@ -1,10 +1,17 @@
+import { useState } from 'react';
 import { useMcsaData } from '../hooks/useMcsaData';
+import { ScoreTable } from '../components/ScoreTable';
 import styles from './Dashboard.module.css';
 
 export function Dashboard() {
   const { items, state, error, reload } = useMcsaData();
+  const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
 
   const latestDate = items.length > 0 ? items[0].as_of_date : '—';
+
+  const handleRowClick = (ticker: string) => {
+    setExpandedTicker((prev) => (prev === ticker ? null : ticker));
+  };
 
   return (
     <div className={styles.dashboard}>
@@ -27,9 +34,11 @@ export function Dashboard() {
       )}
 
       {state === 'success' && (
-        <p style={{ color: 'var(--text-secondary)' }}>
-          {items.length} results loaded. Score Table coming in Task 6.
-        </p>
+        <ScoreTable
+          items={items}
+          expandedTicker={expandedTicker}
+          onRowClick={handleRowClick}
+        />
       )}
     </div>
   );

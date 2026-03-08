@@ -1,0 +1,175 @@
+.scoreTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+/* ── Header ── */
+
+.scoreTable th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  padding: var(--space-2) var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.scoreTable th[data-sortable='true'] {
+  cursor: pointer;
+}
+
+.scoreTable th[data-sortable='true']:hover {
+  color: var(--text-primary);
+}
+
+.thContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sortIcon {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.sortIcon--active {
+  opacity: 1;
+  color: var(--info);
+}
+
+/* ── Alignment ── */
+
+.alignRight {
+  text-align: right;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.alignLeft {
+  text-align: left;
+}
+
+/* ── Rows ── */
+
+.scoreTable tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.scoreTable tbody tr:hover {
+  background: var(--bg-overlay);
+}
+
+.row--expanded {
+  background: var(--bg-overlay);
+}
+
+.row--expanded td:first-child {
+  border-left: 3px solid var(--border-focus);
+}
+
+/* Band accent on left border for expanded row */
+.row--strong td:first-child {
+  border-left-color: var(--band-strong-accent);
+}
+.row--watchlist td:first-child {
+  border-left-color: var(--band-watchlist-accent);
+}
+.row--neutral td:first-child {
+  border-left-color: var(--band-neutral-accent);
+}
+.row--weak td:first-child {
+  border-left-color: var(--band-weak-accent);
+}
+
+/* ── Cells ── */
+
+.scoreTable td {
+  padding: var(--space-2) var(--space-3);
+  vertical-align: middle;
+}
+
+.cellRank {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  width: 40px;
+}
+
+.cellTicker {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  width: 80px;
+}
+
+.cellScore {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  width: 80px;
+}
+
+/* Band-colored score text */
+.score--strong    { color: var(--band-strong-text); }
+.score--watchlist { color: var(--band-watchlist-text); }
+.score--neutral   { color: var(--band-neutral-text); }
+.score--weak      { color: var(--band-weak-text); }
+
+.cellBand {
+  width: 90px;
+}
+
+.cellComponent {
+  width: 80px;
+}
+
+.componentCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.componentValue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  min-width: 28px;
+  text-align: right;
+}
+
+.cellMissing {
+  color: var(--warning);
+  font-size: 12px;
+  cursor: help;
+}
+
+/* ── Empty state ── */
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-6);
+  color: var(--text-secondary);
+}
+
+.emptyState button {
+  margin-top: var(--space-3);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+}
