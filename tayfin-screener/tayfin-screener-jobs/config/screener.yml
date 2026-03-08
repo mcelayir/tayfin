@@ -19,7 +19,8 @@ jobs:
           - key: rolling_low
             window: 252
           - key: sma_slope
-            window: 200
+            sma_window: 200
+            slope_period: 20
 
   vcp_screen:
     targets:

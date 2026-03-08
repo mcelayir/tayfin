@@ -181,15 +181,20 @@ The job MUST fetch indicators using `get_index_latest()` (6 bulk calls):
 
 ```python
 indicators_needed = [
-    ("sma", {"window": 50}),
-    ("sma", {"window": 150}),
-    ("sma", {"window": 200}),
-    ("rolling_high", {"window": 252}),
-    ("rolling_low", {"window": 252}),
-    ("sma_slope", {"sma_window": 200, "slope_period": 20}),
+    {"key": "sma_50", "indicator": "sma", "params": {"window": 50}},
+    {"key": "sma_150", "indicator": "sma", "params": {"window": 150}},
+    {"key": "sma_200", "indicator": "sma", "params": {"window": 200}},
+    {"key": "rolling_high_252", "indicator": "rolling_high", "params": {"window": 252}},
+    {"key": "rolling_low_252", "indicator": "rolling_low", "params": {"window": 252}},
+    {"key": "sma_slope_200", "indicator": "sma_slope", "params": {"sma_window": 200, "slope_period": 20}},
 ]
-for indicator_key, params in indicators_needed:
-    data = indicator_client.get_index_latest("NDX", indicator_key, params["window"])
+for spec in indicators_needed:
+    # Single-window indicators use legacy ?window=N endpoint.
+    # Compound-param indicators use indicator-specific endpoint:
+    #   GET /indicators/index/latest/<indicator>?index_code=NDX&<params>
+    data = indicator_client.get_index_latest(
+        "NDX", spec["indicator"], params=spec["params"],
+    )
     # build lookup dict: ticker -> value
 ```
 

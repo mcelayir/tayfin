@@ -233,20 +233,36 @@ class McsaScreenJob:
         Returns a nested dict: ``{indicator_canon: {ticker: value}}``.
         Example: ``{"sma_50": {"AAPL": 185.3, "MSFT": 420.1, ...}}``.
         """
-        # (canonical_key, api_indicator_key, window)
+        # Each entry is a dict with 'key', 'indicator', and 'params'.
+        # Items with a single 'window' param use the legacy endpoint;
+        # compound-param items use the indicator-specific endpoint.
         indicators_needed = [
-            ("sma_50", "sma", 50),
-            ("sma_150", "sma", 150),
-            ("sma_200", "sma", 200),
-            ("rolling_high_252", "rolling_high", 252),
-            ("rolling_low_252", "rolling_low", 252),
-            ("sma_slope_200", "sma_slope", 200),
+            {"key": "sma_50", "indicator": "sma", "params": {"window": 50}},
+            {"key": "sma_150", "indicator": "sma", "params": {"window": 150}},
+            {"key": "sma_200", "indicator": "sma", "params": {"window": 200}},
+            {"key": "rolling_high_252", "indicator": "rolling_high", "params": {"window": 252}},
+            {"key": "rolling_low_252", "indicator": "rolling_low", "params": {"window": 252}},
+            {"key": "sma_slope_200", "indicator": "sma_slope", "params": {"sma_window": 200, "slope_period": 20}},
         ]
 
         data: dict[str, dict[str, float]] = {}
 
-        for canon, api_key, window in indicators_needed:
-            items = self.indicator.get_index_latest(index_code, api_key, window)
+        for spec in indicators_needed:
+            canon = spec["key"]
+            api_key = spec["indicator"]
+            params = spec["params"]
+
+            # Single-window indicators use the legacy `window` kwarg;
+            # compound params use the indicator-specific endpoint.
+            if list(params.keys()) == ["window"]:
+                items = self.indicator.get_index_latest(
+                    index_code, api_key, window=params["window"],
+                )
+            else:
+                items = self.indicator.get_index_latest(
+                    index_code, api_key, params=params,
+                )
+
             data[canon] = {
                 item["ticker"]: float(item["value"])
                 for item in items

@@ -189,6 +189,23 @@ class TestRunOrchestration:
         # rolling_high_252, rolling_low_252, sma_slope_200
         assert job.indicator.get_index_latest.call_count == 6
 
+    def test_sma_slope_uses_compound_params(self):
+        """Verifies sma_slope call uses compound params (BLOCKER-1 fix)."""
+        job = _build_job()
+        job._fetch_bulk_indicators("NDX")
+
+        # Find the call that requested sma_slope
+        calls = job.indicator.get_index_latest.call_args_list
+        sma_slope_calls = [
+            c for c in calls if c.args[1] == "sma_slope" or c.kwargs.get("indicator") == "sma_slope"
+            or (len(c.args) >= 2 and c.args[1] == "sma_slope")
+        ]
+        assert len(sma_slope_calls) == 1
+        call = sma_slope_calls[0]
+        # Must use params= kwarg with compound dict, not window=
+        assert call.kwargs.get("params") == {"sma_window": 200, "slope_period": 20}
+        assert "window" not in call.kwargs
+
     def test_single_ticker_override(self):
         job = _build_job(tickers=["GOOG"])
         # Ensure bulk indicators include GOOG

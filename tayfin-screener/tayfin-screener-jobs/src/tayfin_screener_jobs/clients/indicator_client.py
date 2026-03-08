@@ -44,20 +44,34 @@ class IndicatorClient:
         ticker: str,
         indicator: str,
         window: int | None = None,
+        params: dict | None = None,
     ) -> dict | None:
         """Return the most recent indicator value for *ticker*.
+
+        When *params* is given the indicator-specific endpoint is used::
+
+            GET /indicators/latest/<indicator>?ticker=X&<params>
+
+        Otherwise falls back to the legacy ``?window=`` endpoint.
 
         Returns a dict with keys ``ticker``, ``as_of_date``, ``indicator``,
         ``params``, ``value``, ``source``.  Returns ``None`` when no data
         is found (404).
         """
-        params: dict[str, str | int] = {
+        if params is not None:
+            query: dict[str, str | int] = {"ticker": ticker, **params}
+            return self._get(
+                f"/indicators/latest/{indicator}",
+                params=query,
+                allow_404=True,
+            )
+        query = {
             "ticker": ticker,
             "indicator": indicator,
         }
         if window is not None:
-            params["window"] = window
-        return self._get("/indicators/latest", params=params, allow_404=True)
+            query["window"] = window
+        return self._get("/indicators/latest", params=query, allow_404=True)
 
     def get_range(
         self,
@@ -66,21 +80,37 @@ class IndicatorClient:
         from_date: str,
         to_date: str,
         window: int | None = None,
+        params: dict | None = None,
     ) -> list[dict]:
         """Return a time-series of indicator values for *ticker*.
+
+        When *params* is given the indicator-specific endpoint is used.
 
         Each item is a dict with keys ``as_of_date`` and ``value``.
         Returns an empty list when no data is found (404).
         """
-        params: dict[str, str | int] = {
-            "ticker": ticker,
-            "indicator": indicator,
-            "from": from_date,
-            "to": to_date,
-        }
-        if window is not None:
-            params["window"] = window
-        data = self._get("/indicators/range", params=params, allow_404=True)
+        if params is not None:
+            query: dict[str, str | int] = {
+                "ticker": ticker,
+                "from": from_date,
+                "to": to_date,
+                **params,
+            }
+            data = self._get(
+                f"/indicators/range/{indicator}",
+                params=query,
+                allow_404=True,
+            )
+        else:
+            query = {
+                "ticker": ticker,
+                "indicator": indicator,
+                "from": from_date,
+                "to": to_date,
+            }
+            if window is not None:
+                query["window"] = window
+            data = self._get("/indicators/range", params=query, allow_404=True)
         if data is None:
             return []
         return data.get("items", [])
@@ -90,21 +120,36 @@ class IndicatorClient:
         index_code: str,
         indicator: str,
         window: int | None = None,
+        params: dict | None = None,
     ) -> list[dict]:
         """Return the latest indicator value per ticker for all index members.
+
+        When *params* is given the indicator-specific endpoint is used::
+
+            GET /indicators/index/latest/<indicator>?index_code=NDX&<params>
+
+        Otherwise falls back to the legacy ``?window=`` endpoint.
 
         Each item is a dict with keys ``ticker``, ``as_of_date``, ``value``.
         Returns an empty list when no data is found.
         """
-        params: dict[str, str | int] = {
-            "index_code": index_code,
-            "indicator": indicator,
-        }
-        if window is not None:
-            params["window"] = window
-        data = self._get(
-            "/indicators/index/latest", params=params, allow_404=True,
-        )
+        if params is not None:
+            query: dict[str, str | int] = {"index_code": index_code, **params}
+            data = self._get(
+                f"/indicators/index/latest/{indicator}",
+                params=query,
+                allow_404=True,
+            )
+        else:
+            query = {
+                "index_code": index_code,
+                "indicator": indicator,
+            }
+            if window is not None:
+                query["window"] = window
+            data = self._get(
+                "/indicators/index/latest", params=query, allow_404=True,
+            )
         if data is None:
             return []
         return data.get("items", [])

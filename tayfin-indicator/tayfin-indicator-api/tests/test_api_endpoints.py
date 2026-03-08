@@ -252,3 +252,107 @@ class TestIndicatorsIndexLatest:
         )
         assert resp.status_code == 400
         assert resp.get_json()["error"] == "invalid_window"
+
+
+# ── /indicators/index/latest/<indicator> (indicator-specific) ───────
+
+
+class TestIndicatorsIndexLatestByName:
+    def test_returns_200_with_list(self, client):
+        resp = client.get(
+            "/indicators/index/latest/sma?index_code=NDX&window=50"
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["index_code"] == "NDX"
+        assert data["indicator"] == "sma"
+        assert isinstance(data["items"], list)
+        assert len(data["items"]) == 2
+
+    def test_compound_params(self, client):
+        """Compound params like sma_slope are passed through correctly."""
+        resp = client.get(
+            "/indicators/index/latest/sma_slope?index_code=NDX&sma_window=200&slope_period=20"
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["indicator"] == "sma_slope"
+        assert data["params"] == {"sma_window": 200, "slope_period": 20}
+
+    def test_missing_index_code_returns_400(self, client):
+        resp = client.get("/indicators/index/latest/sma")
+        assert resp.status_code == 400
+
+    def test_empty_result(self, client_empty):
+        resp = client_empty.get(
+            "/indicators/index/latest/sma?index_code=NDX&window=50"
+        )
+        assert resp.status_code == 200
+        assert resp.get_json()["items"] == []
+
+
+# ── /indicators/latest/<indicator> (indicator-specific) ─────────────
+
+
+class TestIndicatorsLatestByName:
+    def test_returns_200(self, client):
+        resp = client.get(
+            "/indicators/latest/sma?ticker=AAPL&window=50"
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["ticker"] == "AAPL"
+        assert data["indicator"] == "sma"
+
+    def test_compound_params(self, client):
+        resp = client.get(
+            "/indicators/latest/sma_slope?ticker=AAPL&sma_window=200&slope_period=20"
+        )
+        assert resp.status_code == 200
+
+    def test_missing_ticker_returns_400(self, client):
+        resp = client.get("/indicators/latest/sma")
+        assert resp.status_code == 400
+
+    def test_not_found_returns_404(self, client_empty):
+        resp = client_empty.get(
+            "/indicators/latest/sma?ticker=ZZZ&window=50"
+        )
+        assert resp.status_code == 404
+
+
+# ── /indicators/range/<indicator> (indicator-specific) ──────────────
+
+
+class TestIndicatorsRangeByName:
+    def test_returns_200_with_items(self, client):
+        resp = client.get(
+            "/indicators/range/sma?ticker=AAPL&window=50"
+            "&from=2025-01-01&to=2026-02-12"
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["indicator"] == "sma"
+        assert len(data["items"]) == 3
+
+    def test_compound_params(self, client):
+        resp = client.get(
+            "/indicators/range/sma_slope?ticker=AAPL&sma_window=200&slope_period=20"
+            "&from=2025-01-01&to=2026-02-12"
+        )
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["indicator"] == "sma_slope"
+        assert data["params"] == {"sma_window": 200, "slope_period": 20}
+
+    def test_missing_from_returns_400(self, client):
+        resp = client.get(
+            "/indicators/range/sma?ticker=AAPL&to=2026-02-12"
+        )
+        assert resp.status_code == 400
+
+    def test_bad_date_returns_400(self, client):
+        resp = client.get(
+            "/indicators/range/sma?ticker=AAPL&from=2025-13-01&to=2026-02-12"
+        )
+        assert resp.status_code == 400
