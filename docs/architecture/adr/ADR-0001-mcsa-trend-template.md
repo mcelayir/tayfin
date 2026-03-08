@@ -1,6 +1,6 @@
 # ADR-0001: MCSA Trend Template Screener Architecture
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-03-08
 - **Author:** @lead-dev
 - **Epic:** [Issue #11 — MCSA UI](https://github.com/mcelayir/tayfin/issues/11)
