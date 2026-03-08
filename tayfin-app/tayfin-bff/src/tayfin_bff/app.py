@@ -166,10 +166,14 @@ def create_app() -> Flask:
                 min_criteria = int(raw)
             except ValueError:
                 return jsonify({"error": "bad_param", "detail": "min_criteria must be integer"}), 400
+            if not (0 <= min_criteria <= 8):
+                return jsonify({"error": "bad_param", "detail": "min_criteria must be between 0 and 8"}), 400
 
         try:
-            limit = min(int(request.args.get("limit", 500)), _MAX_LIMIT)
-            offset = int(request.args.get("offset", 0))
+            raw_limit = int(request.args.get("limit", 500))
+            limit = max(0, min(raw_limit, _MAX_LIMIT))
+            raw_offset = int(request.args.get("offset", 0))
+            offset = max(0, raw_offset)
         except ValueError:
             return jsonify({"error": "bad_param", "detail": "limit/offset must be integers"}), 400
 
