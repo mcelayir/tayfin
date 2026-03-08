@@ -42,8 +42,11 @@
             <td style="font-size: 0.75rem; font-family: monospace;">
                 {% if row.criteria_json is mapping %}
                     {% for k, v in row.criteria_json.items() %}
-                        <span style="color: {{ '#6ee7b7' if v else '#f87171' }};">
-                            {{ k[2:] if k.startswith('c_') else k }}{{ '✓' if v else '✗' }}
+                        {# Derive a short, stable label (e.g., C1) and keep full key as tooltip #}
+                        {% set base_label = (k|split('_'))[0]|upper if '_' in k else k %}
+                        {% set display_label = base_label if base_label != k else (k[2:] if k.startswith('c_') else k) %}
+                        <span style="color: {{ '#6ee7b7' if v else '#f87171' }};" title="{{ k }}">
+                            {{ display_label }}{{ '✓' if v else '✗' }}
                         </span>
                         {%- if not loop.last %} {% endif %}
                     {% endfor %}
