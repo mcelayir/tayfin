@@ -7,11 +7,12 @@
  * See: DESIGN_SPEC §3.3 (Score Table)
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Fragment } from 'react';
 import type { McsaResult, McsaBand } from '../../types/mcsa';
 import { COMPONENT_WEIGHTS } from '../../types/mcsa';
 import { BandBadge } from '../common/BandBadge';
 import { ProgressBar } from '../common/ProgressBar';
+import { DetailPanel } from '../DetailPanel';
 import styles from './ScoreTable.module.css';
 
 // ── Sort types ─────────────────────────────────────────────
@@ -157,8 +158,8 @@ export function ScoreTable({ items, expandedTicker, onRowClick }: ScoreTableProp
           const hasMissing = item.missing_fields.length > 0;
 
           return (
+            <Fragment key={item.ticker}>
             <tr
-              key={item.ticker}
               className={`${isExpanded ? `${styles['row--expanded']} ${styles[`row--${item.mcsa_band}`]}` : ''}`}
               onClick={() => onRowClick(item.ticker)}
               onKeyDown={(e) => handleKeyDown(e, item.ticker)}
@@ -213,6 +214,14 @@ export function ScoreTable({ items, expandedTicker, onRowClick }: ScoreTableProp
                 ),
               )}
             </tr>
+            {isExpanded && (
+              <tr className={styles['row--expanded']}>
+                <td colSpan={8} style={{ padding: 0 }}>
+                  <DetailPanel item={item} />
+                </td>
+              </tr>
+            )}
+            </Fragment>
           );
         })}
       </tbody>
