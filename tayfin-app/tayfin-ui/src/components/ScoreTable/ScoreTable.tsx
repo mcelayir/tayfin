@@ -127,10 +127,11 @@ export function ScoreTable({ items, expandedTicker, onRowClick }: ScoreTableProp
     <table className={styles.scoreTable} role="grid">
       <thead>
         <tr>
-          <th className={styles.alignRight} aria-label="Rank">#</th>
+          <th className={styles.alignRight} scope="col" aria-label="Rank">#</th>
           {COLUMNS.map((col) => (
             <th
               key={col.key}
+              scope="col"
               className={styles[`align${capitalize(col.align)}`]}
               data-sortable={col.sortable}
               onClick={() => col.sortable && handleSort(col.key)}

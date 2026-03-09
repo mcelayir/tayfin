@@ -45,7 +45,7 @@ export function ScoreHistogram({ items }: ScoreHistogramProps) {
   return (
     <div className={styles.card}>
       <h3 className={styles.card__title}>Score Distribution</h3>
-      <div className={styles.card__body}>
+      <div className={styles.card__body} role="img" aria-label="Score distribution histogram">
         {counts.map((bucket) => (
           <div key={bucket.label} className={styles.barRow}>
             <span className={styles.barRow__label}>{bucket.label}</span>

@@ -31,7 +31,7 @@ export function BandDistribution({ items }: BandDistributionProps) {
   return (
     <div className={styles.card}>
       <h3 className={styles.card__title}>Band Distribution</h3>
-      <div className={styles.card__body}>
+      <div className={styles.card__body} role="img" aria-label="Band distribution chart">
         {BAND_KEYS.map((band) => (
           <div key={band} className={styles.barRow}>
             <span className={styles.barRow__label}>

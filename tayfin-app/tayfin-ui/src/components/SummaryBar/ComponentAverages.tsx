@@ -59,7 +59,7 @@ export function ComponentAverages({ items }: ComponentAveragesProps) {
   return (
     <div className={styles.card}>
       <h3 className={styles.card__title}>Avg Component Scores</h3>
-      <div className={styles.card__body}>
+      <div className={styles.card__body} role="img" aria-label="Average component scores chart">
         {COMPONENTS.map((comp) => {
           const avg =
             items.reduce((sum, item) => sum + comp.accessor(item), 0) / n;
