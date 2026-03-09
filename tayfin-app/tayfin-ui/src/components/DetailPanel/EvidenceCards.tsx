@@ -154,7 +154,11 @@ function FundamentalsCard({
   max: number;
   missingFields: string[];
 }) {
-  const fundMissing = missingFields.filter((f) => f.startsWith('fundamentals.') || f.startsWith('fund'));
+  // Match prefixed (fundamentals.*, fund*) and un-prefixed fundamentals keys
+  const FUND_KEYS = ['revenue_growth_yoy', 'earnings_growth_yoy', 'roe', 'net_margin', 'debt_equity'];
+  const fundMissing = missingFields.filter(
+    (f) => f.startsWith('fundamentals.') || f.startsWith('fund') || FUND_KEYS.includes(f),
+  );
 
   return (
     <div className={styles.evidenceCard}>

@@ -139,7 +139,7 @@ Optional (evaluated per task):
 
 ### BFF Integration
 
-- **Development:** Vite dev server on `:5173` with proxy to BFF on `:5000` (configured in `vite.config.ts`)
+- **Development:** Vite dev server on `:5173` with proxy to BFF on `:8030` (configured in `vite.config.ts`)
 - **Production:** BFF serves the built `dist/` folder as static files at `/` and API routes at `/api/*`
 - UI calls only `/api/*` endpoints on the BFF — never calls context APIs directly (ARCHITECTURE_RULES §2.2)
 

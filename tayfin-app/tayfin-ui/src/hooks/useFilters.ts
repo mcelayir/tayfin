@@ -110,7 +110,15 @@ export function useFilters(items: McsaResult[]): UseFiltersReturn {
     }, 300);
   }, []);
 
+  // Clean up pending debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   const resetFilters = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     setBandsState(new Set(ALL_BANDS));
     setMinScoreState(0);
     setTickerSearchState('');

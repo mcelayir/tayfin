@@ -13,12 +13,21 @@ Architecture rules:
 from __future__ import annotations
 
 import logging
+import os
+from pathlib import Path
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 from .clients.screener_client import ScreenerClient
 
 logger = logging.getLogger(__name__)
+
+# Resolve tayfin-ui dist folder relative to this package.
+# In production: tayfin-app/tayfin-ui/dist  (or override via TAYFIN_UI_DIST_DIR)
+_DEFAULT_DIST = (
+    Path(__file__).resolve().parents[4] / "tayfin-ui" / "dist"
+)
+_DIST_DIR = Path(os.environ.get("TAYFIN_UI_DIST_DIR", str(_DEFAULT_DIST)))
 
 
 def create_app() -> Flask:
@@ -34,6 +43,26 @@ def create_app() -> Flask:
     def health():
         """Liveness check — no DB, just confirm the process is running."""
         return jsonify({"status": "ok"})
+
+    # ------------------------------------------------------------------
+    # Static UI serving (production)
+    # ------------------------------------------------------------------
+
+    if _DIST_DIR.is_dir():
+        @app.get("/")
+        def serve_index():
+            """Serve the UI index.html for the root route."""
+            return send_from_directory(str(_DIST_DIR), "index.html")
+
+        @app.get("/assets/<path:filename>")
+        def serve_assets(filename: str):
+            """Serve Vite build assets (JS, CSS, images)."""
+            return send_from_directory(str(_DIST_DIR / "assets"), filename)
+
+        @app.errorhandler(404)
+        def fallback_to_spa(e):  # noqa: ARG001
+            """SPA fallback — serve index.html for client-side routing."""
+            return send_from_directory(str(_DIST_DIR), "index.html")
 
     # ------------------------------------------------------------------
     # MCSA Dashboard  (proxy to Screener API)

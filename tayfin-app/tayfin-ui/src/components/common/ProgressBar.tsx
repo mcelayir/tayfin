@@ -18,7 +18,7 @@ export function ProgressBar({ value, max, color, title }: ProgressBarProps) {
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={max}
-      aria-label={title}
+      aria-label={title ?? `${value.toFixed(1)} / ${max}`}
       title={title ?? `${value.toFixed(1)} / ${max}`}
     >
       <div

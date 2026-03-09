@@ -43,6 +43,11 @@ export function FilterBar({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [localSearch, setLocalSearch] = useState(tickerSearch);
 
+  // Sync localSearch when parent resets tickerSearch
+  useEffect(() => {
+    setLocalSearch(tickerSearch);
+  }, [tickerSearch]);
+
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

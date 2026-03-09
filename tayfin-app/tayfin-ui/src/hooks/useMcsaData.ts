@@ -31,7 +31,7 @@ export function useMcsaData(): UseMcsaDataReturn {
       if (err instanceof ApiError) {
         setError(`API error ${err.status}: ${err.body}`);
       } else {
-        setError('Unable to load MCSA data. Screener API unreachable.');
+        setError('Unable to load MCSA data. BFF unreachable.');
       }
       setState('error');
     }

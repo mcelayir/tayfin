@@ -7,7 +7,7 @@
  * See: DESIGN_SPEC §3.3 (Score Table)
  */
 
-import { useState, useMemo, Fragment } from 'react';
+import { useState, useMemo, Fragment, type KeyboardEvent } from 'react';
 import type { McsaResult, McsaBand } from '../../types/mcsa';
 import { COMPONENT_WEIGHTS } from '../../types/mcsa';
 import { BandBadge } from '../common/BandBadge';
@@ -105,7 +105,7 @@ export function ScoreTable({ items, expandedTicker, onRowClick }: ScoreTableProp
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, ticker: string) => {
+  const handleKeyDown = (e: KeyboardEvent, ticker: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onRowClick(ticker);

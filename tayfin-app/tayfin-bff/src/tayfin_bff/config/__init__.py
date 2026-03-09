@@ -18,11 +18,11 @@ def load_config(
     path: Path | None = None,
     default_filename: str = "bff.yml",
 ) -> dict:
-    """Load YAML config and return as dict.
+    """Load YAML config and return the raw YAML dict.
 
-    Precedence: CLI > env vars > YAML > defaults.
-    This loader reads YAML and returns a dict.  Environment variables are
-    available via ``os.environ`` for other code to consume.
+    Environment variables are loaded into ``os.environ`` via ``python-dotenv``
+    at module import time.  Callers should read ``os.environ`` directly for
+    env-based overrides — this function only returns the YAML layer.
     """
     cfg: dict = {}
     if path:
