@@ -1,0 +1,6 @@
+# tayfin-ingestor-api configuration
+# Environment variables override these values (ADR-04).
+
+server:
+  host: "0.0.0.0"
+  port: 8000
