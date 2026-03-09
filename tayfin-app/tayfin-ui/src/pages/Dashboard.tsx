@@ -1,10 +1,21 @@
 import { useState } from 'react';
 import { useMcsaData } from '../hooks/useMcsaData';
+import { useFilters } from '../hooks/useFilters';
 import { ScoreTable } from '../components/ScoreTable';
+import { FilterBar } from '../components/FilterBar';
 import styles from './Dashboard.module.css';
 
 export function Dashboard() {
   const { items, state, error, reload } = useMcsaData();
+  const {
+    filters,
+    filtered,
+    toggleBand,
+    setMinScore,
+    setTickerSearch,
+    resetFilters,
+    hasActiveFilters,
+  } = useFilters(items);
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null);
 
   const latestDate = items.length > 0 ? items[0].as_of_date : '—';
@@ -34,11 +45,26 @@ export function Dashboard() {
       )}
 
       {state === 'success' && (
-        <ScoreTable
-          items={items}
-          expandedTicker={expandedTicker}
-          onRowClick={handleRowClick}
-        />
+        <>
+          <FilterBar
+            bands={filters.bands}
+            minScore={filters.minScore}
+            tickerSearch={filters.tickerSearch}
+            totalCount={items.length}
+            filteredCount={filtered.length}
+            hasActiveFilters={hasActiveFilters}
+            onToggleBand={toggleBand}
+            onMinScoreChange={setMinScore}
+            onTickerSearchChange={setTickerSearch}
+            onReset={resetFilters}
+          />
+
+          <ScoreTable
+            items={filtered}
+            expandedTicker={expandedTicker}
+            onRowClick={handleRowClick}
+          />
+        </>
       )}
     </div>
   );

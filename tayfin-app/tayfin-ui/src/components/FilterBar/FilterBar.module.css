@@ -1,0 +1,178 @@
+/* FilterBar — filter controls toolbar */
+/* See: DESIGN_SPEC §3.2 */
+
+.filterBar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ── Group ── */
+
+.filterBar__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  position: relative;
+}
+
+.filterBar__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.filterBar__value {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+/* ── Band dropdown ── */
+
+.filterBar__dropdown {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  min-width: 140px;
+  height: 32px;
+}
+
+.filterBar__dropdown:hover {
+  border-color: var(--border-focus);
+}
+
+.filterBar__dropdownText {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filterBar__chevron {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.filterBar__menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: var(--space-1);
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+  z-index: 100;
+  min-width: 160px;
+  padding: var(--space-1) 0;
+}
+
+.filterBar__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.filterBar__option:hover {
+  background: var(--bg-input);
+}
+
+.filterBar__option input[type="checkbox"] {
+  accent-color: var(--info);
+  width: 14px;
+  height: 14px;
+}
+
+.filterBar__bandDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+/* ── Slider ── */
+
+.filterBar__slider {
+  width: 160px;
+  height: 32px;
+  accent-color: var(--info);
+  cursor: pointer;
+}
+
+/* ── Text input ── */
+
+.filterBar__input {
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  height: 32px;
+  width: 160px;
+}
+
+.filterBar__input::placeholder {
+  color: var(--text-muted);
+}
+
+.filterBar__input:focus {
+  border-color: var(--border-focus);
+  outline: none;
+}
+
+/* ── Meta (count + reset) ── */
+
+.filterBar__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  height: 32px;
+}
+
+.filterBar__count {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.filterBar__reset {
+  background: transparent;
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.filterBar__reset:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
