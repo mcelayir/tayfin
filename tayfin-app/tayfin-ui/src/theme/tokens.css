@@ -1,0 +1,114 @@
+/* Tayfin UI Design Tokens — see docs/ui/THEME.md */
+
+:root {
+  /* ── Background ── */
+  --bg-base: #1e1e2e;
+  --bg-surface: #181825;
+  --bg-overlay: #313244;
+  --bg-input: #45475a;
+
+  /* ── Text ── */
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #6c7086;
+  --text-inverse: #1e1e2e;
+
+  /* ── Border ── */
+  --border-default: #45475a;
+  --border-subtle: #313244;
+  --border-focus: #89b4fa;
+
+  /* ── Band Colors ── */
+  --band-strong-bg: #166534;
+  --band-strong-text: #4ade80;
+  --band-strong-accent: #22c55e;
+
+  --band-watchlist-bg: #1e3a5f;
+  --band-watchlist-text: #60a5fa;
+  --band-watchlist-accent: #3b82f6;
+
+  --band-neutral-bg: #854d0e;
+  --band-neutral-text: #fbbf24;
+  --band-neutral-accent: #f59e0b;
+
+  --band-weak-bg: #991b1b;
+  --band-weak-text: #f87171;
+  --band-weak-accent: #ef4444;
+
+  /* ── Component Colors ── */
+  --component-trend: #2dd4bf;
+  --component-trend-light: #5eead4;
+
+  --component-vcp: #a78bfa;
+  --component-vcp-light: #c4b5fd;
+
+  --component-volume: #fb923c;
+  --component-volume-light: #fdba74;
+
+  --component-fundamentals: #f472b6;
+  --component-fundamentals-light: #f9a8d4;
+
+  /* ── Semantic ── */
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --info: #60a5fa;
+
+  /* ── Typography ── */
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ── Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Global Reset ── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--info);
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
