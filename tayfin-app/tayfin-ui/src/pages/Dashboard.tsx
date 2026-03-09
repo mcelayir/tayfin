@@ -3,6 +3,7 @@ import { useMcsaData } from '../hooks/useMcsaData';
 import { useFilters } from '../hooks/useFilters';
 import { ScoreTable } from '../components/ScoreTable';
 import { FilterBar } from '../components/FilterBar';
+import { SummaryBar } from '../components/SummaryBar';
 import styles from './Dashboard.module.css';
 
 export function Dashboard() {
@@ -46,6 +47,8 @@ export function Dashboard() {
 
       {state === 'success' && (
         <>
+          <SummaryBar items={items} />
+
           <FilterBar
             bands={filters.bands}
             minScore={filters.minScore}
