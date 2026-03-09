@@ -19,6 +19,7 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 
 from .clients.screener_client import ScreenerClient
+from .config.loader import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,11 @@ _DIST_DIR = Path(os.environ.get("TAYFIN_UI_DIST_DIR", str(_DEFAULT_DIST)))
 def create_app() -> Flask:
     """Create and configure the Flask application."""
 
+    config = load_config()
     app = Flask(__name__)
+
+    # Feed upstream settings to lazy ScreenerClient initialiser
+    _set_upstream_config(config.get("upstream", {}))
 
     # ------------------------------------------------------------------
     # Health
@@ -137,11 +142,22 @@ def create_app() -> Flask:
 # ------------------------------------------------------------------
 
 _client_instance: ScreenerClient | None = None
+_upstream_config: dict = {}
+
+
+def _set_upstream_config(cfg: dict) -> None:
+    """Store upstream config for lazy ScreenerClient init."""
+    global _upstream_config
+    _upstream_config = cfg
 
 
 def _screener_client() -> ScreenerClient:
-    """Lazy-init singleton ScreenerClient."""
+    """Lazy-init singleton ScreenerClient using upstream config from bff.yml."""
     global _client_instance
     if _client_instance is None:
-        _client_instance = ScreenerClient()
+        _client_instance = ScreenerClient(
+            base_url=_upstream_config.get("screener_api_base_url"),
+            timeout_s=_upstream_config.get("timeout_s", 30.0),
+            max_retries=_upstream_config.get("max_retries", 3),
+        )
     return _client_instance
