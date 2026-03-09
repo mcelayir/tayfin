@@ -25,9 +25,11 @@ logger = logging.getLogger(__name__)
 
 # Resolve tayfin-ui dist folder relative to this package.
 # In production: tayfin-app/tayfin-ui/dist  (or override via TAYFIN_UI_DIST_DIR)
-_DEFAULT_DIST = (
-    Path(__file__).resolve().parents[4] / "tayfin-ui" / "dist"
-)
+# In Docker the path hierarchy is shallower, so guard the lookup.
+try:
+    _DEFAULT_DIST = Path(__file__).resolve().parents[4] / "tayfin-ui" / "dist"
+except IndexError:
+    _DEFAULT_DIST = Path("/nonexistent")  # Docker: UI served by its own container
 _DIST_DIR = Path(os.environ.get("TAYFIN_UI_DIST_DIR", str(_DEFAULT_DIST)))
 
 
