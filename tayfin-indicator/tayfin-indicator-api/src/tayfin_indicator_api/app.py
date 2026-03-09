@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from flask import Flask, jsonify, request
 
 from .clients.ingestor_client import IngestorClient
+from .config.loader import load_config
 from .db.engine import get_engine
 from .repositories.indicator_repository import (
     get_index_latest,
@@ -42,6 +43,7 @@ def _build_params(window: str | None) -> dict | None:
 
 
 def create_app():
+    config = load_config()
     app = Flask(__name__)
 
     # ------------------------------------------------------------------
