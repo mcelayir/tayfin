@@ -94,7 +94,6 @@ def create_app():
         resp = {
             "symbol": symbol.upper(),
             "country": country.upper(),
-            "source": source,
             "from": fr_date.isoformat() if fr_date else None,
             "to": to_date.isoformat() if to_date else None,
             "count": len(items),
