@@ -5,9 +5,11 @@ services:
     image: timescale/timescaledb-ha:pg16
     container_name: tayfin_db_dev
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Provide safe defaults for local development when .env is missing.
+      # Note: Postgres requires a non-empty superuser password at container init.
+      POSTGRES_DB: ${POSTGRES_DB:-tayfin}
+      POSTGRES_USER: ${POSTGRES_USER:-tayfin_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tayfin_password}
     ports:
       - "5432:5432"
     healthcheck:
@@ -24,9 +26,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-tayfin}
+      POSTGRES_USER: ${POSTGRES_USER:-tayfin_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tayfin_password}
     volumes:
       - ../tayfin-ingestor/db/migrations:/flyway/sql/tayfin-ingestor:ro
       - ../tayfin-screener/db/migrations:/flyway/sql/tayfin-screener:ro
