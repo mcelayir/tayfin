@@ -57,8 +57,7 @@ def _date_str(d: Any) -> str:
 def serialize_candle(row: dict) -> dict:
     """Serialize a single OHLCV candle dict to a JSON-safe shape.
 
-    Expected input keys: ticker, as_of_date, open, high, low, close,
-    volume, source.
+    Expected input keys: ticker, as_of_date, open, high, low, close, volume.
     """
     return {
         "ticker": row["ticker"],
@@ -68,7 +67,6 @@ def serialize_candle(row: dict) -> dict:
         "low": _to_float(row["low"]),
         "close": _to_float(row["close"]),
         "volume": _to_int(row["volume"]),
-        "source": row["source"],
     }
 
 

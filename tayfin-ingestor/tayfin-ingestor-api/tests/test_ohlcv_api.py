@@ -14,7 +14,7 @@ import pytest
 
 from conftest import AAPL_DATES, MSFT_DATES, TEST_INDEX_CODE
 
-CANDLE_KEYS = {"ticker", "as_of_date", "open", "high", "low", "close", "volume", "source"}
+CANDLE_KEYS = {"ticker", "as_of_date", "open", "high", "low", "close", "volume"}
 
 
 # ================================================================
@@ -101,7 +101,6 @@ class TestOhlcvLatestTicker:
         assert isinstance(body["close"], (int, float))
         assert isinstance(body["volume"], int)
         assert isinstance(body["ticker"], str)
-        assert isinstance(body["source"], str)
 
 
 # ================================================================
