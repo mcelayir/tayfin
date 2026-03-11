@@ -1,9 +1,7 @@
-"""YAML + env config loader for tayfin-bff.
+"""YAML + env config loader for tayfin-ingestor-api.
 
-The BFF owns no database — it only needs upstream API URLs and a few
-runtime knobs.  Environment variables take precedence over YAML values.
-
-Follows ADR-04 pattern: dotenv loaded at import time, YAML read on demand.
+Follows the ADR-04 standard: python-dotenv at import time, YAML config
+with env-var overrides.  Precedence: CLI > env vars > YAML > defaults.
 """
 
 from __future__ import annotations
@@ -18,9 +16,9 @@ load_dotenv()
 
 def load_config(
     path: Path | None = None,
-    default_filename: str = "bff.yml",
+    default_filename: str = "ingestor.yml",
 ) -> dict:
-    """Load YAML config and return the raw YAML dict.
+    """Load YAML config and return the raw dict.
 
     Environment variables are loaded into ``os.environ`` via ``python-dotenv``
     at module import time.  Callers should read ``os.environ`` directly for

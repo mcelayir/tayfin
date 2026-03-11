@@ -37,7 +37,7 @@ SCREENER_API_DIR = REPO_ROOT / "tayfin-screener" / "tayfin-screener-api"
 
 def _get_engine():
     user = os.environ.get("POSTGRES_USER", "tayfin_user")
-    password = os.environ.get("POSTGRES_PASSWORD", "tayfin_password")
+    password = os.environ.get("POSTGRES_PASSWORD", "")
     db = os.environ.get("POSTGRES_DB", "tayfin")
     host = os.environ.get("POSTGRES_HOST", "localhost")
     port = os.environ.get("POSTGRES_PORT", "5432")

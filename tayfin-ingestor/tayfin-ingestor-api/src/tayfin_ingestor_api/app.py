@@ -1,9 +1,12 @@
 import os
 import re
-from flask import Flask, request, jsonify
+from datetime import date
+
+from flask import Flask, jsonify, request
+
+from .config.loader import load_config
 from .db.engine import get_engine
 from .repositories.fundamentals_repository import FundamentalsRepository
-from datetime import date
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -16,9 +19,8 @@ def _parse_date(value: str) -> date:
 
 
 def create_app():
+    load_config()  # ADR-04: triggers dotenv loading; no YAML keys used yet
     app = Flask(__name__)
-
-    # create engine/repo lazily inside handlers to avoid requiring DB driver at import time
 
     @app.get('/health')
     def health():

@@ -22,6 +22,7 @@ from datetime import date
 
 from flask import Flask, jsonify, request
 
+from .config.loader import load_config
 from .db import get_engine
 from .repositories.vcp_repository import (
     get_latest_all as vcp_get_latest_all,
@@ -66,6 +67,7 @@ def _serialise_row(row: dict) -> dict:
 
 def create_app():
     """Application factory."""
+    load_config()  # ADR-04: triggers dotenv loading; no YAML keys used yet
     app = Flask(__name__)
 
     # ------------------------------------------------------------------

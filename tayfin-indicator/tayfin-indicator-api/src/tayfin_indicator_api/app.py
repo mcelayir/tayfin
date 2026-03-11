@@ -6,9 +6,12 @@ import json
 import re
 from datetime import date, timedelta
 
+import os
+
 from flask import Flask, jsonify, request
 
 from .clients.ingestor_client import IngestorClient
+from .config.loader import load_config
 from .db.engine import get_engine
 from .repositories.indicator_repository import (
     get_index_latest,
@@ -42,7 +45,19 @@ def _build_params(window: str | None) -> dict | None:
 
 
 def create_app():
+    config = load_config()
     app = Flask(__name__)
+
+    # ADR-04: wire YAML upstream config into IngestorClient.
+    # Env vars take precedence over YAML values.
+    _upstream = config.get("upstream", {})
+    app.config["INGESTOR_BASE_URL"] = (
+        os.environ.get("TAYFIN_INGESTOR_API_BASE_URL")
+        or _upstream.get("ingestor_api_base_url")
+    )
+    app.config["INGESTOR_TIMEOUT_S"] = float(
+        _upstream.get("timeout_s", 10.0)
+    )
 
     # ------------------------------------------------------------------
     # Health
@@ -165,7 +180,10 @@ def create_app():
         engine = get_engine()
         
         # Fetch index members from the ingestor API
-        ingestor = IngestorClient()
+        ingestor = IngestorClient(
+            base_url=app.config.get("INGESTOR_BASE_URL"),
+            timeout_s=app.config.get("INGESTOR_TIMEOUT_S", 10.0),
+        )
         tickers = ingestor.get_index_members(index_code)
         
         # Query indicators filtered by index membership

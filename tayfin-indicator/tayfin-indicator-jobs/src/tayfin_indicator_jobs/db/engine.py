@@ -1,4 +1,8 @@
-"""SQLAlchemy engine factory for tayfin-indicator-jobs."""
+"""SQLAlchemy engine factory for tayfin-indicator-jobs.
+
+Env var contract per ADR-05: POSTGRES_* only, postgresql+psycopg:// driver.
+Default credentials per ADR-06: tayfin_user / empty password.
+"""
 
 import os
 
