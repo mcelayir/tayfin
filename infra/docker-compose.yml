@@ -1,5 +1,6 @@
 version: '3.8'
 services:
+  # ── Data tier ──────────────────────────────────────────────
   db:
     image: timescale/timescaledb-ha:pg16
     container_name: tayfin_db_dev
@@ -34,6 +35,69 @@ services:
       - ./flyway-run.sh:/flyway-run.sh:ro
     entrypoint: ["/bin/bash"]
     command: ["/flyway-run.sh"]
+
+  # ── Python APIs (ADR-03 § Flask dev server) ────────────────
+  ingestor-api:
+    build:
+      context: ../tayfin-ingestor/tayfin-ingestor-api
+    ports:
+      - "8000:8000"
+    env_file: ../.env
+    environment:
+      POSTGRES_HOST: db
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+
+  indicator-api:
+    build:
+      context: ../tayfin-indicator/tayfin-indicator-api
+    ports:
+      - "8010:8010"
+    env_file: ../.env
+    environment:
+      POSTGRES_HOST: db
+      TAYFIN_INGESTOR_API_BASE_URL: http://ingestor-api:8000
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+      ingestor-api:
+        condition: service_healthy
+
+  screener-api:
+    build:
+      context: ../tayfin-screener/tayfin-screener-api
+    ports:
+      - "8020:8020"
+    env_file: ../.env
+    environment:
+      POSTGRES_HOST: db
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+
+  # ── BFF + UI (ADR-03 § Vite HMR) ──────────────────────────
+  bff:
+    build:
+      context: ../tayfin-app/tayfin-bff
+    ports:
+      - "8030:8030"
+    environment:
+      TAYFIN_SCREENER_API_BASE_URL: http://screener-api:8020
+    depends_on:
+      screener-api:
+        condition: service_healthy
+
+  ui:
+    build:
+      context: ../tayfin-app/tayfin-ui
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_TARGET: http://bff:8030
+    depends_on:
+      bff:
+        condition: service_healthy
 
 volumes:
   pgdata_dev:
