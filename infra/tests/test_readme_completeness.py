@@ -8,7 +8,6 @@ docker-compose.yml and .env.example as the stack evolves.
 from __future__ import annotations
 
 import pathlib
-import re
 
 import pytest
 

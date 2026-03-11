@@ -163,7 +163,6 @@ def _screener_client() -> ScreenerClient:
     """
     global _client_instance
     if _client_instance is None:
-        import os
         # Env var wins over YAML (ADR-04)
         base_url = (
             os.environ.get("TAYFIN_SCREENER_API_BASE_URL")

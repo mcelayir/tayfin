@@ -11,8 +11,6 @@ import os
 from pathlib import Path
 from unittest import mock
 
-import pytest
-
 
 # ================================================================
 # A) Config Loader Tests (ADR-04)

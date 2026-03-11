@@ -57,6 +57,13 @@ def _docker_exec_env(service: str, var: str) -> str:
         ],
         capture_output=True, text=True, timeout=10,
     )
+    if result.returncode != 0:
+        pytest.fail(
+            f"docker compose exec failed while reading env var {var!r} "
+            f"from service {service!r} (exit code {result.returncode}).\n"
+            f"STDOUT:\n{result.stdout}\n"
+            f"STDERR:\n{result.stderr}"
+        )
     return result.stdout.strip()
 
 

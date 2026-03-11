@@ -15,6 +15,12 @@ for i in $(seq 1 10); do
   sleep 2
 done
 
+# Fail fast if DB never became ready (avoids cryptic Flyway errors).
+if ! flyway info >/dev/null 2>&1; then
+  echo "Error: Flyway could not connect to the database after 10 attempts; aborting migrations." >&2
+  exit 1
+fi
+
 echo "Running Flyway for tayfin_ingestor"
 FLYWAY_LOCATIONS=filesystem:/flyway/sql/tayfin-ingestor FLYWAY_DEFAULT_SCHEMA=tayfin_ingestor flyway migrate
 

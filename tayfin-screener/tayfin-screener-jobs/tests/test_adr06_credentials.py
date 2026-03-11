@@ -14,8 +14,6 @@ import sys
 from pathlib import Path
 from unittest import mock
 
-import pytest
-
 # Ensure src/ is importable
 _SRC = str(Path(__file__).resolve().parents[1] / "src")
 if _SRC not in sys.path:
