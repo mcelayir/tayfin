@@ -85,9 +85,14 @@ class IngestorClient:
         self,
         symbol: str,
         country: str = "US",
-        source: str = "stockdex",
+        source: str | None = None,
     ) -> dict | None:
         """Return the latest fundamentals snapshot for *symbol*.
+
+        The API and DB lookup are ticker + date based; callers SHOULD NOT rely
+        on a specific provider *source*. When *source* is provided it will be
+        passed to the API; when omitted the client will request by ticker/country
+        only (no source query param).
 
         Returns a flat dict with keys such as ``revenue_growth_yoy``,
         ``earnings_growth_yoy``, ``roe``, ``net_margin``, ``debt_equity``,
@@ -96,8 +101,9 @@ class IngestorClient:
         params: dict[str, str] = {
             "symbol": symbol,
             "country": country,
-            "source": source,
         }
+        if source is not None:
+            params["source"] = source
         return self._get("/fundamentals/latest", params=params, allow_404=True)
 
     # ------------------------------------------------------------------
