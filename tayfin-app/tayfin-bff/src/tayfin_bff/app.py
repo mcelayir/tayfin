@@ -156,9 +156,10 @@ def _set_upstream_config(cfg: dict) -> None:
 def _screener_client() -> ScreenerClient:
     """Lazy-init singleton ScreenerClient using upstream config from bff.yml.
 
-    Per ADR-04: env vars take precedence over YAML values.  We pass None
-    as base_url when the env var is set so that ScreenerClient.__init__
-    picks up ``TAYFIN_SCREENER_API_BASE_URL`` from the environment.
+    Per ADR-04: env vars take precedence over YAML values.  The base URL is
+    resolved here by first checking the ``TAYFIN_SCREENER_API_BASE_URL``
+    environment variable and falling back to ``screener_api_base_url`` from
+    the loaded upstream config when the env var is not set.
     """
     global _client_instance
     if _client_instance is None:

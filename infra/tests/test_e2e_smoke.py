@@ -48,24 +48,27 @@ def _get_json(url: str) -> tuple[int, dict]:
     return code, json.loads(body)
 
 
-def _docker_exec_env(container: str, var: str) -> str:
-    """Read an env var from inside a running container."""
+def _docker_exec_env(service: str, var: str) -> str:
+    """Read an env var from inside a running compose service."""
     result = subprocess.run(
-        ["docker", "exec", container, "printenv", var],
+        [
+            "docker", "compose", "-f", "infra/docker-compose.yml",
+            "exec", "-T", service, "printenv", var,
+        ],
         capture_output=True, text=True, timeout=10,
     )
     return result.stdout.strip()
 
 
-# ── Fixtures ─────────────────────────────────────────────────
-
-COMPOSE_CONTAINERS = {
-    "ingestor-api": "infra-ingestor-api-1",
-    "indicator-api": "infra-indicator-api-1",
-    "screener-api": "infra-screener-api-1",
-    "bff": "infra-bff-1",
-    "ui": "infra-ui-1",
-}
+def _docker_exec_python(service: str, script: str) -> subprocess.CompletedProcess:
+    """Run a Python snippet inside a running compose service."""
+    return subprocess.run(
+        [
+            "docker", "compose", "-f", "infra/docker-compose.yml",
+            "exec", "-T", service, "python", "-c", script,
+        ],
+        capture_output=True, text=True, timeout=15,
+    )
 
 
 # ── 1. Health Endpoints ─────────────────────────────────────
@@ -122,29 +125,20 @@ def test_bff_to_screener_api() -> None:
 def test_indicator_api_ingestor_env() -> None:
     """indicator-api container has TAYFIN_INGESTOR_API_BASE_URL set to
     the Docker service name (not localhost)."""
-    val = _docker_exec_env(
-        COMPOSE_CONTAINERS["indicator-api"],
-        "TAYFIN_INGESTOR_API_BASE_URL",
-    )
+    val = _docker_exec_env("indicator-api", "TAYFIN_INGESTOR_API_BASE_URL")
     assert val == "http://ingestor-api:8000", f"Got: {val!r}"
 
 
 def test_bff_screener_env() -> None:
     """BFF container has TAYFIN_SCREENER_API_BASE_URL set to
     the Docker service name."""
-    val = _docker_exec_env(
-        COMPOSE_CONTAINERS["bff"],
-        "TAYFIN_SCREENER_API_BASE_URL",
-    )
+    val = _docker_exec_env("bff", "TAYFIN_SCREENER_API_BASE_URL")
     assert val == "http://screener-api:8020", f"Got: {val!r}"
 
 
 def test_ui_vite_target_env() -> None:
     """UI container has VITE_API_TARGET pointing at BFF."""
-    val = _docker_exec_env(
-        COMPOSE_CONTAINERS["ui"],
-        "VITE_API_TARGET",
-    )
+    val = _docker_exec_env("ui", "VITE_API_TARGET")
     assert val == "http://bff:8030", f"Got: {val!r}"
 
 
@@ -153,19 +147,19 @@ def test_ui_vite_target_env() -> None:
 @pytest.mark.parametrize("svc", ["ingestor-api", "indicator-api", "screener-api"])
 def test_postgres_host_is_db(svc: str) -> None:
     """DB-connected APIs have POSTGRES_HOST=db inside the container."""
-    val = _docker_exec_env(COMPOSE_CONTAINERS[svc], "POSTGRES_HOST")
+    val = _docker_exec_env(svc, "POSTGRES_HOST")
     assert val == "db", f"{svc} POSTGRES_HOST={val!r}, expected 'db'"
 
 
 # ── 5. DB Query from Containers ─────────────────────────────
 
-@pytest.mark.parametrize("container,package", [
-    ("infra-ingestor-api-1", "tayfin_ingestor_api"),
-    ("infra-indicator-api-1", "tayfin_indicator_api"),
-    ("infra-screener-api-1", "tayfin_screener_api"),
+@pytest.mark.parametrize("service,package", [
+    ("ingestor-api", "tayfin_ingestor_api"),
+    ("indicator-api", "tayfin_indicator_api"),
+    ("screener-api", "tayfin_screener_api"),
 ])
-def test_db_select_from_container(container: str, package: str) -> None:
-    """Each DB container can run SELECT 1 through its engine."""
+def test_db_select_from_container(service: str, package: str) -> None:
+    """Each DB service can run SELECT 1 through its engine."""
     script = (
         f"import sqlalchemy as sa\n"
         f"from {package}.db.engine import get_engine\n"
@@ -174,10 +168,7 @@ def test_db_select_from_container(container: str, package: str) -> None:
         f"    r = c.execute(sa.text('SELECT 1'))\n"
         f"    print(r.scalar())\n"
     )
-    result = subprocess.run(
-        ["docker", "exec", container, "python", "-c", script],
-        capture_output=True, text=True, timeout=15,
-    )
+    result = _docker_exec_python(service, script)
     assert result.returncode == 0, (
-        f"{container} DB query failed: {result.stderr}")
+        f"{service} DB query failed: {result.stderr}")
     assert result.stdout.strip() == "1"

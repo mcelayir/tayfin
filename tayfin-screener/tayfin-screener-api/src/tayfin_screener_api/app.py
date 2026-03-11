@@ -67,7 +67,7 @@ def _serialise_row(row: dict) -> dict:
 
 def create_app():
     """Application factory."""
-    config = load_config()
+    load_config()  # ADR-04: triggers dotenv loading; no YAML keys used yet
     app = Flask(__name__)
 
     # ------------------------------------------------------------------

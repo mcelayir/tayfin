@@ -66,6 +66,47 @@ class TestConfigLoader:
 # ================================================================
 
 
+class TestUpstreamWiring:
+    """Tests for create_app() wiring YAML upstream config into IngestorClient."""
+
+    def test_yaml_upstream_applies_when_env_absent(self, monkeypatch, tmp_path):
+        """YAML upstream.ingestor_api_base_url is applied when env var is not set."""
+        # Ensure env var is absent
+        monkeypatch.delenv("TAYFIN_INGESTOR_API_BASE_URL", raising=False)
+
+        # Stub out IngestorClient, get_engine, and repo functions
+        monkeypatch.setattr(
+            "tayfin_indicator_api.app.get_engine", lambda: "fake-engine"
+        )
+        monkeypatch.setattr(
+            "tayfin_indicator_api.app.ping_db", lambda engine: True
+        )
+
+        from tayfin_indicator_api.app import create_app
+
+        app = create_app()
+
+        assert app.config["INGESTOR_BASE_URL"] == "http://localhost:8000"
+        assert app.config["INGESTOR_TIMEOUT_S"] == 30.0
+
+    def test_env_var_overrides_yaml_upstream(self, monkeypatch):
+        """TAYFIN_INGESTOR_API_BASE_URL env var overrides YAML value."""
+        monkeypatch.setenv("TAYFIN_INGESTOR_API_BASE_URL", "http://ingestor-api:8000")
+
+        monkeypatch.setattr(
+            "tayfin_indicator_api.app.get_engine", lambda: "fake-engine"
+        )
+        monkeypatch.setattr(
+            "tayfin_indicator_api.app.ping_db", lambda engine: True
+        )
+
+        from tayfin_indicator_api.app import create_app
+
+        app = create_app()
+
+        assert app.config["INGESTOR_BASE_URL"] == "http://ingestor-api:8000"
+
+
 class TestGetEngine:
     """Tests for db/engine.py."""
 

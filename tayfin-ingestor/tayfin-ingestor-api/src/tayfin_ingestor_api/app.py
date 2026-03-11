@@ -19,7 +19,7 @@ def _parse_date(value: str) -> date:
 
 
 def create_app():
-    config = load_config()
+    load_config()  # ADR-04: triggers dotenv loading; no YAML keys used yet
     app = Flask(__name__)
 
     @app.get('/health')
