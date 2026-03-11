@@ -177,6 +177,29 @@ The database is NOT a shared read model.
 
 ---
 
+## 4.4 Avoid provider `source` in named SQL queries
+
+- Named SQL queries and API lookup endpoints MUST NOT rely on a provider
+	`source` parameter as part of the canonical lookup key. Lookups MUST be
+	performed by instrument identity (ticker/instrument_id) and by date-range or
+	`latest` semantics only.
+- Rationale: provider identifiers are implementation details of the ingest
+	context and vary across providers (e.g. `stockdex`, `stockdex_yahoo`). If
+	named queries filter by `source` they become brittle and callers will get
+	404s when the provider name changes or differs between ingestion runs.
+- Implementation guidance:
+	- Repository SQL should query by `instrument_id` and `as_of_date` (range
+		or ORDER BY/ LIMIT for latest), not by `source`.
+	- API handlers SHOULD accept `source` only as an advisory parameter (for
+		debugging) and MUST return results by ticker/date when present.
+	- Jobs and cross-context callers MUST request data by ticker and date only.
+	- When provider provenance is needed, include it in the snapshot payload
+		(e.g. a `source` field in the returned metrics) rather than using it to
+		select rows.
+
+
+---
+
 # 5. Migrations (Flyway)
 
 ## 5.1 Ownership
