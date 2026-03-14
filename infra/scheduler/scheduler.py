@@ -60,45 +60,47 @@ def run_once(schedules: dict):
             conn = db_lock.get_connection()
         except Exception:
             conn = None
-    for name, cfg in schedules.items():
-        cmd = cfg.get("cmd")
-        if not cmd:
-            print(f"[scheduler] schedule {name} has no cmd, skipping")
-            continue
-        # Acquire advisory lock to prevent overlapping runs.
-        acquired = False
-        try:
-            if conn is not None:
-                acquired = db_lock.try_acquire_lock(name, conn=conn)
-            else:
-                acquired = db_lock.try_acquire_lock(name)
-        except Exception as e:
-            print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
-            # proceed to attempt run if locking fails
-            acquired = True
 
-        if not acquired:
-            print(f"[scheduler] lock not acquired for {name}, skipping")
-            continue
-
-        try:
-            ok = run_command(cmd)
-            if not ok:
-                failures.append(name)
-        finally:
+        for name, cfg in schedules.items():
+            cmd = cfg.get("cmd")
+            if not cmd:
+                print(f"[scheduler] schedule {name} has no cmd, skipping")
+                continue
+            # Acquire advisory lock to prevent overlapping runs.
+            acquired = False
             try:
                 if conn is not None:
-                    db_lock.release_lock(name, conn=conn)
+                    acquired = db_lock.try_acquire_lock(name, conn=conn)
                 else:
-                    db_lock.release_lock(name)
+                    acquired = db_lock.try_acquire_lock(name)
             except Exception as e:
-                print(f"[scheduler] warning: failed to release lock for {name}: {e}")
+                print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
+                # proceed to attempt run if locking fails
+                acquired = True
+
+            if not acquired:
+                print(f"[scheduler] lock not acquired for {name}, skipping")
+                continue
+
+            try:
+                ok = run_command(cmd)
+                if not ok:
+                    failures.append(name)
+            finally:
+                try:
+                    if conn is not None:
+                        db_lock.release_lock(name, conn=conn)
+                    else:
+                        db_lock.release_lock(name)
+                except Exception as e:
+                    print(f"[scheduler] warning: failed to release lock for {name}: {e}")
     finally:
         if conn is not None:
             try:
                 conn.close()
             except Exception:
                 pass
+
     if failures:
         print(f"[scheduler] failures: {failures}")
         sys.exit(1)
