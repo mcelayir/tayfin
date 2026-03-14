@@ -27,6 +27,10 @@ jobs:
           pip install -r tayfin-screener/tayfin-screener-jobs/requirements.txt
           pip install -r infra/scheduler/requirements.txt || true
 
+      - name: Install test runner
+        run: |
+          pip install pytest
+
       - name: Run smoke tests
         run: |
           pytest infra/tests/test_smoke_jobs.py -q
