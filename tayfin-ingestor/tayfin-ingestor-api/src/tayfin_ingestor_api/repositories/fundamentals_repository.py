@@ -27,11 +27,11 @@ class FundamentalsRepository:
                 return None
             return {"id": str(row[0]), "ticker": row[1], "country": row[2]}
 
-    def get_latest_snapshot(self, instrument_id: str, source: str):
+    def get_latest_snapshot(self, instrument_id: str):
         stmt = text(
-            "SELECT as_of_date, price, eps_ttm, bvps, standard_bvps, total_debt, total_equity, net_income_ttm, total_revenue, pe_ratio, pb_ratio, standard_pb_ratio, debt_equity, roe, net_margin, revenue_growth_yoy, earnings_growth_yoy FROM tayfin_ingestor.fundamentals_snapshots WHERE instrument_id = :instrument_id AND source = :source ORDER BY as_of_date DESC LIMIT 1"
+            "SELECT as_of_date, price, eps_ttm, bvps, standard_bvps, total_debt, total_equity, net_income_ttm, total_revenue, pe_ratio, pb_ratio, standard_pb_ratio, debt_equity, roe, net_margin, revenue_growth_yoy, earnings_growth_yoy FROM tayfin_ingestor.fundamentals_snapshots WHERE instrument_id = :instrument_id ORDER BY as_of_date DESC LIMIT 1"
         )
-        params = {"instrument_id": instrument_id, "source": source}
+        params = {"instrument_id": instrument_id}
         with self.engine.connect() as conn:
             res = conn.execute(stmt, params)
             row = res.fetchone()
@@ -58,8 +58,8 @@ class FundamentalsRepository:
             }
             return {"as_of_date": as_of, "metrics": metrics}
 
-    def get_snapshots_range(self, instrument_id: str, source: str, fr, to, limit: int, order: str):
-        sql = "SELECT as_of_date, price, eps_ttm, bvps, standard_bvps, total_debt, total_equity, net_income_ttm, total_revenue, pe_ratio, pb_ratio, standard_pb_ratio, debt_equity, roe, net_margin, revenue_growth_yoy, earnings_growth_yoy FROM tayfin_ingestor.fundamentals_snapshots WHERE instrument_id = :instrument_id AND source = :source"
+    def get_snapshots_range(self, instrument_id: str, fr, to, limit: int, order: str):
+        sql = "SELECT as_of_date, price, eps_ttm, bvps, standard_bvps, total_debt, total_equity, net_income_ttm, total_revenue, pe_ratio, pb_ratio, standard_pb_ratio, debt_equity, roe, net_margin, revenue_growth_yoy, earnings_growth_yoy FROM tayfin_ingestor.fundamentals_snapshots WHERE instrument_id = :instrument_id"
         if fr:
             sql += " AND as_of_date >= :fr"
         if to:
@@ -67,7 +67,7 @@ class FundamentalsRepository:
         sql += f" ORDER BY as_of_date { 'ASC' if order=='asc' else 'DESC' } LIMIT :limit"
 
         stmt = text(sql)
-        params = {"instrument_id": instrument_id, "source": source, "limit": limit}
+        params = {"instrument_id": instrument_id, "limit": limit}
         if fr:
             params["fr"] = fr
         if to:

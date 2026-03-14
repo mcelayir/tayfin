@@ -30,7 +30,6 @@ def create_app():
     def latest():
         symbol = request.args.get('symbol')
         country = request.args.get('country', 'US')
-        source = request.args.get('source', 'stockdex_yahoo')
 
         if not symbol:
             return jsonify({"error": "symbol_required", "details": "query param 'symbol' is required"}), 400
@@ -41,11 +40,14 @@ def create_app():
         if not instr:
             return jsonify({"error": "instrument_not_found", "details": f"{symbol} {country}"}), 404
 
-        row = repo.get_latest_snapshot(instr['id'], source)
+        # Intentionally ignore any `source` query param: return the latest
+        # snapshot for the instrument across all sources so callers receive
+        # the most recent available data for the ticker.
+        row = repo.get_latest_snapshot(instr['id'])
         if not row:
-            return jsonify({"error": "snapshot_not_found", "details": f"no snapshot for {symbol} {country} {source}"}), 404
+            return jsonify({"error": "snapshot_not_found", "details": f"no snapshot for {symbol} {country}"}), 404
 
-        resp = {"symbol": symbol.upper(), "country": country.upper(), "source": source, "as_of_date": row['as_of_date'].isoformat()}
+        resp = {"symbol": symbol.upper(), "country": country.upper(), "as_of_date": row['as_of_date'].isoformat()}
         resp.update(row['metrics'])
         return jsonify(resp)
 
@@ -53,7 +55,6 @@ def create_app():
     def range_query():
         symbol = request.args.get('symbol')
         country = request.args.get('country', 'US')
-        source = request.args.get('source', 'stockdex_yahoo')
         fr = request.args.get('from')
         to = request.args.get('to')
         order = request.args.get('order', 'asc').lower()
@@ -85,12 +86,14 @@ def create_app():
         if not instr:
             return jsonify({"error": "instrument_not_found", "details": f"{symbol} {country}"}), 404
 
-        items = repo.get_snapshots_range(instr['id'], source, fr_date, to_date, limit, order)
+        # Ignore `source` and return snapshots across all providers for the
+        # requested ticker in the given date range. This makes the API behave
+        # predictably by ticker and date only.
+        items = repo.get_snapshots_range(instr['id'], fr_date, to_date, limit, order)
 
         resp = {
             "symbol": symbol.upper(),
             "country": country.upper(),
-            "source": source,
             "from": fr_date.isoformat() if fr_date else None,
             "to": to_date.isoformat() if to_date else None,
             "count": len(items),

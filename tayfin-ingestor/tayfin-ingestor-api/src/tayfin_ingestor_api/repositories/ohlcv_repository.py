@@ -20,7 +20,11 @@ def _dec(v):
 
 
 def _row_to_dict(row) -> dict:
-    """Map a (ticker, as_of_date, open, high, low, close, volume, source) row."""
+    """Map a (ticker, as_of_date, open, high, low, close, volume) row.
+
+    API responses intentionally omit per-provider `source` metadata; callers
+    should treat returned OHLCV as the canonical snapshot for that date.
+    """
     return {
         "ticker": row[0],
         "as_of_date": row[1].isoformat() if hasattr(row[1], "isoformat") else str(row[1]),
@@ -29,7 +33,6 @@ def _row_to_dict(row) -> dict:
         "low": _dec(row[4]),
         "close": _dec(row[5]),
         "volume": row[6],
-        "source": row[7],
     }
 
 
@@ -61,7 +64,7 @@ class OhlcvRepository:
             return None
 
         stmt = text(
-            "SELECT i.ticker, o.as_of_date, o.open, o.high, o.low, o.close, o.volume, o.source "
+            "SELECT i.ticker, o.as_of_date, o.open, o.high, o.low, o.close, o.volume "
             "FROM tayfin_ingestor.ohlcv_daily o "
             "JOIN tayfin_ingestor.instruments i ON o.instrument_id = i.id "
             "WHERE o.instrument_id = :instrument_id "
@@ -91,7 +94,7 @@ class OhlcvRepository:
             return None  # instrument not found
 
         sql = (
-            "SELECT i.ticker, o.as_of_date, o.open, o.high, o.low, o.close, o.volume, o.source "
+            "SELECT i.ticker, o.as_of_date, o.open, o.high, o.low, o.close, o.volume "
             "FROM tayfin_ingestor.ohlcv_daily o "
             "JOIN tayfin_ingestor.instruments i ON o.instrument_id = i.id "
             "WHERE o.instrument_id = :instrument_id"
@@ -124,7 +127,7 @@ class OhlcvRepository:
         """
         stmt = text(
             "SELECT DISTINCT ON (o.instrument_id) "
-            "  i.ticker, o.as_of_date, o.open, o.high, o.low, o.close, o.volume, o.source "
+            "  i.ticker, o.as_of_date, o.open, o.high, o.low, o.close, o.volume "
             "FROM tayfin_ingestor.index_memberships im "
             "JOIN tayfin_ingestor.ohlcv_daily o ON o.instrument_id = im.instrument_id "
             "JOIN tayfin_ingestor.instruments i ON i.id = im.instrument_id "

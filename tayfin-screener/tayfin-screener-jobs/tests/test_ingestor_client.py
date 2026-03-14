@@ -240,7 +240,6 @@ class TestGetFundamentalsLatest:
         _, kwargs = mock_get.call_args
         assert kwargs["params"]["symbol"] == "AAPL"
         assert kwargs["params"]["country"] == "US"
-        assert kwargs["params"]["source"] == "stockdex"
 
     @patch("tayfin_screener_jobs.clients.ingestor_client.httpx.get")
     def test_404_returns_none(self, mock_get):
@@ -253,8 +252,7 @@ class TestGetFundamentalsLatest:
     def test_custom_country_and_source(self, mock_get):
         mock_get.return_value = _mock_response(200, {})
         client = IngestorClient(base_url="http://test:8000")
-        client.get_fundamentals_latest("THYAO", country="TR", source="custom")
+        client.get_fundamentals_latest("THYAO", country="TR")
 
         _, kwargs = mock_get.call_args
         assert kwargs["params"]["country"] == "TR"
-        assert kwargs["params"]["source"] == "custom"
