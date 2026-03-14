@@ -69,24 +69,24 @@ def run_once(schedules: dict):
             if attempt < max_attempts:
                 time.sleep(wait_seconds)
     if conn is None:
-        print("[scheduler] warning: proceeding without DB connection; advisory locks disabled")
+        print("[scheduler] warning: proceeding without shared DB connection; advisory locks will be skipped")
 
+    try:
         for name, cfg in schedules.items():
             cmd = cfg.get("cmd")
             if not cmd:
                 print(f"[scheduler] schedule {name} has no cmd, skipping")
                 continue
-            # Acquire advisory lock to prevent overlapping runs.
-            acquired = False
-            try:
-                if conn is not None:
+
+            # Try to acquire advisory lock only if we have a shared connection.
+            acquired = True
+            if conn is not None:
+                try:
                     acquired = db_lock.try_acquire_lock(name, conn=conn)
-                else:
-                    acquired = db_lock.try_acquire_lock(name)
-            except Exception as e:
-                print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
-                # proceed to attempt run if locking fails
-                acquired = True
+                except Exception as e:
+                    print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
+                    # proceed to attempt run if locking fails
+                    acquired = True
 
             if not acquired:
                 print(f"[scheduler] lock not acquired for {name}, skipping")
@@ -97,13 +97,11 @@ def run_once(schedules: dict):
                 if not ok:
                     failures.append(name)
             finally:
-                try:
-                    if conn is not None:
+                if conn is not None:
+                    try:
                         db_lock.release_lock(name, conn=conn)
-                    else:
-                        db_lock.release_lock(name)
-                except Exception as e:
-                    print(f"[scheduler] warning: failed to release lock for {name}: {e}")
+                    except Exception as e:
+                        print(f"[scheduler] warning: failed to release lock for {name}: {e}")
     finally:
         if conn is not None:
             try:
