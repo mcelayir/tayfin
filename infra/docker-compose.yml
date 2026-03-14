@@ -18,6 +18,8 @@ services:
       retries: 20
     volumes:
       - pgdata_dev:/var/lib/postgresql/data
+      # Initialization SQL (creates `postgres` role if missing)
+      - ./db/init:/docker-entrypoint-initdb.d:ro
 
   flyway:
     image: flyway/flyway:12
