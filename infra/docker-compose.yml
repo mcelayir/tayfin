@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   # ── Data tier ──────────────────────────────────────────────
   db:
@@ -126,6 +125,11 @@ services:
       - ..:/repo:cached
     # Default: run all schedules once and exit. For continuous scheduler remove --once.
     command: ["--once"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/schedules.yml"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
 
 volumes:
   pgdata_dev:

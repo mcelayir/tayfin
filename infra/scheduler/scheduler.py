@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 import yaml
 from typing import Dict
+from infra.scheduler import db_lock
 
 # Prefer schedules file copied into image at /app/schedules.yml (when running in
 # the scheduler container). Fall back to repo-relative path when running from
@@ -52,18 +53,52 @@ def run_command(cmd: str):
 
 def run_once(schedules: dict):
     failures = []
+    # Reuse a single DB connection for advisory lock operations during this run
+    conn = None
+    try:
+        try:
+            conn = db_lock.get_connection()
+        except Exception:
+            conn = None
     for name, cfg in schedules.items():
         cmd = cfg.get("cmd")
         if not cmd:
             print(f"[scheduler] schedule {name} has no cmd, skipping")
             continue
-        # Example: integrate DB advisory locks here to prevent overlapping runs.
-        # from infra.scheduler.db_lock import make_lock_key
-        # lock_key = make_lock_key(name)
-        # TODO: acquire advisory lock using a DB connection before running.
-        ok = run_command(cmd)
-        if not ok:
-            failures.append(name)
+        # Acquire advisory lock to prevent overlapping runs.
+        acquired = False
+        try:
+            if conn is not None:
+                acquired = db_lock.try_acquire_lock(name, conn=conn)
+            else:
+                acquired = db_lock.try_acquire_lock(name)
+        except Exception as e:
+            print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
+            # proceed to attempt run if locking fails
+            acquired = True
+
+        if not acquired:
+            print(f"[scheduler] lock not acquired for {name}, skipping")
+            continue
+
+        try:
+            ok = run_command(cmd)
+            if not ok:
+                failures.append(name)
+        finally:
+            try:
+                if conn is not None:
+                    db_lock.release_lock(name, conn=conn)
+                else:
+                    db_lock.release_lock(name)
+            except Exception as e:
+                print(f"[scheduler] warning: failed to release lock for {name}: {e}")
+    finally:
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
     if failures:
         print(f"[scheduler] failures: {failures}")
         sys.exit(1)

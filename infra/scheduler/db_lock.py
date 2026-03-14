@@ -24,6 +24,11 @@ def _connect_from_env():
     return psycopg.connect(conninfo)
 
 
+def get_connection():
+    """Return a new psycopg connection using environment variables."""
+    return _connect_from_env()
+
+
 def try_acquire_lock(name: str, conn: Optional[psycopg.Connection] = None) -> bool:
     """Try to acquire an advisory lock for `name`. Returns True if acquired."""
     own_conn = False
