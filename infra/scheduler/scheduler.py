@@ -72,36 +72,73 @@ def run_once(schedules: dict):
         print("[scheduler] warning: proceeding without shared DB connection; advisory locks will be skipped")
 
     try:
+        # Group schedules by module (derived from `python -m <module>` in the cmd)
+        module_groups: dict[str, list[tuple[str, str]]] = {}
         for name, cfg in schedules.items():
             cmd = cfg.get("cmd")
             if not cmd:
                 print(f"[scheduler] schedule {name} has no cmd, skipping")
                 continue
-
-            # Try to acquire advisory lock only if we have a shared connection.
-            acquired = True
-            if conn is not None:
+            # extract module after `-m`
+            parts = cmd.split()
+            module = None
+            if "-m" in parts:
                 try:
-                    acquired = db_lock.try_acquire_lock(name, conn=conn)
-                except Exception as e:
-                    print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
-                    # proceed to attempt run if locking fails
-                    acquired = True
+                    m_idx = parts.index("-m")
+                    module = parts[m_idx + 1]
+                except Exception:
+                    module = None
+            # fallback: try pattern `python -m modulename`
+            if module is None:
+                # crude fallback: take second token when command starts with python
+                if parts and parts[0].endswith("python") and len(parts) > 2 and parts[1] == "-m":
+                    module = parts[2]
 
-            if not acquired:
-                print(f"[scheduler] lock not acquired for {name}, skipping")
-                continue
+            mod_key = module or "unknown"
+            module_groups.setdefault(mod_key, []).append((name, cmd))
 
-            try:
-                ok = run_command(cmd)
-                if not ok:
-                    failures.append(name)
-            finally:
+        # Desired execution order of modules
+        preferred_order = ["tayfin_ingestor_jobs", "tayfin_indicator_jobs", "tayfin_screener_jobs"]
+
+        # Build ordered list of modules to execute: preferred order first, then the rest
+        ordered_modules: list[str] = []
+        for p in preferred_order:
+            if p in module_groups:
+                ordered_modules.append(p)
+        # append any remaining module keys (preserve insertion order)
+        for k in module_groups.keys():
+            if k not in ordered_modules:
+                ordered_modules.append(k)
+
+        # Execute groups in order
+        for mod in ordered_modules:
+            entries = module_groups.get(mod, [])
+            print(f"[scheduler] executing module group: {mod} ({len(entries)} jobs)")
+            for name, cmd in entries:
+                # Try to acquire advisory lock only if we have a shared connection.
+                acquired = True
                 if conn is not None:
                     try:
-                        db_lock.release_lock(name, conn=conn)
+                        acquired = db_lock.try_acquire_lock(name, conn=conn)
                     except Exception as e:
-                        print(f"[scheduler] warning: failed to release lock for {name}: {e}")
+                        print(f"[scheduler] warning: could not acquire lock for {name}: {e}")
+                        # proceed to attempt run if locking fails
+                        acquired = True
+
+                if not acquired:
+                    print(f"[scheduler] lock not acquired for {name}, skipping")
+                    continue
+
+                try:
+                    ok = run_command(cmd)
+                    if not ok:
+                        failures.append(name)
+                finally:
+                    if conn is not None:
+                        try:
+                            db_lock.release_lock(name, conn=conn)
+                        except Exception as e:
+                            print(f"[scheduler] warning: failed to release lock for {name}: {e}")
     finally:
         if conn is not None:
             try:
