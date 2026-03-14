@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+export POSTGRES_DB=${POSTGRES_DB:-tayfin}
+export POSTGRES_USER=${POSTGRES_USER:-tayfin_user}
+export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-tayfin_password}
+
 export FLYWAY_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
 export FLYWAY_USER=${POSTGRES_USER}
 export FLYWAY_PASSWORD=${POSTGRES_PASSWORD}
