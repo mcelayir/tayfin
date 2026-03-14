@@ -138,9 +138,28 @@ function VolumeCard({ evidence, max }: { evidence: VolumeEvidence; max: number }
           {evidence.score.toFixed(1)} / {max}
         </span>
       </div>
-      <BoolRow label="Pullback below volume SMA" value={evidence.pullback_below_avg} />
-      <BoolRow label="Volume dry-up detected" value={evidence.volume_dry_up} />
-      <BoolRow label="No abnormal selling spikes" value={evidence.no_abnormal_selling} />
+l      {/* Accept either backend naming or legacy UI naming for robustness */}
+      <BoolRow
+        label="Pullback below volume SMA"
+        value={
+          // backend: pullback_below_sma | UI older: pullback_below_avg
+          (evidence as any).pullback_below_avg ?? (evidence as any).pullback_below_sma
+        }
+      />
+      <BoolRow
+        label="Volume dry-up detected"
+        value={
+          // backend: volume_dryup | UI older: volume_dry_up
+          (evidence as any).volume_dry_up ?? (evidence as any).volume_dryup
+        }
+      />
+      <BoolRow
+        label="No abnormal selling spikes"
+        value={
+          // backend: no_heavy_selling | UI older: no_abnormal_selling
+          (evidence as any).no_abnormal_selling ?? (evidence as any).no_heavy_selling
+        }
+      />
     </div>
   );
 }
