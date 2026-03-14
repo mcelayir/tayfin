@@ -7,10 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only the scheduler files (avoid copying the whole repo)
-COPY infra/scheduler/requirements.txt /app/requirements.txt
+COPY scheduler/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-COPY infra/scheduler /app/
+COPY scheduler /app/
 
 # Ensure run script is executable in the image
 RUN chmod +x /app/run_job.sh || true
