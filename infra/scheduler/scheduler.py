@@ -7,6 +7,8 @@ import argparse
 import shlex
 import subprocess
 import sys
+import os
+import time
 from pathlib import Path
 import yaml
 from typing import Dict
@@ -53,13 +55,21 @@ def run_command(cmd: str):
 
 def run_once(schedules: dict):
     failures = []
-    # Reuse a single DB connection for advisory lock operations during this run
+    # Reuse a single DB connection for advisory lock operations during this run.
+    # Try to connect with a small retry loop so scheduler waits briefly for DB readiness.
     conn = None
-    try:
+    max_attempts = int(os.environ.get("SCHEDULER_DB_CONNECT_ATTEMPTS", "6"))
+    wait_seconds = int(os.environ.get("SCHEDULER_DB_CONNECT_WAIT", "5"))
+    for attempt in range(1, max_attempts + 1):
         try:
             conn = db_lock.get_connection()
-        except Exception:
-            conn = None
+            break
+        except Exception as e:
+            print(f"[scheduler] warning: DB connect attempt {attempt}/{max_attempts} failed: {e}")
+            if attempt < max_attempts:
+                time.sleep(wait_seconds)
+    if conn is None:
+        print("[scheduler] warning: proceeding without DB connection; advisory locks disabled")
 
         for name, cfg in schedules.items():
             cmd = cfg.get("cmd")

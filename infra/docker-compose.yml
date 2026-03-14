@@ -119,6 +119,8 @@ services:
       SCHEDULER_ENABLED: "0"
       PYTHONPATH: "/repo/tayfin-screener/tayfin-screener-jobs/src:/repo/tayfin-indicator/tayfin-indicator-jobs/src:/repo/tayfin-ingestor/tayfin-ingestor-jobs/src"
     depends_on:
+      flyway:
+        condition: service_completed_successfully
       db:
         condition: service_healthy
     volumes:
