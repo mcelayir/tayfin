@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   # ── Data tier ──────────────────────────────────────────────
   db:
@@ -19,6 +18,8 @@ services:
       retries: 20
     volumes:
       - pgdata_dev:/var/lib/postgresql/data
+      # Initialization SQL (creates `postgres` role if missing)
+      - ./db/init:/docker-entrypoint-initdb.d:ro
 
   flyway:
     image: flyway/flyway:12
@@ -109,6 +110,30 @@ services:
     volumes:
       - ../tayfin-app/tayfin-ui:/app:cached
     # Ensure dev server runs with host binding (Dockerfile CMD already does this)
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: scheduler/Dockerfile
+    environment:
+      POSTGRES_HOST: db
+      # Toggle: set SCHEDULER_ENABLED=1 to enable scheduled runs in dev
+      SCHEDULER_ENABLED: "0"
+      PYTHONPATH: "/repo/tayfin-screener/tayfin-screener-jobs/src:/repo/tayfin-indicator/tayfin-indicator-jobs/src:/repo/tayfin-ingestor/tayfin-ingestor-jobs/src"
+    depends_on:
+      flyway:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    volumes:
+      - ..:/repo:cached
+    # Default: run all schedules once and exit. For continuous scheduler remove --once.
+    command: ["--once"]
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/schedules.yml"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
 
 volumes:
   pgdata_dev:

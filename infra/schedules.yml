@@ -1,0 +1,12 @@
+mcsa_daily:
+  cron: "0 6 * * *"
+  # command uses mounted source to invoke Typer CLI directly in scheduler prototype
+  cmd: "python -m tayfin_screener_jobs.cli.main jobs run mcsa nasdaq-100"
+
+indicators_hourly:
+  cron: "0 * * * *"
+  cmd: "python -m tayfin_indicator_jobs.cli.main jobs run vol_sma all"
+
+ohlcv_daily:
+  cron: "0 5 * * *"
+  cmd: "python -m tayfin_ingestor_jobs.cli.main jobs run ohlcv all"
