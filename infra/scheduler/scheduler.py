@@ -4,10 +4,12 @@ Minimal scheduler prototype for Compose dev.
 Reads infra/schedules.yml and can run in --once mode to execute all scheduled jobs immediately.
 """
 import argparse
+import shlex
 import subprocess
 import sys
 from pathlib import Path
 import yaml
+from typing import Dict
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEDULES_FILE = ROOT / "infra" / "schedules.yml"
@@ -22,10 +24,19 @@ def load_schedules(path: Path):
 
 def run_command(cmd: str):
     print(f"[scheduler] executing: {cmd}")
+    # Use shlex.split to avoid shell=True and reduce shell-injection risk.
     try:
-        subprocess.check_call(cmd, shell=True)
+        args = shlex.split(cmd)
+        proc = subprocess.run(args, check=True, capture_output=True, text=True)
+        print(proc.stdout)
+        if proc.stderr:
+            print(proc.stderr)
     except subprocess.CalledProcessError as e:
-        print(f"[scheduler] command failed: {e}")
+        print(f"[scheduler] command failed (rc={e.returncode}): {e}")
+        if e.stdout:
+            print(e.stdout)
+        if e.stderr:
+            print(e.stderr)
         return False
     return True
 
@@ -37,6 +48,10 @@ def run_once(schedules: dict):
         if not cmd:
             print(f"[scheduler] schedule {name} has no cmd, skipping")
             continue
+        # Example: integrate DB advisory locks here to prevent overlapping runs.
+        # from infra.scheduler.db_lock import make_lock_key
+        # lock_key = make_lock_key(name)
+        # TODO: acquire advisory lock using a DB connection before running.
         ok = run_command(cmd)
         if not ok:
             failures.append(name)
