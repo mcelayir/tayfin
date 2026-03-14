@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 import yaml
 from typing import Dict
-from infra.scheduler import db_lock
+import db_lock
 
 # Prefer schedules file copied into image at /app/schedules.yml (when running in
 # the scheduler container). Fall back to repo-relative path when running from
