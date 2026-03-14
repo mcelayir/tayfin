@@ -11,6 +11,13 @@ export FLYWAY_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
 export FLYWAY_USER=${POSTGRES_USER}
 export FLYWAY_PASSWORD=${POSTGRES_PASSWORD}
 
+echo "FLYWAY_URL=$FLYWAY_URL"
+echo "FLYWAY_USER=$FLYWAY_USER"
+echo "POSTGRES_DB=$POSTGRES_DB"
+echo "POSTGRES_USER=$POSTGRES_USER"
+echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD:0:4}****" 
+
+
 # Wait for the DB to accept client connections (pg_isready can return
 # true before the DB is ready for authenticated connections on first boot).
 # First wait for the TCP port to be open (avoid calling flyway until socket available)
@@ -24,16 +31,16 @@ for i in $(seq 1 12); do
 done
 
 # Then wait for Flyway to be able to contact DB (gives clearer diagnostics)
-for i in $(seq 1 10); do
-  if flyway info >/dev/null 2>&1; then
+for i in $(seq 1 4); do
+  if flyway -locations=filesystem:/tmp/empty info >/dev/null 2>&1; then
     break
   fi
-  echo "Waiting for Flyway DB connectivity (attempt $i/10)…"
+  echo "Waiting for Flyway DB connectivity (attempt $i/4)…"
   sleep 2
 done
 
 # Fail fast if DB never became ready (avoids cryptic Flyway errors).
-if ! flyway info >/dev/null 2>&1; then
+if ! flyway -locations=filesystem:/tmp/empty info; then
   echo "Error: Flyway could not connect to the database after 10 attempts; aborting migrations." >&2
   exit 1
 fi
