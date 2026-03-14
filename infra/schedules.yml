@@ -12,3 +12,28 @@ ohlcv_daily:
   cron: "0 5 * * *"
   # use defined ingestor target name
   cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv nasdaq-100"
+
+# Ingestor module jobs
+discovery_daily:
+  cron: "0 4 * * *"
+  # discovery job for NASDAQ-100
+  cmd: "python -m tayfin_ingestor_jobs jobs run discovery nasdaq-100"
+
+fundamentals_daily:
+  cron: "30 5 * * *"
+  # fundamentals job for NASDAQ-100
+  cmd: "python -m tayfin_ingestor_jobs jobs run fundamentals nasdaq-100"
+
+ohlcv_backfill_weekly:
+  cron: "0 2 * * 0"
+  # backfill (weekly) for NASDAQ-100; adjust --days-back or chunk args as needed
+  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv_backfill nasdaq-100"
+
+# Indicator module jobs
+ma_compute_hourly:
+  cron: "15 * * * *"
+  cmd: "python -m tayfin_indicator_jobs jobs run ma_compute nasdaq-100"
+
+rolling_high_daily:
+  cron: "30 6 * * *"
+  cmd: "python -m tayfin_indicator_jobs jobs run rolling_high_compute nasdaq-100"
