@@ -37,3 +37,9 @@ ma_compute_hourly:
 rolling_high_daily:
   cron: "30 6 * * *"
   cmd: "python -m tayfin_indicator_jobs jobs run rolling_high_compute nasdaq-100"
+
+# VCP (screener) jobs
+vcp_daily:
+  cron: "0 7 * * *"
+  # VCP orchestrator: compute VCP scores for NASDAQ-100
+  cmd: "python -m tayfin_screener_jobs jobs run vcp_screen nasdaq-100"
