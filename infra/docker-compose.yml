@@ -110,5 +110,21 @@ services:
       - ../tayfin-app/tayfin-ui:/app:cached
     # Ensure dev server runs with host binding (Dockerfile CMD already does this)
 
+  scheduler:
+    build:
+      context: ..
+      dockerfile: infra/scheduler/Dockerfile
+    environment:
+      POSTGRES_HOST: db
+      # Toggle: set SCHEDULER_ENABLED=1 to enable scheduled runs in dev
+      SCHEDULER_ENABLED: "0"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ..:/repo:cached
+    # Default: run all schedules once and exit. For continuous scheduler remove --once.
+    command: ["--once"]
+
 volumes:
   pgdata_dev:
