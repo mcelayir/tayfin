@@ -11,8 +11,17 @@ from pathlib import Path
 import yaml
 from typing import Dict
 
-ROOT = Path(__file__).resolve().parents[2]
-SCHEDULES_FILE = ROOT / "infra" / "schedules.yml"
+# Prefer schedules file copied into image at /app/schedules.yml (when running in
+# the scheduler container). Fall back to repo-relative path when running from
+# source checkout.
+ROOT = Path(__file__).resolve().parent
+SCHEDULES_FILE = ROOT / "schedules.yml"
+if not SCHEDULES_FILE.exists():
+    try:
+        ROOT = Path(__file__).resolve().parents[2]
+        SCHEDULES_FILE = ROOT / "infra" / "schedules.yml"
+    except IndexError:
+        SCHEDULES_FILE = ROOT / "schedules.yml"
 
 
 def load_schedules(path: Path):
