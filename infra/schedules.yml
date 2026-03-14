@@ -5,8 +5,10 @@ mcsa_daily:
 
 indicators_hourly:
   cron: "0 * * * *"
-  cmd: "python -m tayfin_indicator_jobs jobs run vol_sma all"
+  # indicator job and target must match tayfin-indicator config
+  cmd: "python -m tayfin_indicator_jobs jobs run vol_sma_compute nasdaq-100"
 
 ohlcv_daily:
   cron: "0 5 * * *"
-  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv all"
+  # use defined ingestor target name
+  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv nasdaq-100"

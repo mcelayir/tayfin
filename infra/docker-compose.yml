@@ -119,11 +119,18 @@ services:
       POSTGRES_HOST: db
       # Toggle: set SCHEDULER_ENABLED=1 to enable scheduled runs in dev
       SCHEDULER_ENABLED: "0"
+      # Point scheduler at Compose service hostnames for in-cluster requests
+      TAYFIN_INGESTOR_API_BASE_URL: "http://ingestor-api:8000"
+      TAYFIN_INDICATOR_API_BASE_URL: "http://indicator-api:8010"
       PYTHONPATH: "/repo/tayfin-screener/tayfin-screener-jobs/src:/repo/tayfin-indicator/tayfin-indicator-jobs/src:/repo/tayfin-ingestor/tayfin-ingestor-jobs/src"
     depends_on:
       flyway:
         condition: service_completed_successfully
       db:
+        condition: service_healthy
+      ingestor-api:
+        condition: service_healthy
+      indicator-api:
         condition: service_healthy
     volumes:
       - ..:/repo:cached
