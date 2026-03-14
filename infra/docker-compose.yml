@@ -118,6 +118,7 @@ services:
       POSTGRES_HOST: db
       # Toggle: set SCHEDULER_ENABLED=1 to enable scheduled runs in dev
       SCHEDULER_ENABLED: "0"
+      PYTHONPATH: "/repo/tayfin-screener/tayfin-screener-jobs/src:/repo/tayfin-indicator/tayfin-indicator-jobs/src:/repo/tayfin-ingestor/tayfin-ingestor-jobs/src"
     depends_on:
       db:
         condition: service_healthy
