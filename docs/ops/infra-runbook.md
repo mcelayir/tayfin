@@ -65,6 +65,25 @@ Indicator one-off
   done
   ```
 
+Screener one-off
+- Run screener jobs individually (use `.env` for env values):
+  ```bash
+  docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+    python -m tayfin_screener_jobs jobs run vcp_screen nasdaq-100 --config /app/config/screener.yml
+  ```
+
+  ```bash
+  docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+    python -m tayfin_screener_jobs jobs run mcsa_screen nasdaq-100 --config /app/config/screener.yml
+  ```
+
+  ```bash
+  for job in vcp_screen mcsa_screen; do
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+      python -m tayfin_screener_jobs jobs run "$job" nasdaq-100 --config /app/config/screener.yml
+  done
+  ```
+
 Troubleshooting
 - "No instruments found / No OHLCV data": ensure ingestor discovery and OHLCV jobs ran and succeeded before screeners. The scheduler now sequences ingestor first; if manual debugging, run discovery first.
 - Missing config files in container: confirm repository `config` files are mounted/copied into `/app/config` in image build and `infra/schedules.yml` uses explicit `--config /app/config/...` paths.
