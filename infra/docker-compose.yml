@@ -122,6 +122,9 @@ services:
       # Point scheduler at Compose service hostnames for in-cluster requests
       TAYFIN_INGESTOR_API_BASE_URL: "http://ingestor-api:8000"
       TAYFIN_INDICATOR_API_BASE_URL: "http://indicator-api:8010"
+      # Scheduler DB connect retry settings (consumed by infra/scheduler/scheduler.py)
+      SCHEDULER_DB_CONNECT_ATTEMPTS: "6"
+      SCHEDULER_DB_CONNECT_WAIT: "5"
       PYTHONPATH: "/repo/tayfin-screener/tayfin-screener-jobs/src:/repo/tayfin-indicator/tayfin-indicator-jobs/src:/repo/tayfin-ingestor/tayfin-ingestor-jobs/src"
     depends_on:
       flyway:

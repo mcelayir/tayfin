@@ -1,45 +1,45 @@
 mcsa_daily:
   cron: "0 6 * * *"
   # Use package entrypoint and correct job name
-  cmd: "python -m tayfin_screener_jobs jobs run mcsa_screen nasdaq-100"
+  cmd: "python -m tayfin_screener_jobs jobs run mcsa_screen nasdaq-100 --config /app/config/screener.yml"
 
 indicators_hourly:
   cron: "0 * * * *"
   # indicator job and target must match tayfin-indicator config
-  cmd: "python -m tayfin_indicator_jobs jobs run vol_sma_compute nasdaq-100"
+  cmd: "python -m tayfin_indicator_jobs jobs run vol_sma_compute nasdaq-100 --config /app/config/indicator.yml"
 
 ohlcv_daily:
   cron: "0 5 * * *"
   # use defined ingestor target name
-  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv nasdaq-100"
+  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv nasdaq-100 --config /app/config/ohlcv.yml"
 
 # Ingestor module jobs
 discovery_daily:
   cron: "0 4 * * *"
   # discovery job for NASDAQ-100
-  cmd: "python -m tayfin_ingestor_jobs jobs run discovery nasdaq-100"
+  cmd: "python -m tayfin_ingestor_jobs jobs run discovery nasdaq-100 --config /app/config/discovery.yml"
 
 fundamentals_daily:
   cron: "30 5 * * *"
   # fundamentals job for NASDAQ-100
-  cmd: "python -m tayfin_ingestor_jobs jobs run fundamentals nasdaq-100"
+  cmd: "python -m tayfin_ingestor_jobs jobs run fundamentals nasdaq-100 --config /app/config/fundamentals.yml"
 
 ohlcv_backfill_weekly:
   cron: "0 2 * * 0"
   # backfill (weekly) for NASDAQ-100; adjust --days-back or chunk args as needed
-  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv_backfill nasdaq-100"
+  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv_backfill nasdaq-100 --config /app/config/ohlcv_backfill.yml"
 
 # Indicator module jobs
 ma_compute_hourly:
   cron: "15 * * * *"
-  cmd: "python -m tayfin_indicator_jobs jobs run ma_compute nasdaq-100"
+  cmd: "python -m tayfin_indicator_jobs jobs run ma_compute nasdaq-100 --config /app/config/indicator.yml"
 
 rolling_high_daily:
   cron: "30 6 * * *"
-  cmd: "python -m tayfin_indicator_jobs jobs run rolling_high_compute nasdaq-100"
+  cmd: "python -m tayfin_indicator_jobs jobs run rolling_high_compute nasdaq-100 --config /app/config/indicator.yml"
 
 # VCP (screener) jobs
 vcp_daily:
   cron: "0 7 * * *"
   # VCP orchestrator: compute VCP scores for NASDAQ-100
-  cmd: "python -m tayfin_screener_jobs jobs run vcp_screen nasdaq-100"
+  cmd: "python -m tayfin_screener_jobs jobs run vcp_screen nasdaq-100 --config /app/config/screener.yml"
