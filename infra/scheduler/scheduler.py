@@ -113,7 +113,15 @@ def run_once(schedules: dict):
         # Execute groups in order
         for mod in ordered_modules:
             entries = module_groups.get(mod, [])
+            # If this is the ingestor module, prefer to run discovery jobs first.
+            if mod == "tayfin_ingestor_jobs" and entries:
+                # discovery commands look like: '... jobs run discovery <target> ...'
+                discovery = [e for e in entries if "jobs run discovery" in e[1]]
+                others = [e for e in entries if "jobs run discovery" not in e[1]]
+                entries = discovery + others
+
             print(f"[scheduler] executing module group: {mod} ({len(entries)} jobs)")
+            # Execute jobs sequentially within the module group
             for name, cmd in entries:
                 # Try to acquire advisory lock only if we have a shared connection.
                 acquired = True
