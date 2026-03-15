@@ -19,6 +19,7 @@ After merging to `main`, scheduled screener jobs appear not to run and `ohlcv_ba
 - Config files are available in runtime images or invoked explicitly; CLI no longer errors with missing job/target.
 - Tests added and CI includes a scheduler smoke check.
 - ADRs updated if contract/packaging changes occur.
+ - Scheduler enforces module-group sequencing: all ingestor jobs finish before indicators start, and all indicator jobs finish before screener jobs start (staging).
 
 ## Phases & Tasks
 
@@ -34,6 +35,7 @@ After merging to `main`, scheduled screener jobs appear not to run and `ohlcv_ba
 |---:|---|---|
 | 6 | Ensure config files are present at runtime (package files into image or mount and use explicit `--config`) | Infra / Packaging |
 | 9 | Update `infra/schedules.yml` to use explicit `--config` paths and sensible env/timeouts | Infra |
+| 21 | Enforce module-group sequencing in scheduler (ingestor → indicator → screener) | Infra |
 
 ### Phase 2 — Job resilience & correctness
 | ID | Task | Owner |
@@ -70,3 +72,9 @@ After merging to `main`, scheduled screener jobs appear not to run and `ohlcv_ba
 ---
 
 /cc @lead-dev
+
+## Problem encountered & decision
+
+During the Phase 1 smoke test we observed a race between scheduled jobs from different module groups: ingestor, indicator and screener. Jobs from multiple modules started at nearly the same time which caused downstream jobs (screener) to run before upstream data ingestion completed. This violates the expected data provenance and causes false failures (e.g. `No instruments found` or incomplete indicator data).
+
+Decision: enforce a module-group sequencing policy in the scheduler so that all ingestor jobs complete before indicator jobs start, and all indicator jobs complete before screener jobs start. Sequencing will be implemented by (a) honoring an explicit `module_order` in `infra/schedules.yml` when present, (b) executing module groups strictly sequentially in `infra/scheduler/scheduler.py`, and (c) using DB advisory locks as a cross-instance synchronization mechanism. The change will be backward compatible and controlled by configuration.
