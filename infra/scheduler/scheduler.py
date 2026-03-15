@@ -113,6 +113,28 @@ def run_once(schedules: dict):
         # Execute groups in order
         for mod in ordered_modules:
             entries = module_groups.get(mod, [])
+            # Acquire a module-level advisory lock to serialize module-group execution
+            module_lock_acquired = True
+            if conn is not None:
+                module_lock_acquired = False
+                max_lock_attempts = int(os.environ.get("SCHEDULER_MODULE_LOCK_ATTEMPTS", "6"))
+                lock_wait_seconds = int(os.environ.get("SCHEDULER_MODULE_LOCK_WAIT", "5"))
+                for attempt in range(1, max_lock_attempts + 1):
+                    try:
+                        ok = db_lock.try_acquire_lock(f"module:{mod}", conn=conn)
+                        if ok:
+                            module_lock_acquired = True
+                            break
+                        else:
+                            print(f"[scheduler] module lock not acquired for {mod} (attempt {attempt}/{max_lock_attempts}), retrying in {lock_wait_seconds}s")
+                    except Exception as e:
+                        print(f"[scheduler] warning: error while acquiring module lock for {mod}: {e}")
+                    if attempt < max_lock_attempts:
+                        time.sleep(lock_wait_seconds)
+
+            if not module_lock_acquired:
+                print(f"[scheduler] could not acquire module lock for {mod}, skipping module")
+                continue
             # If this is the ingestor module, prefer to run discovery jobs first.
             if mod == "tayfin_ingestor_jobs" and entries:
                 # discovery commands look like: '... jobs run discovery <target> ...'
@@ -147,6 +169,12 @@ def run_once(schedules: dict):
                             db_lock.release_lock(name, conn=conn)
                         except Exception as e:
                             print(f"[scheduler] warning: failed to release lock for {name}: {e}")
+            # release module-level lock
+            if conn is not None:
+                try:
+                    db_lock.release_lock(f"module:{mod}", conn=conn)
+                except Exception as e:
+                    print(f"[scheduler] warning: failed to release module lock for {mod}: {e}")
     finally:
         if conn is not None:
             try:
