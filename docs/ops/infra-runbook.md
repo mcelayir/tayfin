@@ -40,6 +40,31 @@ Operational recipes
 - Reproduce the race that previously caused screener failures:
   - Start compose with scheduler `--once` and inspect logs; if screener failures appear with "No OHLCV data", confirm ingestor discovery/ohlcv completed before screener started.
 
+Indicator one-off
+- Run indicator jobs individually (use `.env` for env values):
+  ```bash
+  docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+    python -m tayfin_indicator_jobs jobs run vol_sma_compute nasdaq-100 --config /app/config/indicator.yml
+  ```
+
+  ```bash
+  docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+    python -m tayfin_indicator_jobs jobs run ma_compute nasdaq-100 --config /app/config/indicator.yml
+  ```
+
+  ```bash
+  docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+    python -m tayfin_indicator_jobs jobs run rolling_high_compute nasdaq-100 --config /app/config/indicator.yml
+  ```
+
+- Run all indicator jobs in sequence:
+  ```bash
+  for job in vol_sma_compute ma_compute rolling_high_compute; do
+    docker compose --env-file .env -f infra/docker-compose.yml run --rm --entrypoint "" scheduler \
+      python -m tayfin_indicator_jobs jobs run "$job" nasdaq-100 --config /app/config/indicator.yml
+  done
+  ```
+
 Troubleshooting
 - "No instruments found / No OHLCV data": ensure ingestor discovery and OHLCV jobs ran and succeeded before screeners. The scheduler now sequences ingestor first; if manual debugging, run discovery first.
 - Missing config files in container: confirm repository `config` files are mounted/copied into `/app/config` in image build and `infra/schedules.yml` uses explicit `--config /app/config/...` paths.
