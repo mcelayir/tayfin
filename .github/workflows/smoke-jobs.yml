@@ -1,0 +1,36 @@
+name: Smoke - Jobs
+
+on:
+  push:
+    branches:
+      - feat/scheduler-smoke-tests
+  pull_request:
+    branches:
+      - feat/scheduler-smoke-tests
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install job package deps
+        run: |
+          pip install --upgrade pip
+          pip install -r tayfin-ingestor/tayfin-ingestor-jobs/requirements.txt
+          pip install -r tayfin-indicator/tayfin-indicator-jobs/requirements.txt
+          pip install -r tayfin-screener/tayfin-screener-jobs/requirements.txt
+          pip install -r infra/scheduler/requirements.txt || true
+
+      - name: Install test runner
+        run: |
+          pip install pytest
+
+      - name: Run smoke tests
+        run: |
+          pytest infra/tests/test_smoke_jobs.py -q

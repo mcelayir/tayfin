@@ -12,6 +12,7 @@ We follow a strict bounded-context separation. Each folder is a sovereign domain
 
 ## 3. Mandatory Rules & Standards (READ THESE FIRST)
 Every action you take MUST align with the established project laws found here:
+- **Project description:** `docs/architecture/tayfin_project_documentation.md`
 - **Architecture Laws:** `docs/architecture/ARCHITECTURE_RULES.md`
 - **ADRs (Architecture Decision Records):** `docs/architecture/adr/*`
 - **Tech Stack & Tooling:** `docs/architecture/TECH_STACK_RULES.md`
