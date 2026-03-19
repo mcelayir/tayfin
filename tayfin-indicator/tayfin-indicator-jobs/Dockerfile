@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy package source and set PYTHONPATH
 COPY src/ /app/src/
+COPY config/ /app/config/
 ENV PYTHONPATH=/app/src
 
 ENTRYPOINT ["python", "-m", "tayfin_indicator_jobs.cli.main"]
