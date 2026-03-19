@@ -19,6 +19,7 @@ from sqlalchemy import text
 
 from tayfin_ingestor_api.app import create_app
 from tayfin_ingestor_api.db.engine import get_engine
+from .db_utils import delete_rows_by_job_run
 
 
 # ------------------------------------------------------------------
@@ -243,18 +244,10 @@ def seed(db_engine):
 
     # ---------- cleanup (reverse FK order) ----------
     with engine.begin() as conn:
-        conn.execute(
-            text("DELETE FROM tayfin_ingestor.ohlcv_daily WHERE created_by_job_run_id = :jr"),
-            {"jr": str(job_run_id)},
-        )
-        conn.execute(
-            text("DELETE FROM tayfin_ingestor.index_memberships WHERE created_by_job_run_id = :jr"),
-            {"jr": str(job_run_id)},
-        )
-        conn.execute(
-            text("DELETE FROM tayfin_ingestor.instruments WHERE created_by_job_run_id = :jr"),
-            {"jr": str(job_run_id)},
-        )
+        # Delete only rows created by this test job_run_id. This preserves
+        # Flyway-applied baseline objects and data while removing test data.
+        delete_rows_by_job_run(engine, job_run_id, schema="tayfin_ingestor")
+        # Finally remove the job_runs row we created
         conn.execute(
             text("DELETE FROM tayfin_ingestor.job_runs WHERE id = :jr"),
             {"jr": str(job_run_id)},
