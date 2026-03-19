@@ -57,6 +57,61 @@ def db_tx(db_engine):
         connection.close()
 
 
+@pytest.fixture(scope="function")
+def db_schema(db_engine):
+    """Create a fresh schema per test and set `search_path` to it.
+
+    This clones table definitions from the `public` schema into a new
+    schema named `test_<random>` using `CREATE TABLE ... (LIKE ... INCLUDING ALL)`.
+    It does not copy data; tests should seed required rows via fixtures.
+
+    Use this fixture in tests that open independent DB connections so they
+    operate against an isolated schema without re-running Flyway.
+    """
+    import uuid
+
+    engine = db_engine
+    schema_name = f"test_{uuid.uuid4().hex[:8]}"
+
+    with engine.begin() as conn:
+        # create the new schema
+        conn.execute(text(f"CREATE SCHEMA {schema_name}"))
+
+        # find all base tables in public and clone their definitions
+        tables = conn.execute(
+            text(
+                "SELECT table_name FROM information_schema.tables "
+                "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"
+            )
+        ).fetchall()
+
+        for (tbl,) in tables:
+            # create table in new schema with same structure
+            conn.execute(
+                text(
+                    f"CREATE TABLE {schema_name}.\"{tbl}\" (LIKE public.\"{tbl}\" INCLUDING ALL)"
+                )
+            )
+
+    # yield a session bound to the new schema by setting search_path
+    connection = engine.connect()
+    connection.execute(text(f"SET search_path TO {schema_name}, public"))
+
+    from sqlalchemy.orm import sessionmaker
+
+    Session = sessionmaker(bind=connection)
+    session = Session()
+
+    try:
+        yield session
+    finally:
+        session.close()
+        connection.close()
+        # drop schema cascade
+        with engine.begin() as conn:
+            conn.execute(text(f"DROP SCHEMA IF EXISTS {schema_name} CASCADE"))
+
+
 
 # ------------------------------------------------------------------
 # Seed-data constants
