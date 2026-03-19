@@ -20,4 +20,11 @@ jobs:
           export PYTHONPATH="$(pwd)/tayfin-ingestor/tayfin-ingestor-jobs/src:$(pwd)/tayfin-ingestor/tayfin-ingestor-api/src:$(pwd)/tayfin-indicator/tayfin-indicator-jobs/src:$(pwd)/tayfin-indicator/tayfin-indicator-api/src:$(pwd)/tayfin-screener/tayfin-screener-jobs/src:$(pwd)/tayfin-screener/tayfin-screener-api/src:$(pwd)/tayfin-analyzer/tayfin-analyzer-api/src:$(pwd)/tayfin-app/tayfin-bff/src"
           echo "PYTHONPATH=$PYTHONPATH"
           find . -name "__pycache__" -type d -exec rm -rf {} + || true
-          pytest -q
+          # Run package-scoped tests to avoid import-name collisions across packages
+          pytest infra/tests -q
+          pytest tayfin-ingestor/tayfin-ingestor-api/tests -q
+          pytest tayfin-ingestor/tayfin-ingestor-jobs/tests -q
+          pytest tayfin-indicator/tayfin-indicator-api/tests -q
+          pytest tayfin-indicator/tayfin-indicator-jobs/tests -q
+          pytest tayfin-screener/tayfin-screener-api/tests -q
+          pytest tayfin-screener/tayfin-screener-jobs/tests -q
