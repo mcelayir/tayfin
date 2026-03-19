@@ -1,0 +1,8 @@
+-e tayfin-ingestor/tayfin-ingestor-jobs
+-e tayfin-ingestor/tayfin-ingestor-api
+-e tayfin-indicator/tayfin-indicator-jobs
+-e tayfin-indicator/tayfin-indicator-api
+-e tayfin-screener/tayfin-screener-jobs
+-e tayfin-screener/tayfin-screener-api
+-e tayfin-analyzer/tayfin-analyzer-api
+-e tayfin-app/tayfin-bff
