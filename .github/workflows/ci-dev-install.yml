@@ -16,8 +16,8 @@ jobs:
       - name: Prepare PYTHONPATH and run tests
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest || true
-          pip install -r infra/requirements.txt || true
+          python -m pip install pytest pyyaml || true
+          if [ -f infra/requirements.txt ]; then pip install -r infra/requirements.txt; fi
           # Add package src dirs to PYTHONPATH so tests can import local packages
           export PYTHONPATH="$(pwd)/tayfin-ingestor/tayfin-ingestor-jobs/src:$(pwd)/tayfin-ingestor/tayfin-ingestor-api/src:$(pwd)/tayfin-indicator/tayfin-indicator-jobs/src:$(pwd)/tayfin-indicator/tayfin-indicator-api/src:$(pwd)/tayfin-screener/tayfin-screener-jobs/src:$(pwd)/tayfin-screener/tayfin-screener-api/src:$(pwd)/tayfin-analyzer/tayfin-analyzer-api/src:$(pwd)/tayfin-app/tayfin-bff/src"
           echo "PYTHONPATH=$PYTHONPATH"
@@ -59,8 +59,8 @@ jobs:
       - name: Prepare PYTHONPATH and run integration tests
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest || true
-          pip install -r infra/requirements.txt || true
+          python -m pip install pytest pyyaml || true
+          if [ -f infra/requirements.txt ]; then pip install -r infra/requirements.txt; fi
           export PYTHONPATH="$(pwd)/tayfin-ingestor/tayfin-ingestor-jobs/src:$(pwd)/tayfin-ingestor/tayfin-ingestor-api/src:$(pwd)/tayfin-indicator/tayfin-indicator-jobs/src:$(pwd)/tayfin-indicator/tayfin-indicator-api/src:$(pwd)/tayfin-screener/tayfin-screener-jobs/src:$(pwd)/tayfin-screener/tayfin-screener-api/src:$(pwd)/tayfin-analyzer/tayfin-analyzer-api/src:$(pwd)/tayfin-app/tayfin-bff/src"
           echo "PYTHONPATH=$PYTHONPATH"
           find . -name "__pycache__" -type d -exec rm -rf {} + || true
