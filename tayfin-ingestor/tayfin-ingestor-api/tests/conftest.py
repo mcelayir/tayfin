@@ -22,6 +22,43 @@ from tayfin_ingestor_api.db.engine import get_engine
 
 
 # ------------------------------------------------------------------
+# Transactional rollback fixture (opt-in)
+# ------------------------------------------------------------------
+@pytest.fixture(scope="function")
+def db_tx(db_engine):
+    """Yield a connection/session that starts a nested transaction and rolls back after the test.
+
+    Tests that need to isolate DB writes can request this fixture and use the
+    returned connection. This avoids re-running Flyway and preserves baseline
+    data created by migrations.
+    """
+    engine = db_engine
+    connection = engine.connect()
+    trans = connection.begin()
+
+    # create a session bound to this connection if tests prefer session usage
+    from sqlalchemy.orm import sessionmaker
+
+    Session = sessionmaker(bind=connection)
+    session = Session()
+
+    try:
+        yield session
+    finally:
+        try:
+            session.rollback()
+        except Exception:
+            pass
+        session.close()
+        try:
+            trans.rollback()
+        except Exception:
+            pass
+        connection.close()
+
+
+
+# ------------------------------------------------------------------
 # Seed-data constants
 # ------------------------------------------------------------------
 

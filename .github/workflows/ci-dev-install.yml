@@ -28,3 +28,37 @@ jobs:
           pytest tayfin-indicator/tayfin-indicator-jobs/tests -q
           pytest tayfin-screener/tayfin-screener-api/tests -q
           pytest tayfin-screener/tayfin-screener-jobs/tests -q
+  integration:
+    runs-on: ubuntu-latest
+    needs: test-with-dev-installs
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: tayfin_user
+          POSTGRES_PASSWORD: tayfin_password
+          POSTGRES_DB: tayfin
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tayfin_user -d tayfin"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Wait for Postgres
+        run: |
+          echo "Waiting for Postgres service..."
+          sleep 10
+      - name: Run Flyway migrations
+        run: |
+          chmod +x infra/flyway-run.sh || true
+          ./infra/flyway-run.sh
+      - name: Prepare PYTHONPATH and run integration tests
+        run: |
+          export PYTHONPATH="$(pwd)/tayfin-ingestor/tayfin-ingestor-jobs/src:$(pwd)/tayfin-ingestor/tayfin-ingestor-api/src:$(pwd)/tayfin-indicator/tayfin-indicator-jobs/src:$(pwd)/tayfin-indicator/tayfin-indicator-api/src:$(pwd)/tayfin-screener/tayfin-screener-jobs/src:$(pwd)/tayfin-screener/tayfin-screener-api/src:$(pwd)/tayfin-analyzer/tayfin-analyzer-api/src:$(pwd)/tayfin-app/tayfin-bff/src"
+          echo "PYTHONPATH=$PYTHONPATH"
+          find . -name "__pycache__" -type d -exec rm -rf {} + || true
+          pytest tayfin-ingestor/tayfin-ingestor-api/tests -q
