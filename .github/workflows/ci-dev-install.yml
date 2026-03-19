@@ -17,12 +17,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pyyaml || true
-          if [ -f infra/requirements.txt ]; then pip install -r infra/requirements.txt; fi
+          # Install all discovered requirements files so runtime deps like `typer` are present
+          for f in $(git ls-files '*requirements.txt'); do
+            python -m pip install -r "$f" || true
+          done
+          # Ensure .env exists for docker-compose (some services use env_file ../.env)
+          if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
+          # Start compose services required by infra tests
+          docker compose -f infra/docker-compose.yml up -d --build
+          # Wait for DB to be ready (pg_isready inside the db container)
+          for i in $(seq 1 24); do
+            docker compose -f infra/docker-compose.yml exec -T db pg_isready -U ${POSTGRES_USER:-tayfin_user} -d ${POSTGRES_DB:-tayfin} && break || sleep 5
+          done
           # Add package src dirs to PYTHONPATH so tests can import local packages
           export PYTHONPATH="$(pwd)/tayfin-ingestor/tayfin-ingestor-jobs/src:$(pwd)/tayfin-ingestor/tayfin-ingestor-api/src:$(pwd)/tayfin-indicator/tayfin-indicator-jobs/src:$(pwd)/tayfin-indicator/tayfin-indicator-api/src:$(pwd)/tayfin-screener/tayfin-screener-jobs/src:$(pwd)/tayfin-screener/tayfin-screener-api/src:$(pwd)/tayfin-analyzer/tayfin-analyzer-api/src:$(pwd)/tayfin-app/tayfin-bff/src"
           echo "PYTHONPATH=$PYTHONPATH"
           find . -name "__pycache__" -type d -exec rm -rf {} + || true
-          # Run unit/job-scoped tests only (exclude API/integration tests)
+          # Run unit/job-scoped and infra smoke tests
           pytest infra/tests -q
           pytest tayfin-ingestor/tayfin-ingestor-jobs/tests -q
           pytest tayfin-indicator/tayfin-indicator-jobs/tests -q
@@ -51,7 +62,8 @@ jobs:
       - name: Wait for Postgres
         run: |
           echo "Waiting for Postgres service..."
-          sleep 10
+          # short sleep to let service start, Flyway step will handle migrations
+          sleep 5
       - name: Run Flyway migrations
         run: |
           chmod +x infra/flyway-run.sh || true
@@ -60,7 +72,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pyyaml || true
-          if [ -f infra/requirements.txt ]; then pip install -r infra/requirements.txt; fi
+          # Install all discovered requirements so API packages can import their deps
+          for f in $(git ls-files '*requirements.txt'); do
+            python -m pip install -r "$f" || true
+          done
+          # Ensure .env exists for compose-based helpers
+          if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
           export PYTHONPATH="$(pwd)/tayfin-ingestor/tayfin-ingestor-jobs/src:$(pwd)/tayfin-ingestor/tayfin-ingestor-api/src:$(pwd)/tayfin-indicator/tayfin-indicator-jobs/src:$(pwd)/tayfin-indicator/tayfin-indicator-api/src:$(pwd)/tayfin-screener/tayfin-screener-jobs/src:$(pwd)/tayfin-screener/tayfin-screener-api/src:$(pwd)/tayfin-analyzer/tayfin-analyzer-api/src:$(pwd)/tayfin-app/tayfin-bff/src"
           echo "PYTHONPATH=$PYTHONPATH"
           find . -name "__pycache__" -type d -exec rm -rf {} + || true
