@@ -1,3 +1,77 @@
+---
+template_version: 1
+module: tayfin-ingestor
+owner: "@dev"
+qa_checklist: true
+---
+
+# tayfin-ingestor
+
+## Description
+tayfin-ingestor is responsible for ingesting market data (OHLCV, fundamentals, discovery), normalizing it, and persisting raw and derived records for downstream processing (indicator calculations and screener workflows).
+
+## Service Overview
+- Responsibility: Data Ingress / Normalization
+- Primary interfaces: HTTP API (`tayfin-ingestor-api`), CLI jobs (`tayfin-ingestor-jobs`)
+- Owner: @dev
+
+## Getting Started
+
+### Local Commands
+| Task | Command | Description |
+| :--- | :--- | :--- |
+| Start API (dev) | `./tayfin-ingestor/tayfin-ingestor-api/scripts/run_api.sh` | Start the API service locally |
+| Run jobs (example) | `./tayfin-ingestor/tayfin-ingestor-jobs/scripts/run_ohlcv.sh` | Run the OHLCV ingest job locally |
+| Run tests | `pytest -q` (in submodule folders) | Run unit tests for API or jobs |
+
+### Environment Variables (top-level)
+| Key | Type | Required | Default | Example | Notes |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | SQLAlchemy connection string used across submodules |
+| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | Provenance identifier; attach to all persistent writes |
+
+### Execution Examples
+- Docker Compose (local dev):
+```bash
+docker-compose -f infra/docker-compose.yml up --build tayfin-ingestor
+```
+- Run API (script):
+```bash
+./tayfin-ingestor/tayfin-ingestor-api/scripts/run_api.sh
+```
+- Run job (example):
+```bash
+./tayfin-ingestor/tayfin-ingestor-jobs/scripts/run_ohlcv.sh
+```
+
+## Submodules
+- API: [tayfin-ingestor/tayfin-ingestor-api/README.md](tayfin-ingestor/tayfin-ingestor-api/README.md) — documents HTTP endpoints and schemas.  
+- Jobs: [tayfin-ingestor/tayfin-ingestor-jobs/README.md](tayfin-ingestor/tayfin-ingestor-jobs/README.md) — documents available CLI jobs, cron examples, and providers.
+
+## Observability
+- Logs: include `job_run_id` and request IDs in key flows.  
+- Metrics: instrument `requests_total`, `ingest_success_total`, `ingest_failure_total` with tags `module`, `endpoint`.
+
+## Security
+- Auth: API endpoints use bearer tokens/internal service auth (see submodule API README).  
+- Do not commit secrets; use environment variables and placeholders in examples.
+
+## QA Checklist
+- [ ] API curl examples in `tayfin-ingestor-api` run successfully against local dev.  
+- [ ] Job scripts in `tayfin-ingestor-jobs` execute and produce expected outputs.  
+- [ ] Environment variables documented and validated.
+
+## Links
+- API code: `tayfin-ingestor/tayfin-ingestor-api/src`  
+- Jobs code: `tayfin-ingestor/tayfin-ingestor-jobs/src`  
+- Artifacts list: `tayfin-ingestor/artifacts.md`
+
+## CHANGELOG
+- 2026-03-22 — Initial README created (@dev)
+
+---
+
+Note: This top-level README intentionally links to submodule READMEs for endpoint and job details. Fill submodule READMEs next (E36-03.3, E36-03.4) with concrete schemas and examples.
 # tayfin-ingestor
 
 Bounded context responsible for **discovering instruments**, ingesting **fundamentals** and **OHLCV** data, and exposing read-only APIs over that data.
