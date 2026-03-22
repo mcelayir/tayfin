@@ -113,11 +113,6 @@ curl -sS "http://localhost:5000/fundamentals/latest?symbol=AAPL" \
 ```json
 { "index_code": "NDX", "country": "US", "count": 100, "items": [ { "ticker": "AAPL", "instrument_id": "..." }, ... ] }
 ```
-```
-Replace the above illustrative snippet with a minimal valid example if you need to validate programmatically. Example:
-```json
-{ "index_code": "NDX", "country": "US", "count": 100, "items": [ { "ticker": "AAPL", "instrument_id": "inst-0001" } ] }
-```
 
 ---
 
