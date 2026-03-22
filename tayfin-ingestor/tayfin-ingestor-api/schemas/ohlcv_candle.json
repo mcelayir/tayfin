@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OhlcvCandle",
+  "type": "object",
+  "required": ["ticker","as_of_date","open","high","low","close","volume"],
+  "properties": {
+    "ticker": {"type":"string"},
+    "as_of_date": {"type":"string","format":"date"},
+    "open": {"type":"number"},
+    "high": {"type":"number"},
+    "low": {"type":"number"},
+    "close": {"type":"number"},
+    "volume": {"type":"integer"},
+    "source": {"type":"string"}
+  },
+  "additionalProperties": false
+}

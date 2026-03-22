@@ -66,7 +66,14 @@ GET /fundamentals/latest?symbol=AAPL
 }
 ```
 
-**Notes / Schema:** Shapes are produced by `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/repositories/fundamentals_repository.py` — link here when adding an explicit JSON Schema.
+**Notes / Schema:** Shapes are produced by `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/repositories/fundamentals_repository.py`.
+
+**Schemas (authoritative):**
+
+- `fundamentals_latest` schema: `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_latest.json` — use to validate the `/fundamentals/latest` response.
+- `fundamentals_list` schema: `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_list.json` — validates the `/fundamentals` range response.
+
+Examples in this README are marked `illustrative` unless you validate them against the schema files above.
 
 **Curl Example**
 ```bash
@@ -161,6 +168,15 @@ Where possible link to repository code as the authoritative model:
 - OHLCV serializers: `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/serializers/ohlcv_serializer.py`
 
 When adding inline JSON Schema, place it under `tayfin-ingestor/tayfin-ingestor-api/schemas/` and reference it from this README.
+
+Direct schema files added for immediate validation (E36-03.7):
+
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_latest.json`
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_list.json`
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/ohlcv_candle.json`
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/ohlcv_series.json`
+
+Use tools like `ajv` (node) or `jsonschema` (python) to validate example payloads against these files. Mark examples that haven't been run locally as `illustrative` in README text.
 
 ## QA Checklist
 - [ ] Run `curl` examples against local dev and verify response shapes.  
