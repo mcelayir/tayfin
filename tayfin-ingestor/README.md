@@ -53,7 +53,6 @@ docker-compose -f infra/docker-compose.yml up --build tayfin-ingestor
 - Metrics: instrument `requests_total`, `ingest_success_total`, `ingest_failure_total` with tags `module`, `endpoint`.
 
 ## Security
-- Auth: API endpoints use bearer tokens/internal service auth (see submodule API README).  
 - Do not commit secrets; use environment variables and placeholders in examples.
 
 ## QA Checklist
