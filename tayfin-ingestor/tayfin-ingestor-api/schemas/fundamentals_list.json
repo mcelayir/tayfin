@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "FundamentalsList",
   "type": "object",
-  "required": ["symbol","from","to","count","items"],
+  "required": ["symbol","count","items"],
   "properties": {
     "symbol": {"type": "string"},
     "country": {"type": "string"},
@@ -11,7 +11,7 @@
     "count": {"type":"integer"},
     "items": {
       "type": "array",
-      "items": {"$ref":"fundamentals_latest.json"}
+      "items": {"$ref":"./fundamentals_latest.json"}
     }
   },
   "additionalProperties": false

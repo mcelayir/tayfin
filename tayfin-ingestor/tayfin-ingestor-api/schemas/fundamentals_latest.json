@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "FundamentalsLatest",
   "type": "object",
-  "required": ["symbol","country","as_of_date"],
+  "required": ["symbol","country"],
   "properties": {
     "symbol": {"type": "string"},
     "country": {"type": "string"},
