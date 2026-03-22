@@ -77,7 +77,7 @@ Examples in this README are marked `illustrative` unless you validate them again
 
 **Curl Example**
 ```bash
-curl -sS "http://localhost:5000/fundamentals/latest?symbol=AAPL" \
+curl -sS "http://localhost:8000/fundamentals/latest?symbol=AAPL" \
   -H "Accept: application/json"
 ```
 
@@ -149,10 +149,12 @@ curl -sS "http://localhost:5000/fundamentals/latest?symbol=AAPL" \
 **Curl Examples**
 ```bash
 # Latest candle
-curl -sS "http://localhost:5000/ohlcv?ticker=AAPL"
+curl -sS "http://localhost:8000/ohlcv?ticker=AAPL" \
+  -H "Accept: application/json"
 
 # Range
-curl -sS "http://localhost:5000/ohlcv?ticker=AAPL&from=2026-01-01&to=2026-03-21"
+curl -sS "http://localhost:8000/ohlcv?ticker=AAPL&from=2026-01-01&to=2026-03-21" \
+  -H "Accept: application/json"
 ```
 
 ---
@@ -177,6 +179,26 @@ Direct schema files added for immediate validation (E36-03.7):
 - `tayfin-ingestor/tayfin-ingestor-api/schemas/ohlcv_series.json`
 
 Use tools like `ajv` (node) or `jsonschema` (python) to validate example payloads against these files. Mark examples that haven't been run locally as `illustrative` in README text.
+
+Validation command (quick):
+
+```bash
+# install validator (once)
+python -m pip install --user jsonschema
+
+# validate a saved example payload against the fundamentals_latest schema
+python - <<'PY'
+import json, pathlib
+from jsonschema import Draft7Validator, RefResolver
+base = pathlib.Path('tayfin-ingestor/tayfin-ingestor-api/schemas')
+schema = json.loads((base / 'fundamentals_latest.json').read_text())
+example = json.loads(open('example_fundamentals_latest.json').read())
+Draft7Validator(schema, resolver=RefResolver(base_uri='file://' + str(base.resolve()) + '/')).validate(example)
+print('fundamentals_latest.json: valid')
+PY
+```
+
+Tip: save the example JSON from this README into `example_fundamentals_latest.json` then run the command above.
 
 ## QA Checklist
 - [ ] Run `curl` examples against local dev and verify response shapes.  

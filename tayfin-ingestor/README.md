@@ -71,6 +71,23 @@ docker-compose -f infra/docker-compose.yml up --build tayfin-ingestor
 - Jobs code: `tayfin-ingestor/tayfin-ingestor-jobs/src`  
 - Artifacts list: `tayfin-ingestor/artifacts.md`
 
+Validation helper
+
+Quick validation for contributors: save an example payload from the API README as `example_fundamentals_latest.json` and run:
+
+```bash
+python -m pip install --user jsonschema
+python - <<'PY'
+import json, pathlib
+from jsonschema import Draft7Validator, RefResolver
+base = pathlib.Path('tayfin-ingestor/tayfin-ingestor-api/schemas')
+schema = json.loads((base / 'fundamentals_latest.json').read_text())
+example = json.loads(open('example_fundamentals_latest.json').read())
+Draft7Validator(schema, resolver=RefResolver(base_uri='file://' + str(base.resolve()) + '/')).validate(example)
+print('fundamentals_latest.json: valid')
+PY
+```
+
 ## CHANGELOG
 - 2026-03-22 — Initial README created (@dev)
 
