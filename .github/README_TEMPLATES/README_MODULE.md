@@ -40,11 +40,15 @@ Notes:
 | Run tests | `pytest -q` | Run unit tests |
 
 ### Environment Variables
-| Key | Required | Description |
-| :--- | :---: | :--- |
-| `DB_URL` | Yes | SQL connection string for the module database |
-| `JOB_RUN_ID` | Yes | Job provenance identifier attached to writes |
-| `PROVIDER_API_KEY` | Conditionally | API key for external provider (if used) |
+| Key | Type | Required | Default | Example | Notes |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | SQLAlchemy connection string used by the module |
+| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | Job provenance identifier attached to writes; include on all persistent writes |
+| `PROVIDER_API_KEY` | string | Conditionally | - | `EXAMPLE_KEY` | API key for external provider; never commit real keys |
+
+Notes:
+- Mark optional env vars clearly and provide example values where helpful.
+- If a variable has a recommended default for local development, document it in `Default`.
 
 ### Execution Examples
 - Docker (compose):
@@ -62,6 +66,30 @@ python -m {{module_entry_point}} --config config/local.yml
 - Cron example: `0 * * * * /opt/app/bin/job --type=sync`
 
 ## API Documentation
+
+### API Schema Linkage (required)
+Each documented endpoint must provide either:
+
+- An inline JSON Schema block describing the request or response; or
+- A link to the authoritative schema or code model (use repo-relative path with optional line reference), e.g. `tayfin-ingestor/tayfin-ingestor-api/src/schemas/ingest.schema.json` or `tayfin-ingestor/tayfin-ingestor-api/src/models.py#L123`.
+
+Example (link to schema):
+Schema: `tayfin-ingestor/tayfin-ingestor-api/src/schemas/ingest.schema.json`
+
+Example (inline JSON Schema):
+```json
+{
+  "$id": "https://example.com/schemas/ingest.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "provider": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "records": {"type": "array"}
+  },
+  "required": ["provider","timestamp","records"]
+}
+```
 
 ### `POST /v1/{{module}}/ingest`
 **Description:** Ingest payload into module.
