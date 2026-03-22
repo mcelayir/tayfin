@@ -24,13 +24,16 @@ This package contains CLI-driven ingestion jobs for discovery, fundamentals, and
 | Run OHLCV backfill | `./tayfin-ingestor/tayfin-ingestor-jobs/scripts/run_ohlcv_backfill.sh` | Backfill historical candles |
 
 ### Environment Variables (jobs)
+### Environment Variables (jobs)
 | Key | Type | Required | Default | Example | Notes |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | Database used by jobs |
-| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | Must be provided/attached for job provenance writes; the `job_run_repository` records runs |
-| `TRADINGVIEW_COOKIE` | string | Conditionally | - | `REDACTED` | Optional: authenticated cookie to extend TradingView rate limits |
-| `OHLCV_RATE_LIMIT_RPS` | int | No | `5` | `5` | Rate limit tuning for providers |
-| `OHLCV_RETRY_MAX_ATTEMPTS` | int | No | `3` | `3` | Retry attempts for provider requests |
+| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | Primary DB connection string used by jobs; recommended for CI and local dev
+| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | REQUIRED for any run that writes to DB — recorded in `job_runs` and `job_run_items`
+| `TRADINGVIEW_COOKIE` | string | Conditionally | - | `REDACTED` | Optional: provide when using TradingView provider to increase rate limits; keep secret
+| `OHLCV_RATE_LIMIT_RPS` | int | No | `5` | `5` | Requests-per-second tuning for OHLCV provider calls; tune down for shared/dev infra
+| `OHLCV_RETRY_MAX_ATTEMPTS` | int | No | `3` | `3` | Retry attempts per provider request
+| `LOG_LEVEL` | string | No | `INFO` | `DEBUG` | Controls logging verbosity for jobs
+
 
 Notes: jobs load config from `tayfin-ingestor/tayfin-ingestor-jobs/config/*.yml` — ensure values are consistent with env vars for local runs.
 
@@ -166,13 +169,13 @@ Fetches daily OHLCV candles for all instruments in an index. Currently configure
 
 Config: `config/ohlcv.yml`
 
-**Optional env vars:**
+**Optional env vars (additional notes):**
 
 | Variable | Purpose |
 |---|---|
-| `TRADINGVIEW_COOKIE` | Authenticated cookie for extended rate limits |
-| `OHLCV_RATE_LIMIT_RPS` | Requests per second (default: 2) |
-| `OHLCV_RETRY_MAX_ATTEMPTS` | Max retry attempts per ticker (default: 3) |
+| `TRADINGVIEW_COOKIE` | Authenticated cookie for extended rate limits when using TradingView provider (sensitive)
+| `OHLCV_RATE_LIMIT_RPS` | Tune request throughput to provider; default `5` (lower for shared environments)
+| `OHLCV_RETRY_MAX_ATTEMPTS` | Retry attempts per provider call; default `3`
 
 ---
 

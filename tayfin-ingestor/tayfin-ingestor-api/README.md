@@ -18,10 +18,18 @@ Run the API locally (example):
 ```
 
 ### Environment Variables (API)
+### Environment Variables (API)
 | Key | Type | Required | Default | Example | Notes |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | SQL connection string used by the API |
-| `JOB_RUN_ID` | string | No | - | `job-20260322-abc123` | Optional for read-only calls that want to attach provenance when triggering jobs |
+| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | Full SQLAlchemy-compatible connection string taking precedence over DB_HOST/DB_* vars when present |
+| `DB_HOST` | string | No | `localhost` | `localhost` | Optional components used when `DB_URL` is not provided (DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASS)
+| `DB_PORT` | int | No | `5432` | `5432` | Postgres port
+| `DB_NAME` | string | No | `tayfin` | `tayfin` | Database name when using individual DB_* vars
+| `DB_USER` | string | No | - | `user` | DB username when using individual DB_* vars
+| `DB_PASS` | string | No | - | `pass` | DB password (do not commit)
+| `JOB_RUN_ID` | string | No | - | `job-20260322-abc123` | Optional: attach to requests that will trigger jobs or to tag provenance when proxying writes
+| `PORT` | int | No | `8000` | `8000` | Port the Flask app binds to in local dev
+| `LOG_LEVEL` | string | No | `INFO` | `DEBUG` | Controls server logging verbosity
 
 ## Endpoints
 

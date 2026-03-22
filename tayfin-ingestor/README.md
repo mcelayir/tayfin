@@ -25,10 +25,16 @@ tayfin-ingestor is responsible for ingesting market data (OHLCV, fundamentals, d
 | Run tests | `pytest -q` (in submodule folders) | Run unit tests for API or jobs |
 
 ### Environment Variables (top-level)
+### Environment Variables (top-level)
 | Key | Type | Required | Default | Example | Notes |
 | :--- | :--- | :---: | :--- | :--- | :--- |
-| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | SQLAlchemy connection string used across submodules |
-| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | Provenance identifier; attach to all persistent writes |
+| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | Primary SQLAlchemy connection string (preferred). If absent, individual `DB_*` vars may be used.
+| `DB_HOST` | string | No | `localhost` | `localhost` | Host portion of DB when not using `DB_URL`.
+| `DB_PORT` | int | No | `5432` | `5432` | DB port.
+| `DB_NAME` | string | No | `tayfin` | `tayfin` | DB name.
+| `DB_USER` | string | No | - | `user` | DB username (do not commit credentials).
+| `DB_PASS` | string | No | - | `pass` | DB password (do not commit credentials).
+| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | Required for job runs and any write operations; used to populate `job_runs` / `job_run_items`.
 
 ### Execution Examples
 - Docker Compose (local dev):
