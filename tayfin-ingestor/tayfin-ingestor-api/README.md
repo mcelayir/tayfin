@@ -113,6 +113,11 @@ curl -sS "http://localhost:5000/fundamentals/latest?symbol=AAPL" \
 ```json
 { "index_code": "NDX", "country": "US", "count": 100, "items": [ { "ticker": "AAPL", "instrument_id": "..." }, ... ] }
 ```
+```
+Replace the above illustrative snippet with a minimal valid example if you need to validate programmatically. Example:
+```json
+{ "index_code": "NDX", "country": "US", "count": 100, "items": [ { "ticker": "AAPL", "instrument_id": "inst-0001" } ] }
+```
 
 ---
 
@@ -141,7 +146,7 @@ curl -sS "http://localhost:5000/fundamentals/latest?symbol=AAPL" \
 
 **Range Response (200 OK):**
 ```json
-{ "ticker": "AAPL", "from": "2026-01-01", "to": "2026-03-21", "count": 60, "items": [ {"as_of_date":"2026-03-21","open":180.12,"high":184.0,"low":179.5,"close":183.45,"volume":1234567}, ... ] }
+{ "ticker": "AAPL", "from": "2026-01-01", "to": "2026-03-21", "count": 60, "items": [ {"as_of_date":"2026-03-21","open":180.12,"high":184.0,"low":179.5,"close":183.45,"volume":1234567} ] }
 ```
 
 **Serializer implementation:** See `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/serializers/ohlcv_serializer.py` for canonical output shapes (`serialize_candle`, `serialize_series`).
@@ -312,7 +317,7 @@ curl "http://localhost:8000/ohlcv?index_code=NDX"
   "count": 101,
   "items": [
     { "ticker": "AAPL", "as_of_date": "2026-02-11", "open": 274.695, "high": 279.905, "low": 274.45, "close": 279.74, "volume": 15943723, "source": "tradingview" },
-    { "ticker": "ABNB", "as_of_date": "2026-02-11", "..." : "..." }
+    { "ticker": "ABNB", "as_of_date": "2026-02-11", "open": 130.12, "high": 132.00, "low": 129.50, "close": 131.45, "volume": 2345678, "source": "tradingview" }
   ]
 }
 ```
