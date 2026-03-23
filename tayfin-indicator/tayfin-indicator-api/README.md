@@ -56,6 +56,8 @@ curl "http://localhost:8010/indicators/latest?ticker=AAPL&indicator=sma&window=5
 # {"ticker":"AAPL","as_of_date":"2026-02-12","indicator":"sma","params":{"window":50},"value":268.081,"source":"computed"}
 ```
 
+Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_latest.json`
+
 ### GET /indicators/range
 
 Return indicator values for a date range (max ~5 years).
@@ -70,8 +72,10 @@ Return indicator values for a date range (max ~5 years).
 
 ```bash
 curl "http://localhost:8010/indicators/range?ticker=AAPL&indicator=sma&window=50&from=2025-01-01&to=2026-02-12"
-# {"ticker":"AAPL","indicator":"sma","params":{"window":50},"from":"2025-01-01","to":"2026-02-12","items":[...]}
+# {"ticker":"AAPL","indicator":"sma","params":{"window":50},"from":"2025-01-01","to":"2026-02-12","items":[{"date":"2025-01-02","value":250.12},{"date":"2025-01-03","value":251.34}]}
 ```
+
+Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_range.json`
 
 ### GET /indicators/index/latest
 
@@ -87,3 +91,5 @@ Return the latest indicator value per ticker for all tickers in the specified in
 curl "http://localhost:8010/indicators/index/latest?index_code=NDX&indicator=sma&window=50"
 # {"index_code":"NDX","indicator":"sma","params":{"window":50},"items":[{"ticker":"AAPL","as_of_date":"2026-02-12","value":268.081}]}
 ```
+
+Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_index_latest.json`
