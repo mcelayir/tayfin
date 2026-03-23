@@ -57,14 +57,17 @@ When documenting job examples or reproducing runs, capture the `job_run_id` and 
 
 Jobs use the same DB configuration as the API. Key variables:
 
-| Key | Default/Example | Notes |
-|---|---|---|
-| `POSTGRES_HOST` | `localhost` | Database host |
-| `POSTGRES_PORT` | `5432` | Database port |
-| `POSTGRES_DB` | `tayfin` | Database name |
-| `POSTGRES_USER` | `tayfin_user` | Database user |
-| `POSTGRES_PASSWORD` | _(empty)_ | Database password (do not commit) |
-| `TAYFIN_INGESTOR_API_BASE_URL` | `http://localhost:8000` | Used by `IngestorClient` to fetch OHLCV / index members |
+| Key | Type | Required | Default | Example | Notes |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| `POSTGRES_HOST` | string | Yes | `localhost` | `localhost` | Database host |
+| `POSTGRES_PORT` | integer | Yes | `5432` | `5432` | Database port |
+| `POSTGRES_DB` | string | Yes | `tayfin` | `tayfin` | Database name |
+| `POSTGRES_USER` | string | Yes | `tayfin_user` | `tayfin_user` | Database user |
+| `POSTGRES_PASSWORD` | string | Conditionally | _(empty)_ | `REDACTED` | Database password (do not commit) |
+| `TAYFIN_INGESTOR_API_BASE_URL` | string | Conditionally | `http://localhost:8000` | `http://localhost:8000` | Used by `IngestorClient` to fetch OHLCV / index members |
+| `TAYFIN_HTTP_TIMEOUT_SECONDS` | integer | No | `20` | `20` | Default timeout for HTTP calls made by clients (jobs pick this up if present) |
+| `TAYFIN_CONFIG_DIR` | string | No | - | `/app/config` | Optional path to override package `config/` with runtime YAML |
+| `TAYFIN_INDICATOR_LOOKBACK_DAYS` | integer | No | `420` | `420` | Lookback window in days used by jobs when computing indicators (can be overridden per job via CLI)
 
 ## Where values are persisted
 

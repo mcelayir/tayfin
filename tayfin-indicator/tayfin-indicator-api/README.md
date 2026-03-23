@@ -10,13 +10,16 @@ pip install -r requirements.txt
 
 ## Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `POSTGRES_HOST` | `localhost` | Database host |
-| `POSTGRES_PORT` | `5432` | Database port |
-| `POSTGRES_DB` | `tayfin` | Database name |
-| `POSTGRES_USER` | `tayfin_user` | Database user |
-| `POSTGRES_PASSWORD` | _(empty)_ | Database password |
+| Key | Type | Required | Default | Example | Notes |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| `POSTGRES_HOST` | string | Yes | `localhost` | `localhost` | Database host |
+| `POSTGRES_PORT` | integer | Yes | `5432` | `5432` | Database port |
+| `POSTGRES_DB` | string | Yes | `tayfin` | `tayfin` | Database name |
+| `POSTGRES_USER` | string | Yes | `tayfin_user` | `tayfin_user` | Database user |
+| `POSTGRES_PASSWORD` | string | Conditionally | _(empty)_ | `REDACTED` | Database password (do not commit secrets) |
+| `TAYFIN_INGESTOR_API_BASE_URL` | string | Conditionally | `http://localhost:8000` | `http://localhost:8000` | Upstream ingestor API base used by `IngestorClient` (overrides YAML upstream config)
+| `TAYFIN_HTTP_TIMEOUT_SECONDS` | integer | No | `20` | `20` | Default HTTP timeout used by jobs/clients if not explicitly passed
+| `TAYFIN_CONFIG_DIR` | string | No | - | `/app/config` | Optional directory to mount runtime YAML config (jobs CLI honors this)
 
 You can also source the repo-root `.env` file.
 

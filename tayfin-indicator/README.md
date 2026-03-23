@@ -26,8 +26,11 @@ Computes technical indicators (SMA, ATR, volatility SMA, rolling Highs, etc.) fr
 | `POSTGRES_DB` | string | Yes | `tayfin` | `tayfin` | Database name |
 | `POSTGRES_USER` | string | Yes | `tayfin_user` | `tayfin_user` | DB user |
 | `POSTGRES_PASSWORD` | string | Conditionally | _(empty)_ | `REDACTED` | DB password (do not commit secrets) |
-| `JOB_RUN_ID` | string | Yes | - | `job-20260322-abc123` | Job provenance identifier attached to writes; include as `created_by_job_run_id` on persistent writes |
+| `JOB_RUN_ID` | string | Yes (for jobs) | - | `job-20260322-abc123` | Job provenance identifier attached to writes; jobs create and log a `job_run_id` which is stored in `created_by_job_run_id` |
 | `TAYFIN_INGESTOR_API_BASE_URL` | string | Conditionally | `http://localhost:8000` | `http://localhost:8000` | Upstream ingestor API base used to fetch OHLCV/index members |
+| `TAYFIN_CONFIG_DIR` | string | No | - | `/app/config` | Optional directory from which to load runtime YAML config (overrides package config)
+| `TAYFIN_INDICATOR_LOOKBACK_DAYS` | integer | No | `420` | `420` | Number of days to include when computing indicators (jobs may override per CLI)
+| `TAYFIN_HTTP_TIMEOUT_SECONDS` | integer | No | `20` | `20` | Default timeout used by clients when calling upstream services (jobs/clients honor this env var)
 
 Notes:
 - Prefer loading environment variables from the repo root `.env` for local development.  
