@@ -73,6 +73,13 @@ Jobs use the same DB configuration as the API. Key variables:
 
 Indicator rows are persisted into the schema/table created by: `db/migrations/V4__create_indicator_series.sql`. Repositories responsible for writes live in `src/tayfin_indicator_jobs/repositories/indicator_series_repository.py`.
 
+Schema for persisted rows: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_series.json`
+
+Example upsert payload used by repositories (JSON representation of a row):
+```
+{"ticker":"AAPL","as_of_date":"2026-02-12","indicator_key":"sma","params_json":{"window":50},"value":268.081,"source":"computed","created_by_job_run_id":"job-20260323-abc123"}
+```
+
 ## QA Checklist
 
 - [ ] Running a single job with `--ticker` writes expected rows to `indicator_series` with `created_by_job_run_id` set.  

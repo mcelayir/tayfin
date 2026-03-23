@@ -60,6 +60,8 @@ curl "http://localhost:8010/indicators/latest?ticker=AAPL&indicator=sma&window=5
 ```
 
 Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_latest.json`
+ 
+Persisted row schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_series.json`
 
 ### GET /indicators/range
 
@@ -96,3 +98,9 @@ curl "http://localhost:8010/indicators/index/latest?index_code=NDX&indicator=sma
 ```
 
 Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_index_latest.json`
+
+Notes:
+- The `indicator_series.json` schema describes persisted rows in the `indicator_series` table (see `db/migrations/V4__create_indicator_series.sql`). Example persisted row:
+```
+{"ticker":"AAPL","as_of_date":"2026-02-12","indicator_key":"sma","params_json":{"window":50},"value":268.081,"source":"computed"}
+```
