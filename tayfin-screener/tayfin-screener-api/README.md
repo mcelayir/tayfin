@@ -55,9 +55,22 @@ Persisted-row contract
 
 Environment & Configuration
 ---------------------------
-- `TAYFIN_SCREENER_API_BASE_URL` — base URL for local examples and tests.
-- `DATABASE_URL` — Postgres URL used by the service (if it reads DB directly).
-- `TAYFIN_HTTP_TIMEOUT_SECONDS` — HTTP client timeout used when calling other services.
+The service respects repo-wide configuration patterns. Example env vars and recommended local values:
+
+- `TAYFIN_SCREENER_API_BASE_URL` — base URL used in examples and tests. Example: `http://localhost:8083`
+- `DATABASE_URL` — Postgres URL used by the service (if it reads DB directly). Example: `postgresql://tayfin:password@localhost:5432/tayfin_dev`
+- `TAYFIN_HTTP_TIMEOUT_SECONDS` — HTTP client timeout used when calling other services. Example: `10`
+- `TAYFIN_CONFIG_DIR` — path to service config files. Example: `./tayfin-screener/tayfin-screener-api/config`
+
+Local test notes
+---------------
+- When running validator scripts against README examples, export the API base URL so curl examples resolve correctly:
+
+```bash
+export TAYFIN_SCREENER_API_BASE_URL=http://localhost:8083
+```
+
+- Keep example responses minimal and valid JSON — validators will parse them against JSON Schemas placed under `tayfin-screener-api/schemas/`.
 
 Validation & QA
 --------------

@@ -33,8 +33,27 @@ Provenance
 Env vars
 --------
 - `DATABASE_URL` — Postgres connection for writes and migrations.
+	- Example: `postgresql://tayfin:password@localhost:5432/tayfin_dev`
 - `TAYFIN_CONFIG_DIR` — directory holding job target configs.
+	- Example: `./tayfin-screener/tayfin-screener-jobs/config`
 - `JOB_RUN_ID` — optional: if set, jobs should use this `job_run_id` rather than creating a new one (useful for manual runs and end-to-end testing).
+	- Example: `2f1e6b10-3c4a-4d2a-9f5b-3a8b9d6c7e1f`
+- `TAYFIN_HTTP_TIMEOUT_SECONDS` — HTTP client timeout used when calling other services. Example: `10`
+
+Example run (local)
+-------------------
+```bash
+export DATABASE_URL=postgresql://tayfin:password@localhost:5432/tayfin_dev
+export TAYFIN_CONFIG_DIR=./tayfin-screener/tayfin-screener-jobs/config
+# optional: reuse a job_run id created by a test harness
+export JOB_RUN_ID=2f1e6b10-3c4a-4d2a-9f5b-3a8b9d6c7e1f
+python -m tayfin_screener_jobs.main run screener_compute --target nasdaq-100
+```
+
+Notes
+-----
+- Use `JOB_RUN_ID` for manual or CI-driven invocations when you want to correlate writes across multiple steps.
+- Do not commit secrets into repo files; use env-based secrets or the CI secrets store.
 
 Testing & Validation
 --------------------

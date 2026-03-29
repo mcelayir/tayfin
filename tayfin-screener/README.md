@@ -32,11 +32,24 @@ Jobs
 
 Environment variables (summary)
 -------------------------------
-The module follows repo-wide env conventions. Key env vars used by screener components include:
+The module follows repo-wide env conventions. Key env vars used by screener components include (example values shown):
 
-- `DATABASE_URL` — Postgres connection for migrations and persistence.
-- `TAYFIN_CONFIG_DIR` — path to configuration files used by jobs and APIs.
-- `TAYFIN_HTTP_TIMEOUT_SECONDS` — HTTP client timeout used when calling other services.
+- `DATABASE_URL` — Postgres connection for migrations and persistence. Example: `postgresql://tayfin:password@localhost:5432/tayfin_dev`
+- `TAYFIN_CONFIG_DIR` — path to configuration files used by jobs and APIs. Example: `/srv/tayfin/config` or `./tayfin-screener/tayfin-screener-jobs/config`
+- `TAYFIN_HTTP_TIMEOUT_SECONDS` — HTTP client timeout used when calling other services. Example: `10` (seconds)
+- `TAYFIN_SCREENER_API_BASE_URL` — runtime base URL used in examples and tests. Example: `http://localhost:8083`
+- `JOB_RUN_ID` — (optional) UUID used to force a provenance context for manual runs. Example: `2f1e6b10-3c4a-4d2a-9f5b-3a8b9d6c7e1f`
+
+Example local config sequence
+----------------------------
+1. Start a local Postgres (or use the repo's Docker compose) and set `DATABASE_URL`.
+2. Point `TAYFIN_CONFIG_DIR` at the screener job config folder used in README examples.
+3. Set `TAYFIN_SCREENER_API_BASE_URL` when running API curl checks from CI or local scripts.
+
+When adding README examples
+--------------------------
+- Use the example values above or minimal, valid placeholders so automated README validators can parse them.
+- If a README contains interactive steps that require external services, clearly mark them as "integration-only" and include minimal mocks for unit tests.
 
 Examples
 --------
