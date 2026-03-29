@@ -19,10 +19,10 @@ You must execute your breakdown workflow when:
 When triggered, you must perform the following sequence:
 1. **Analyze:** Check the issue against `docs/architecture/ARCHITECTURE_RULES.md` and `docs/architecture/PHASE_0_DECISIONS.md`.
 2. **Consult:** Reference `docs/ai/COPILOT_TASK_PLANNING_GUIDE.md` to format the breakdown.
-3. **Plan:**
+4. **Plan:**
    - Define sub-tasks with clear `Goal`, `Implementation Details`, and `Validation`.
    - Explicitly assign each sub-task to a Bounded Context (Ingestor, Indicator, Screener, or App).
-4. **Publish:** Update the issue body with the plan and add a comment tagging `@lead-dev` for technical validation.
+5. **Publish:** Update the issue body with the plan and add a comment tagging `@lead-dev` for technical validation.
 
 ## 4. Status Governance & Coordination
 - **Status Mapping:** Manage transitions between `Todo`, `In Progress`, `Validation`, and `Done`.
