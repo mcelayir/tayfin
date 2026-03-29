@@ -77,6 +77,25 @@ PYTHONPATH=src flask --app tayfin_bff.app run --port 8030
 |------------------------------------|----------------------------|------------------------|
 | `TAYFIN_SCREENER_API_BASE_URL`     | `http://127.0.0.1:8020`   | Screener API base URL  |
 
+## Examples & Schemas
+
+Example curl (latest MCSA dashboard):
+
+```bash
+curl -sS "${TAYFIN_BFF_BASE_URL:-http://localhost:8030}/api/mcsa/dashboard?limit=20" \
+	-H "Accept: application/json"
+```
+
+Example response schema (examples stored under `tests/fixtures` and client contracts under `src/tayfin_bff/clients`):
+
+- Example fixtures: `tayfin-app/tayfin-bff/tests/conftest.py` and `tayfin-app/tayfin-bff/tests/test_mcsa_endpoints.py`
+- Client contracts: `tayfin-app/tayfin-bff/src/tayfin_bff/clients/screener_client.py`
+
+Notes for validators
+--------------------
+- Use the BFF tests and fixtures as authoritative examples when drafting README examples.
+- Keep example payloads minimal and valid for automated JSON-schema validation when schemas are available.
+
 ## Tests
 
 ```bash
