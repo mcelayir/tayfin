@@ -90,6 +90,18 @@ Links
 -----
 - Artifacts inventory: [tayfin-screener/artifacts.md](tayfin-screener/artifacts.md)
 - Top-level module README: [tayfin-screener/README.md](tayfin-screener/README.md)
+
+Schemas
+-------
+- `screener_result_latest.json` — schema for `GET /v1/screener/{strategy}/latest` responses: `tayfin-screener-api/schemas/screener_result_latest.json`
+- `screener_result_range.json` — schema for range responses: `tayfin-screener-api/schemas/screener_result_range.json`
+- `persisted_screener_result.json` — schema for persisted DB rows: `tayfin-screener-api/schemas/persisted_screener_result.json`
+
+Examples
+--------
+- Latest response example: `tayfin-screener-api/examples/screener_result_latest.example.json`
+- Range response example: `tayfin-screener-api/examples/screener_result_range.example.json`
+- Persisted row example: `tayfin-screener-api/examples/persisted_screener_result.example.json`
 Purpose: Read-only API exposing screener results.
 Phase: Phase 1 skeleton (no business logic yet).
 Context: tayfin-screener

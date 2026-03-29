@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ScreenerResultLatest",
+  "type": "object",
+  "required": ["ticker", "strategy", "as_of_date", "score", "tags"],
+  "properties": {
+    "ticker": {"type": "string"},
+    "strategy": {"type": "string"},
+    "as_of_date": {"type": "string", "format": "date-time"},
+    "score": {"type": "number", "minimum": 0, "maximum": 1},
+    "details": {"type": "object"},
+    "tags": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

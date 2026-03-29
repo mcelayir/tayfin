@@ -1,0 +1,11 @@
+{
+  "ticker": "AAPL",
+  "strategy": "vcp",
+  "as_of_date": "2026-03-28T00:00:00Z",
+  "score": 0.82,
+  "details": {
+    "breakout_price": 172.34,
+    "volume_confirmed": true
+  },
+  "tags": ["vcp-breakout", "volume-confirmed"]
+}

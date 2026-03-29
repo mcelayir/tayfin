@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PersistedScreenerResult",
+  "type": "object",
+  "required": ["id", "ticker", "strategy", "as_of_date", "score", "created_at", "created_by_job_run_id"],
+  "properties": {
+    "id": {"type": "integer"},
+    "ticker": {"type": "string"},
+    "strategy": {"type": "string"},
+    "as_of_date": {"type": "string", "format": "date-time"},
+    "score": {"type": "number"},
+    "details": {"type": "object"},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string", "format": "date-time"},
+    "created_by_job_run_id": {"type": "string", "format": "uuid"}
+  },
+  "additionalProperties": false
+}
