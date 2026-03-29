@@ -14,11 +14,8 @@ Instruction: implementers must follow the canonical template at `.github/README_
 | E36-05.3 | Draft API README (`tayfin-screener-api`) | Document endpoints exposed by the screener API (if present): request/response examples, parameter descriptions, and curl examples. Link to code-models or add inline JSON Schema for outputs where applicable. | `tayfin-screener/tayfin-screener-api/README.md` with endpoint docs, schema links, and curl examples. |
 | E36-05.4 | Draft Jobs README (`tayfin-screener-jobs`) | Document screening jobs, CLI usage, config files, env vars, and example outputs. Include scheduling/backfill patterns and tuning knobs. | `tayfin-screener/tayfin-screener-jobs/README.md` with job list, run commands, and QA checklist. |
 | E36-05.5 | Populate Env var details & examples | For all screener READMEs add env var rows (Type, Default, Example, Notes) and clearly document provenance `JOB_RUN_ID` usage for any DB writes. | ENV tables completed in each README and a short note on provenance usage. |
-| E36-05.6 | Add validation metadata header | Add the machine-checkable YAML header to each README: `template_version`, `module`, `owner`, `qa_checklist: true` (unless owner opts out). | Each new README starts with the YAML header filled. |
 | E36-05.7 | Add realistic payloads & schema links | Extract canonical input/output shapes from screening code (e.g., screener result shape), provide JSON Schema files under `tayfin-screener/.../schemas/` or link to model code. Mark unvalidated examples as `illustrative`. | JSON Schema files or repo-code links added; example payloads present and labeled. |
 | E36-05.8 | Local verification & QA readiness | Validate example payloads against schema files (using `jsonschema`), run representative CLI jobs locally (with small test datasets) and capture outputs or note blockers. | `.github/issues/36/e36-05-task-local-verification-report.md` with commands run and outputs or notes. |
-| E36-05.9 | Open PR and request reviews | Open a single PR for `tayfin-screener` README changes, tag `@lead-dev` and `@qa`, and reference epic 36. | PR URL and summary added to the issue. |
-| E36-05.10 | Address review feedback & finalize | Resolve comments from technical and QA reviewers, update READMEs, and merge when approved. | Final merged PR and issue updated with link to merged changes. |
 
 ## Implementation notes
 
