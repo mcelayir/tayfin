@@ -46,3 +46,15 @@ src/
 └── pages/
     └── Dashboard.tsx      # Main dashboard page
 ```
+
+## Environment Variables
+
+Key environment variables used by the UI (examples):
+
+- `TAYFIN_BFF_BASE_URL` — Base URL for the BFF used by the client. Example: `http://localhost:8030`
+- `VITE_DEV_SERVER_PORT` — Vite dev server port. Example: `5173`
+- `NODE_ENV` — Build mode (`development`/`production`). Example: `development`
+
+Dev proxy note
+-------------
+The Vite dev server proxies `/api` requests to the BFF. Confirm `vite.config.ts` proxy settings when troubleshooting API calls.
