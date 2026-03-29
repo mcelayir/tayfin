@@ -43,6 +43,12 @@ Key env vars used by App components (examples):
 - `TAYFIN_BFF_BASE_URL` — Base URL for the BFF. Example: `http://localhost:8030`
 - `NODE_ENV` — `development` / `production` used by the UI build tooling.
 
+More env var guidance
+---------------------
+- `TAYFIN_BFF_BASE_URL`: set this when running the UI locally to point client requests at the BFF.
+- Use `JOB_RUN_ID` when invoking backend jobs from CI to correlate writes and provenance (jobs live in other contexts).
+- For secrets and credentials, rely on CI secret stores or local `.env` files excluded from version control.
+
 Links
 -----
 - Artifacts inventory: [tayfin-app/artifacts.md](tayfin-app/artifacts.md)
