@@ -1,0 +1,16 @@
+/home/muratcan/development/github/tayfin/tayfin-app/tayfin-bff/scripts/validate_examples.py:36: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+  resolver = jsonschema.RefResolver(base_uri=SCHEMA_DIR.as_uri() + "/", referrer=schema)
+{
+  "validations": [
+    {
+      "schema": "mcsa_result",
+      "ok": true,
+      "message": "OK"
+    },
+    {
+      "schema": "mcsa_dashboard",
+      "ok": true,
+      "message": "OK"
+    }
+  ]
+}

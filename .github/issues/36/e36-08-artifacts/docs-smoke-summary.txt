@@ -1,0 +1,15 @@
+Docs smoke tests completed
+README.txt
+docs-smoke-summary.txt
+docs-smoke-tayfin-app-README.md.txt
+docs-smoke-tayfin-bff-README.md.txt
+docs-smoke-tayfin-indicator-README.md.txt
+docs-smoke-tayfin-indicator-api-README.md.txt
+docs-smoke-tayfin-indicator-jobs-README.md.txt
+docs-smoke-tayfin-ingestor-README.md.txt
+docs-smoke-tayfin-ingestor-api-README.md.txt
+docs-smoke-tayfin-ingestor-jobs-README.md.txt
+docs-smoke-tayfin-screener-README.md.txt
+docs-smoke-tayfin-screener-api-README.md.txt
+docs-smoke-tayfin-screener-jobs-README.md.txt
+docs-smoke-tayfin-ui-README.md.txt
