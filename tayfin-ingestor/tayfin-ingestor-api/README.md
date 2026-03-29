@@ -1,3 +1,218 @@
+---
+template_version: 1
+module: tayfin-ingestor-api
+owner: "@dev"
+qa_checklist: true
+---
+
+# tayfin-ingestor-api
+
+This service exposes read-only HTTP endpoints over ingested instruments, fundamentals, and OHLCV data.
+
+## Getting Started
+
+Run the API locally (example):
+
+```bash
+./tayfin-ingestor/tayfin-ingestor-api/scripts/run_api.sh
+```
+
+### Environment Variables (API)
+### Environment Variables (API)
+| Key | Type | Required | Default | Example | Notes |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| `DB_URL` | string | Yes | - | `postgres://user:pass@localhost:5432/tayfin` | Full SQLAlchemy-compatible connection string taking precedence over DB_HOST/DB_* vars when present |
+| `DB_HOST` | string | No | `localhost` | `localhost` | Optional components used when `DB_URL` is not provided (DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASS)
+| `DB_PORT` | int | No | `5432` | `5432` | Postgres port
+| `DB_NAME` | string | No | `tayfin` | `tayfin` | Database name when using individual DB_* vars
+| `DB_USER` | string | No | - | `user` | DB username when using individual DB_* vars
+| `DB_PASS` | string | No | - | `pass` | DB password (do not commit)
+| `JOB_RUN_ID` | string | No | - | `job-20260322-abc123` | Optional: attach to requests that will trigger jobs or to tag provenance when proxying writes
+| `PORT` | int | No | `8000` | `8000` | Port the Flask app binds to in local dev
+| `LOG_LEVEL` | string | No | `INFO` | `DEBUG` | Controls server logging verbosity
+
+## Endpoints
+
+### `GET /health`
+**Description:** Basic health probe.
+
+**Response (200 OK):**
+```json
+{ "status": "ok" }
+```
+
+---
+
+### `GET /fundamentals/latest`
+**Query params:** `symbol` (required), `country` (optional, default `US`)
+
+**Description:** Returns the latest fundamentals snapshot for a ticker.
+
+**Example Request:**
+```
+GET /fundamentals/latest?symbol=AAPL
+```
+
+**Response (200 OK):**
+```json
+{
+  "symbol": "AAPL",
+  "country": "US",
+  "as_of_date": "2026-03-21",
+  "price": 183.45,
+  "eps_ttm": 5.12,
+  "bvps": 12.34,
+  "pe_ratio": 35.8
+}
+```
+
+**Notes / Schema:** Shapes are produced by `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/repositories/fundamentals_repository.py`.
+
+**Schemas (authoritative):**
+
+- `fundamentals_latest` schema: `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_latest.json` — use to validate the `/fundamentals/latest` response.
+- `fundamentals_list` schema: `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_list.json` — validates the `/fundamentals` range response.
+
+Examples in this README are marked `illustrative` unless you validate them against the schema files above.
+
+**Curl Example**
+```bash
+curl -sS "http://localhost:8000/fundamentals/latest?symbol=AAPL" \
+  -H "Accept: application/json"
+```
+
+---
+
+### `GET /fundamentals`
+**Query params:** `symbol` (required), `country` (optional), `from` (YYYY-MM-DD), `to` (YYYY-MM-DD), `limit` (int), `order` (`asc`|`desc`)
+
+**Description:** Returns a range of fundamentals snapshots for a ticker.
+
+**Response (200 OK):**
+```json
+{
+  "symbol": "AAPL",
+  "country": "US",
+  "from": "2026-01-01",
+  "to": "2026-03-21",
+  "count": 45,
+  "items": [ { "as_of_date": "2026-03-21", "price": 183.45, "eps_ttm": 5.12 }, ... ]
+}
+```
+
+**Validation & Errors:** Returns `400` on invalid params and `404` when instrument not found. See `app.py` for exact error shapes.
+
+---
+
+### `GET /indices/members`
+**Query params:** `index_code` (required), `country` (optional), `limit`, `order`
+
+**Description:** Returns the list of instruments for an index code.
+
+**Response (200 OK):**
+```json
+{ "index_code": "NDX", "country": "US", "count": 100, "items": [ { "ticker": "AAPL", "instrument_id": "..." }, ... ] }
+```
+
+---
+
+### `GET /indices/by-symbol`
+**Query params:** `symbol` (required), `country` (optional)
+
+**Description:** Returns index memberships for the given symbol.
+
+**Response (200 OK):**
+```json
+{ "symbol": "AAPL", "country": "US", "count": 2, "items": [ { "index_code": "NDX" }, { "index_code": "SPX" } ] }
+```
+
+---
+
+### `GET /ohlcv`
+**Query params (latest mode):** provide exactly one selector: `ticker` OR `index_code` OR `market_code`  
+**Query params (range mode):** `ticker` + `from` + `to` (date strings)
+
+**Description:** Returns latest candle(s) or a date-range series for a ticker.
+
+**Latest (ticker) Response (200 OK):**
+```json
+{ "ticker": "AAPL", "as_of_date": "2026-03-21", "open": 180.12, "high": 184.00, "low": 179.50, "close": 183.45, "volume": 1234567 }
+```
+
+**Range Response (200 OK):**
+```json
+{ "ticker": "AAPL", "from": "2026-01-01", "to": "2026-03-21", "count": 60, "items": [ {"as_of_date":"2026-03-21","open":180.12,"high":184.0,"low":179.5,"close":183.45,"volume":1234567} ] }
+```
+
+**Serializer implementation:** See `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/serializers/ohlcv_serializer.py` for canonical output shapes (`serialize_candle`, `serialize_series`).
+
+**Curl Examples**
+```bash
+# Latest candle
+curl -sS "http://localhost:8000/ohlcv?ticker=AAPL" \
+  -H "Accept: application/json"
+
+# Range
+curl -sS "http://localhost:8000/ohlcv?ticker=AAPL&from=2026-01-01&to=2026-03-21" \
+  -H "Accept: application/json"
+```
+
+---
+
+### `GET /markets/instruments`
+**Response:** Not implemented (501). The API returns a `501` until exchange listings ingestion is implemented.
+
+## Schema Linkage
+
+Where possible link to repository code as the authoritative model:
+
+- Fundamentals repository: `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/repositories/fundamentals_repository.py`  
+- OHLCV serializers: `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/serializers/ohlcv_serializer.py`
+
+When adding inline JSON Schema, place it under `tayfin-ingestor/tayfin-ingestor-api/schemas/` and reference it from this README.
+
+Direct schema files added for immediate validation (E36-03.7):
+
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_latest.json`
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/fundamentals_list.json`
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/ohlcv_candle.json`
+- `tayfin-ingestor/tayfin-ingestor-api/schemas/ohlcv_series.json`
+
+Use tools like `ajv` (node) or `jsonschema` (python) to validate example payloads against these files. Mark examples that haven't been run locally as `illustrative` in README text.
+
+Validation command (quick):
+
+```bash
+# install validator (once)
+python -m pip install --user jsonschema
+
+# validate a saved example payload against the fundamentals_latest schema
+python - <<'PY'
+import json, pathlib
+from jsonschema import Draft7Validator, RefResolver
+base = pathlib.Path('tayfin-ingestor/tayfin-ingestor-api/schemas')
+schema = json.loads((base / 'fundamentals_latest.json').read_text())
+example = json.loads(open('example_fundamentals_latest.json').read())
+Draft7Validator(schema, resolver=RefResolver(base_uri='file://' + str(base.resolve()) + '/')).validate(example)
+print('fundamentals_latest.json: valid')
+PY
+```
+
+Tip: save the example JSON from this README into `example_fundamentals_latest.json` then run the command above.
+
+## QA Checklist
+- [ ] Run `curl` examples against local dev and verify response shapes.  
+- [ ] Validate that `serialize_candle` outputs match documented fields exactly.  
+- [ ] Ensure error cases (missing params, invalid dates) return documented error codes.
+
+## Links
+- App: `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/app.py`  
+- Serializers: `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/serializers/ohlcv_serializer.py`  
+- Repositories: `tayfin-ingestor/tayfin-ingestor-api/src/tayfin_ingestor_api/repositories/`  
+
+---
+
+*Add inline JSON Schemas or files under `schemas/` as a follow-up if desired.*
 Run the API locally:
 # tayfin-ingestor-api
 
@@ -119,7 +334,7 @@ curl "http://localhost:8000/ohlcv?index_code=NDX"
   "count": 101,
   "items": [
     { "ticker": "AAPL", "as_of_date": "2026-02-11", "open": 274.695, "high": 279.905, "low": 274.45, "close": 279.74, "volume": 15943723, "source": "tradingview" },
-    { "ticker": "ABNB", "as_of_date": "2026-02-11", "..." : "..." }
+    { "ticker": "ABNB", "as_of_date": "2026-02-11", "open": 130.12, "high": 132.00, "low": 129.50, "close": 131.45, "volume": 2345678, "source": "tradingview" }
   ]
 }
 ```

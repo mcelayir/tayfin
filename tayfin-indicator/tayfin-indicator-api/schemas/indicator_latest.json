@@ -1,0 +1,15 @@
+{
+  "$id": "https://tayfin.local/schemas/indicator_latest.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Indicator Latest Response",
+  "type": "object",
+  "properties": {
+    "ticker": {"type": "string"},
+    "as_of_date": {"type": "string", "format": "date"},
+    "indicator": {"type": "string"},
+    "params": {"type": "object", "properties": {"window": {"type": "integer"}}},
+    "value": {"type": "number"},
+    "source": {"type": "string"}
+  },
+  "required": ["ticker","as_of_date","indicator","value"]
+}

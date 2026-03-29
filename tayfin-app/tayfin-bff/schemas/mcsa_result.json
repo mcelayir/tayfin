@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "McsaResult",
+  "type": "object",
+  "required": [
+    "ticker",
+    "as_of_date",
+    "mcsa_score",
+    "mcsa_band",
+    "trend_score",
+    "vcp_component",
+    "volume_score",
+    "fundamental_score",
+    "evidence",
+    "missing_fields"
+  ],
+  "properties": {
+    "ticker": {"type": "string"},
+    "instrument_id": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+    "as_of_date": {"type": "string", "format": "date"},
+    "mcsa_score": {"type": "number"},
+    "mcsa_band": {"type": "string", "enum": ["strong","watchlist","neutral","weak"]},
+    "trend_score": {"type": "number"},
+    "vcp_component": {"type": "number"},
+    "volume_score": {"type": "number"},
+    "fundamental_score": {"type": "number"},
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "trend": {
+          "type": "object",
+          "properties": {
+            "score": {"type": "number"},
+            "price_above_sma50": {"type": "boolean"},
+            "sma50_above_sma150": {"type": "boolean"}
+          }
+        },
+        "vcp": {"type": "object", "properties": {"score": {"type": "number"}}},
+        "volume": {"type": "object", "properties": {"score": {"type": "number"}}},
+        "fundamentals": {"type": "object", "properties": {"score": {"type": "number"}}}
+      }
+    },
+    "missing_fields": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

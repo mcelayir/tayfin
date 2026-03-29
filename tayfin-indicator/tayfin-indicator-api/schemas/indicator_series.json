@@ -1,0 +1,15 @@
+{
+  "$id": "https://tayfin.local/schemas/indicator_series.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Indicator Series Row",
+  "type": "object",
+  "properties": {
+    "ticker": {"type": "string"},
+    "as_of_date": {"type": "string", "format": "date"},
+    "indicator_key": {"type": "string"},
+    "params_json": {"type": ["object", "null"]},
+    "value": {"type": "number"},
+    "source": {"type": "string"}
+  },
+  "required": ["ticker","as_of_date","indicator_key","value"]
+}

@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ScreenerResultRange",
+  "type": "array",
+  "items": {"$ref": "./screener_result_latest.json"}
+}

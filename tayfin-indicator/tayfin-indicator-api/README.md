@@ -10,13 +10,16 @@ pip install -r requirements.txt
 
 ## Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `POSTGRES_HOST` | `localhost` | Database host |
-| `POSTGRES_PORT` | `5432` | Database port |
-| `POSTGRES_DB` | `tayfin` | Database name |
-| `POSTGRES_USER` | `tayfin_user` | Database user |
-| `POSTGRES_PASSWORD` | _(empty)_ | Database password |
+| Key | Type | Required | Default | Example | Notes |
+| :--- | :--- | :---: | :--- | :--- | :--- |
+| `POSTGRES_HOST` | string | Yes | `localhost` | `localhost` | Database host |
+| `POSTGRES_PORT` | integer | Yes | `5432` | `5432` | Database port |
+| `POSTGRES_DB` | string | Yes | `tayfin` | `tayfin` | Database name |
+| `POSTGRES_USER` | string | Yes | `tayfin_user` | `tayfin_user` | Database user |
+| `POSTGRES_PASSWORD` | string | Conditionally | _(empty)_ | `REDACTED` | Database password (do not commit secrets) |
+| `TAYFIN_INGESTOR_API_BASE_URL` | string | Conditionally | `http://localhost:8000` | `http://localhost:8000` | Upstream ingestor API base used by `IngestorClient` (overrides YAML upstream config)
+| `TAYFIN_HTTP_TIMEOUT_SECONDS` | integer | No | `20` | `20` | Default HTTP timeout used by jobs/clients if not explicitly passed
+| `TAYFIN_CONFIG_DIR` | string | No | - | `/app/config` | Optional directory to mount runtime YAML config (jobs CLI honors this)
 
 You can also source the repo-root `.env` file.
 
@@ -56,6 +59,10 @@ curl "http://localhost:8010/indicators/latest?ticker=AAPL&indicator=sma&window=5
 # {"ticker":"AAPL","as_of_date":"2026-02-12","indicator":"sma","params":{"window":50},"value":268.081,"source":"computed"}
 ```
 
+Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_latest.json`
+ 
+Persisted row schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_series.json`
+
 ### GET /indicators/range
 
 Return indicator values for a date range (max ~5 years).
@@ -70,8 +77,10 @@ Return indicator values for a date range (max ~5 years).
 
 ```bash
 curl "http://localhost:8010/indicators/range?ticker=AAPL&indicator=sma&window=50&from=2025-01-01&to=2026-02-12"
-# {"ticker":"AAPL","indicator":"sma","params":{"window":50},"from":"2025-01-01","to":"2026-02-12","items":[...]}
+# {"ticker":"AAPL","indicator":"sma","params":{"window":50},"from":"2025-01-01","to":"2026-02-12","items":[{"date":"2025-01-02","value":250.12},{"date":"2025-01-03","value":251.34}]}
 ```
+
+Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_range.json`
 
 ### GET /indicators/index/latest
 
@@ -86,4 +95,12 @@ Return the latest indicator value per ticker for all tickers in the specified in
 ```bash
 curl "http://localhost:8010/indicators/index/latest?index_code=NDX&indicator=sma&window=50"
 # {"index_code":"NDX","indicator":"sma","params":{"window":50},"items":[{"ticker":"AAPL","as_of_date":"2026-02-12","value":268.081}]}
+```
+
+Schema: `tayfin-indicator/tayfin-indicator-api/schemas/indicator_index_latest.json`
+
+Notes:
+- The `indicator_series.json` schema describes persisted rows in the `indicator_series` table (see `db/migrations/V4__create_indicator_series.sql`). Example persisted row:
+```
+{"ticker":"AAPL","as_of_date":"2026-02-12","indicator_key":"sma","params_json":{"window":50},"value":268.081,"source":"computed"}
 ```
