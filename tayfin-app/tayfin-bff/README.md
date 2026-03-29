@@ -77,6 +77,18 @@ PYTHONPATH=src flask --app tayfin_bff.app run --port 8030
 |------------------------------------|----------------------------|------------------------|
 | `TAYFIN_SCREENER_API_BASE_URL`     | `http://127.0.0.1:8020`   | Screener API base URL  |
 
+Additional env vars (examples):
+
+| Variable                       | Example                                | Notes |
+|--------------------------------|----------------------------------------|-------|
+| `TAYFIN_BFF_BASE_URL`          | `http://localhost:8030`                | Base URL used in README examples and local dev |
+| `TAYFIN_HTTP_TIMEOUT_SECONDS`  | `10`                                   | HTTP client timeout for upstream calls |
+| `LOG_LEVEL`                    | `INFO`                                 | Service log level |
+
+Auth & secrets
+----------------
+- The BFF uses environment-based secrets for any upstream auth. Do not hardcode credentials in README examples; use placeholders and CI secrets.
+
 ## Examples & Schemas
 
 Example curl (latest MCSA dashboard):
