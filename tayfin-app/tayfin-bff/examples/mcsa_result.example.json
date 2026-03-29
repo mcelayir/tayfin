@@ -1,0 +1,18 @@
+{
+  "ticker": "AAPL",
+  "instrument_id": "550e8400-e29b-41d4-a716-446655440000",
+  "as_of_date": "2026-03-06",
+  "mcsa_score": 82.5,
+  "mcsa_band": "watchlist",
+  "trend_score": 25.0,
+  "vcp_component": 28.0,
+  "volume_score": 12.0,
+  "fundamental_score": 17.5,
+  "evidence": {
+    "trend": {"score": 25.0, "price_above_sma50": true},
+    "vcp": {"score": 28.0, "pattern_detected": true},
+    "volume": {"score": 12.0},
+    "fundamentals": {"score": 17.5}
+  },
+  "missing_fields": []
+}
