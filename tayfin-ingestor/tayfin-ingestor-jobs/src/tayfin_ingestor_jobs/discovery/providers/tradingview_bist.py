@@ -1,7 +1,7 @@
 import logging
 from typing import Iterable
 
-from tradingview_screener import Query
+from tradingview_screener import Query, Column
 
 
 class TradingViewBistDiscoveryProvider:
@@ -23,11 +23,15 @@ class TradingViewBistDiscoveryProvider:
         raw_count, raw_df = (
             Query()
             .set_markets('turkey')
-            .select('name')
+            .select('name', 'exchange', 'market', 'is_primary')
+            .where(Column('is_primary') == True)  # Filter for primary listings to reduce duplicates
             .limit(5000)
             .get_scanner_data()
         )
 
+        print(f"[provider] Raw TradingView data: {raw_df}")
+        
+        
         if raw_df is None or raw_df.empty:
             raise RuntimeError("No symbols returned from TradingView for market='turkey'")
 
@@ -42,9 +46,10 @@ class TradingViewBistDiscoveryProvider:
 
         country = target_cfg.get("country", "TR")
         index_code = target_cfg.get("index_code", "BIST")
+        exchange = target_cfg.get("exchange", "BIST")
 
         result = [
-            {"ticker": t, "country": country, "index_code": index_code}
+            {"ticker": t, "country": country, "index_code": index_code, "exchange": exchange}
             for t in unique_tickers
         ]
 
