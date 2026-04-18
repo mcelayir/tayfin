@@ -19,6 +19,11 @@ discovery_daily:
   # discovery job for NASDAQ-100
   cmd: "python -m tayfin_ingestor_jobs jobs run discovery nasdaq-100 --config /app/config/discovery.yml"
 
+discovery_bist_daily:
+  cron: "10 4 * * *"
+  # discovery job for Borsa Istanbul (BIST/Turkey); staggered 10 min after NASDAQ-100 discovery
+  cmd: "python -m tayfin_ingestor_jobs jobs run discovery bist --config /app/config/discovery.yml"
+
 fundamentals_daily:
   cron: "30 5 * * *"
   # fundamentals job for NASDAQ-100
