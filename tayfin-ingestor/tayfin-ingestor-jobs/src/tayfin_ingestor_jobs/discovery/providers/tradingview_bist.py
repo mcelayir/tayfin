@@ -1,6 +1,7 @@
 import logging
 from typing import Iterable
 
+import pandas as pd
 from tradingview_screener import Query, Column
 
 
@@ -20,17 +21,16 @@ class TradingViewBistDiscoveryProvider:
 
         Returns an iterable of dicts with keys: ticker, country, index_code.
         """
+
         raw_count, raw_df = (
             Query()
             .set_markets('turkey')
-            .select('name', 'exchange', 'market', 'is_primary')
+            .set_index('SYML:BIST;XU100')
+            .select('name', 'exchange', 'market', 'is_primary', 'indexes')
             .where(Column('is_primary') == True)  # Filter for primary listings to reduce duplicates
             .limit(5000)
             .get_scanner_data()
         )
-
-        print(f"[provider] Raw TradingView data: {raw_df}")
-        
         
         if raw_df is None or raw_df.empty:
             raise RuntimeError("No symbols returned from TradingView for market='turkey'")
