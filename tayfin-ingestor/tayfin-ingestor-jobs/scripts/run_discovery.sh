@@ -4,7 +4,7 @@ set -euo pipefail
 # run_discovery.sh
 # Helper to run the discovery job from the repository without thinking about
 # PYTHONPATH or paths. Place this at tayfin-ingestor/tayfin-ingestor-jobs/scripts/
-
+echo "Running discovery job with config from tayfin-ingestor/tayfin-ingestor-jobs/config/discovery.yml"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 env_file="$repo_root/.env"
@@ -51,5 +51,8 @@ if [ "${NO_RUN:-0}" = "1" ]; then
   exit 0
 fi
 
-echo "Running discovery job (nasdaq-100)"
-python -m tayfin_ingestor_jobs jobs run discovery nasdaq-100 --config "$config_file"
+# echo "Running discovery job (nasdaq-100)"
+# python -m tayfin_ingestor_jobs jobs run discovery nasdaq-100 --config "$config_file"
+
+echo "Running discovery job (bist)"
+python -m tayfin_ingestor_jobs jobs run discovery bist --config "$config_file"

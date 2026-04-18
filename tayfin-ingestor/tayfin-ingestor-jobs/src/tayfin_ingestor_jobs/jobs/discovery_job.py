@@ -35,7 +35,8 @@ class DiscoveryJob:
                     exchange_map = {
                         "NMS": "NASDAQ", "NYQ": "NYSE", "ASE": "AMEX", 
                         "NCM": "NASDAQ", "PNK": "OTC", "OTC": "OTC",
-                        "PCX": "NYSE", "NGM": "NASDAQ", "BTS": "OTC"
+                        "PCX": "NYSE", "NGM": "NASDAQ", "BTS": "OTC",
+                        "BIST": "BIST"
                     }
                     return exchange_map.get(exchange_code, exchange_code)
         except Exception as e:

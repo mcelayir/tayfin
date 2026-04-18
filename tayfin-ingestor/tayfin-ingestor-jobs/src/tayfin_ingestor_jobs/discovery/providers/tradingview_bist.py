@@ -1,13 +1,13 @@
 import logging
 from typing import Iterable
 
-from tradingview_screener import get_all_symbols
+from tradingview_screener import Query
 
 
 class TradingViewBistDiscoveryProvider:
     """Provider that fetches all Borsa Istanbul (BIST) instruments from TradingView.
 
-    Uses tradingview_screener.get_all_symbols(market='turkey') which returns
+    Uses tradingview_screener.Query with set_markets('turkey'), which returns
     symbols prefixed with 'BIST:'. The prefix is stripped before returning,
     and results are deduplicated and sorted alphabetically.
     """
@@ -20,16 +20,22 @@ class TradingViewBistDiscoveryProvider:
 
         Returns an iterable of dicts with keys: ticker, country, index_code.
         """
-        raw: list[str] = get_all_symbols(market="turkey")
+        raw_count, raw_df = (
+            Query()
+            .set_markets('turkey')
+            .select('name')
+            .limit(5000)
+            .get_scanner_data()
+        )
 
-        if not raw:
+        if raw_df is None or raw_df.empty:
             raise RuntimeError("No symbols returned from TradingView for market='turkey'")
 
-        tickers = []
-        for symbol in raw:
-            stripped = symbol.replace("BIST:", "", 1).strip().upper()
-            if stripped:
-                tickers.append(stripped)
+        logging.info(f"[provider] TradingView returned {raw_count} raw symbols for market=turkey")
+
+        # raw_df['ticker'] contains 'BIST:SYMBOL' format — strip the exchange prefix
+        tickers_raw = raw_df['ticker'].tolist()
+        tickers = [t.replace('BIST:', '', 1).strip().upper() for t in tickers_raw if t.startswith('BIST:')]
 
         # Deduplicate preserving insertion order, then sort alphabetically
         unique_tickers = sorted(dict.fromkeys(tickers))
