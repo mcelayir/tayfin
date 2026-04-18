@@ -1,5 +1,6 @@
 from ..discovery.providers.placeholder import PlaceholderIndexDiscoveryProvider
 from ..discovery.providers.nasdaqtrader import NasdaqTraderIndexDiscoveryProvider
+from ..discovery.providers.tradingview_bist import TradingViewBistDiscoveryProvider
 
 
 def create_provider(target_cfg: dict):
@@ -16,5 +17,7 @@ def create_provider(target_cfg: dict):
     # Accept both 'nasdaq100' and 'nasdaq-100' (factory key may be dashed)
     if code in ("nasdaq100", "nasdaq-100"):
         return NasdaqTraderIndexDiscoveryProvider()
+    elif code == "bist":
+        return TradingViewBistDiscoveryProvider()
 
     return PlaceholderIndexDiscoveryProvider()
