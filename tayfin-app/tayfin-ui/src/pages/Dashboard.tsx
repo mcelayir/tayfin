@@ -41,7 +41,7 @@ export function Dashboard() {
         </div>
       )}
 
-      {state === 'loading' && (
+      {(state === 'loading' || state === 'idle') && (
         <div className={styles.dashboard__loading}>Loading MCSA data…</div>
       )}
 
