@@ -138,7 +138,7 @@ function VolumeCard({ evidence, max }: { evidence: VolumeEvidence; max: number }
           {evidence.score.toFixed(1)} / {max}
         </span>
       </div>
-l      {/* Accept either backend naming or legacy UI naming for robustness */}
+      {/* Accept either backend naming or legacy UI naming for robustness */}
       <BoolRow
         label="Pullback below volume SMA"
         value={
