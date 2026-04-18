@@ -10,3 +10,4 @@ lxml
 stockdex
 yfinance
 tradingview-scraper
+tradingview-screener==2.5.0
