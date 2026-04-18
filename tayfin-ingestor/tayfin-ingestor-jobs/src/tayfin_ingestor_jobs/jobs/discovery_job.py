@@ -68,9 +68,14 @@ class DiscoveryJob:
             country = it.get("country", self.target_cfg.get("country"))
             index_code = it.get("index_code", self.target_cfg.get("index_code"))
             try:
-                exchange = self._get_exchange_for_ticker(ticker)
+                country = it.get("country", self.target_cfg.get("country"))
+                exchange = it.get("exchange", self.target_cfg.get("exchange"))
+                if country and country.upper() == "US":
+                    exchange = self._get_exchange_for_ticker(ticker)
+                
                 if exchange:
                     logging.info(f"Found exchange for {ticker}: {exchange}")
+
                 instrument_id = self.instrument_repo.upsert(ticker=ticker, country=country, instrument_type=it.get("instrument_type"), exchange=exchange, created_by_job_run_id=job_run_id)
                 membership_id = self.index_membership_repo.upsert(index_code=index_code, instrument_id=instrument_id, country=country, effective_date=it.get("effective_date"), created_by_job_run_id=job_run_id)
                 self.job_run_item_repo.upsert(job_run_id=job_run_id, item_key=ticker, status="SUCCESS")

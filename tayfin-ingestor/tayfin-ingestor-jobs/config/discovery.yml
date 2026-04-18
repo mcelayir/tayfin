@@ -6,3 +6,9 @@ jobs:
       kind: index
       index_code: NDX
       name: "NASDAQ-100"
+    bist:
+      code: bist
+      country: TR
+      kind: market
+      index_code: BIST
+      name: "Borsa Istanbul"
