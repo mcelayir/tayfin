@@ -7,3 +7,11 @@ jobs:
       index_code: NDX
       timeframe: 1d
       window_days: 400
+    bist:
+      code: bist
+      country: TR
+      type: index
+      index_code: BIST
+      timeframe: 1d
+      window_days: 400
+      default_exchange: BIST
