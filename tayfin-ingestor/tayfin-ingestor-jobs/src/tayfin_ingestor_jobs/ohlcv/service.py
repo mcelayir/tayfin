@@ -15,6 +15,7 @@ from ..fundamentals.repositories.instrument_query_repository import (
 )
 from .providers.tradingview_provider import TradingViewOhlcvProvider
 from .providers.yfinance_provider import YfinanceOhlcvProvider
+from .providers.factory import ohlcv_provider_factory
 from .providers.base import (
     ProviderEmptyError,
     TransientProviderError,
@@ -114,7 +115,7 @@ def run_ohlcv_ingestion(
     # ------------------------------------------------------------------
     # Providers (created once, reused across tickers)
     # ------------------------------------------------------------------
-    tv_provider = TradingViewOhlcvProvider()
+    tv_provider = ohlcv_provider_factory(cfg)
     yf_provider = YfinanceOhlcvProvider()
 
     # ------------------------------------------------------------------
