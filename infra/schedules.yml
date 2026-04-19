@@ -34,6 +34,16 @@ ohlcv_backfill_weekly:
   # backfill (weekly) for NASDAQ-100; adjust --days-back or chunk args as needed
   cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv_backfill nasdaq-100 --config /app/config/ohlcv_backfill.yml"
 
+ohlcv_bist_daily:
+  cron: "30 15 * * *"
+  # BIST OHLCV daily ingestion; runs after Borsa Istanbul close (18:10 IST = 15:10 UTC)
+  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv bist --config /app/config/ohlcv.yml"
+
+ohlcv_bist_backfill_weekly:
+  cron: "30 2 * * 0"
+  # BIST OHLCV weekly backfill; staggered 30 min after nasdaq-100 backfill
+  cmd: "python -m tayfin_ingestor_jobs jobs run ohlcv_backfill bist --config /app/config/ohlcv_backfill.yml"
+
 # Indicator module jobs
 ma_compute_hourly:
   cron: "15 * * * *"
